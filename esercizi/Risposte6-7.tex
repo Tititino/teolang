@@ -1,0 +1,193 @@
+\documentclass[12pt, answers]{exam}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[italian]{babel}
+\usepackage{caption}
+\usepackage[utf8]{inputenc}
+\usepackage{embedall}
+\usepackage{etoolbox}
+\usepackage{float}
+\AtBeginEnvironment{align}{\setcounter{equation}{0}}
+\embedfile{\jobname.tex}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{subcaption}
+\usepackage{tabularray}
+\usepackage{tikz}
+\usetikzlibrary{positioning, automata, decorations.pathreplacing, calligraphy}
+\usepackage{xcolor}
+\usepackage[bookmarks]{hyperref}
+
+\definecolor{codegray}{gray}{0.95}
+\lstdefinestyle{mystyle}{
+	numberstyle=\scriptsize\color{black},
+	basicstyle=\footnotesize,
+	numbers=left,
+	numbersep=5pt,
+}
+\lstset{style=mystyle}
+\overfullrule=10pt
+
+\newcommand{\grammar}[4]{\langle #1, #2, #3, #4 \rangle}
+\newcommand{\grammarP}[4]{\langle \{ #1 \}, \{ #2 \}, \{ #3 \}, #4 \rangle}
+\newcommand{\der}{\Rightarrow}
+\newcommand{\prd}{\rightarrow}
+\begin{document}
+\begin{questions}
+	\question Scrivete un'espressione regolare per il linguaggio formato da tutte le stringhe sull'alfabeto $\{0, 1\}$ che, interpretate come numeri in notazione binaria, rappresentano potenze di due.
+	\begin{solution}
+		$$ 1 0* $$
+	\end{solution}
+	\question Scrivete un'espressione regolare per il linguaggio formato da tutte le stringhe sull'alfabeto $\{0, 1\}$ che, interpretate come numeri in notazione binaria, \textit{non} rappresentano potenze di 2.
+	\begin{solution}
+		$$ (0 + 1 (0 + 1)* 1) $$
+	\end{solution}
+	\question Scrivete un'espressione regolare per il linguaggio formato da tutte le stringhe sull'alfabeto $\{a, b\}$ in cui le $a$ e le $b$ si alternano (come $abab$, $bab$, $b$, ecc).
+	Disegnate poi un automa per lo stesso linguaggio.
+	\begin{solution}
+		$$ (b + \epsilon)(ab)* (a + \epsilon) $$
+		% riporto disegni
+		\begin{figure}[H]
+			\centering
+			\begin{subfigure}{0.4\textwidth}
+				\centering
+				\begin{tikzpicture}
+					\node[state, initial] 	(q0)                       {$q_0$};
+					\node[state, accepting]	(q1)   [right=of q0]       {$q_1$};
+					\node[state] 		(trap) [above right=of q0] {$q_2$};
+
+					\path[->] (q0)	 edge			node[above]	  {a}	(q1)
+							 edge			node[above left]  {b}	(trap)
+						  (q1)	 edge			node[above right] {a,b}	(trap)
+						  (trap) edge[loop above]	node[above]       {a, b} ();
+				\end{tikzpicture}
+				\caption{Automa completo per $a$}
+			\end{subfigure}
+			\begin{subfigure}{0.4\textwidth}
+				\centering
+				\begin{tikzpicture}
+					\node[state, initial] 	(q0)                       {$q_0$};
+					\node[state, accepting]	(q1)   [right=of q0]       {$q_1$};
+					\node[state] 		(trap) [above right=of q0] {$q_2$};
+
+					\path[->] (q0)	 edge			node[above]	  {b}	(q1)
+							 edge			node[above left]  {a}	(trap)
+						  (q1)	 edge			node[above right] {a,b}	(trap)
+						  (trap) edge[loop above]	node[above]       {a, b} ();
+				\end{tikzpicture}
+				\caption{Automa completo per $b$}
+			\end{subfigure}
+			\begin{subfigure}{\textwidth}
+				\centering
+				\begin{tikzpicture}
+					\node[state, initial, accepting] (q0)                 {$q_0$};
+					\node[state] 		         (trap) [right=of q0] {$q_2$};
+
+					\path[->] (q0)	 edge			node[above]	  {a, b}	(trap)
+						  (trap) edge[loop above]	node[above]       {a, b} ();
+				\end{tikzpicture}
+				\caption{Automa completo per $\epsilon$}
+			\end{subfigure}
+		\end{figure}
+		Da questi possiamo provare a costruire i vari componenti dell'automa corrispondente.
+		Iniziando con $a + \epsilon$ -- e similmente $b + \epsilon$ -- otteniamo
+		\begin{center}
+			\begin{tikzpicture}
+				\node[state, initial, accepting] (q0)                 {$(q_0, q_0)$};
+				\node[state,  accepting]         (q1)   [right=of q0] {$(q_1, q_2)$};
+				\node[state] 		         (trap) [below right=of q0] {$(q_2, q_2)$};
+
+				\path[->] (q0)	 edge			node[above]	  {a}	(q1)
+					  (q0)   edge			node[above]	  {b}   (trap)
+					  (q1)   edge 			node[right]	  {a,b} (trap)
+				          (trap) edge[loop below]	node[below]       {a, b} ();
+			\end{tikzpicture}
+		\end{center}
+		Poi costruiamo l'automa per $ab$
+		\begin{center}
+			\begin{tikzpicture}[state/.style=state with output]
+				\node[state, initial] (q0)                 {$q_0$ \nodepart{lower} $\varnothing$};
+				\node[state] (q1) [below right=of q0]                 {$q_1$ \nodepart{lower} $\varnothing$};
+				\node[state] (q2) [above right=of q0]                 {$q_2$ \nodepart{lower} $\{q_3\}$};
+				\node[state] (q3) [above right=of q2]                 {$q_1$ \nodepart{lower} $\{q_4\}$};
+				\node[state, accepting] (q4) [below right=of q2]      {$q_1$ \nodepart{lower} $\{q_5\}$};
+
+				\path[->] (q0)	 edge			node[above]	  {a}	(q2)
+					  (q0)   edge			node[above]	  {b}   (q1)
+					  (q1)   edge[loop below]	node[below]	  {a,b} ()
+					  (q2)	 edge			node[above]	  {a}   (q3)
+					  (q2)	 edge			node[below]	  {b}   (q4)
+					  (q3)   edge[loop above]	node[above]	  {a,b} ()
+					  (q4)	 edge			node[right]	  {a,b} (q3);
+			\end{tikzpicture}
+		\end{center}
+		E l'automa per $(ab)*$
+		\begin{center}
+			\begin{tikzpicture}
+				\node[state, initial] (q0)	{$q_0^\prime$};
+				\node[state]	      (q1) [below left=of q0]	{$\{q_1\}$};
+				\node[state]	      (q2) [below right=of q0]	{$\{q_2\}$};
+				\node[state, accepting] (q3) [below left=of q2] {$\{q_4, q_0\}$};
+				\node[state] 	      (q4) [below right=of q2] 	{$\{q_3\}$};
+				\node[state] 	      (q5) [below left=of q3] 	{$\{q_3, q_1\}$};
+				\node[state] 	      (q6) [below right=of q3] 	{$\{q_3, q_2\}$};
+				\node[state, accepting] (q7) [below=of q6] 	{$\{q_3, q_4, q_0\}$};
+
+				\path[->] (q0)	edge	node[left]	{b}	(q1)
+					  (q0)  edge	node[right]	{a}	(q2)
+					  (q1)	edge[loop below] node[below] {a,b}	()
+					  (q2)	edge	node[left]	{b}	(q3)
+					  (q2)	edge	node[right]	{a}	(q4)
+					  (q4)	edge[loop right] node[right] {a,b} ()
+					  (q3)	edge	node[left]	{b}	(q5)
+					  (q3)	edge	node[right]	{a}	(q6)
+					  (q5)	edge[loop left] node[left]   {a,b} ()
+					  (q6)	edge[bend left]	node[right]	{b}	(q7)
+					  (q6)	edge	node[right]	{a}	(q4)
+					  (q7)	edge[bend left]	node[left]	{a}	(q6)
+					  (q7)	edge	node[left]	{b}	(q5);
+			\end{tikzpicture}
+		\end{center}
+		Ed infine l'automa per la concatenazione $(b + \epsilon)(ab)*$
+		\begin{center}
+			\begin{tikzpicture}[state/.style=state with output]
+				\node[state, initial] (q0q3)			{$q_0$ \nodepart{lower} $\{q_3\}$};
+				\node[state] (q2q5) [below left=of q0q3] 	{$q_2$ \nodepart{lower} $\{q_5\}$};
+				\node[state] (q1q4q3) [below right=of q0q3] 	{$q_1$ \nodepart{lower} $\{q_4, q_3\}$};
+				\node[state] (q2q5) [below left=of q0q3] 	{$q_2$ \nodepart{lower} $\{q_5\}$};
+			\end{tikzpicture}
+		\end{center}
+	\end{solution}
+	\question Scrivete un'espressione regolare per il linguaggio formato da tutte le stringhe sull'alfabeto $\{a, b\}$ nelle quali ogni $a$ è seguita immediatamente da una $b$.
+	\begin{solution}
+		$$ b* (abb*)* b* $$
+	\end{solution}
+	\question Scrivete un'espressione regolare per il linguaggio formato da tutte le stringhe sull'alfabeto $\{a, b\}$ che contengono un numero di $a$ pari e un numero di $b$ pari.
+	\textit{Suggerimento: se avete difficoltà nell'ottenere direttamente l'espressione, potete costruire prima un automa a stati finiti e, successivamente, ricavare l'espressione regolare servendovi di una delle trasformazioni da automi ad espressioni regolari presentate a lezione.}
+	\begin{solution}
+		Prima costruiamo l'automa
+		\begin{center}
+			\begin{tikzpicture}
+				\node[state, initial] (q0)	{$q_0$};
+				\node[state]	      (q1) 	[right=of q0]	{$q_1$};
+				\node[state]	      (q2) 	[below=of q0]	{$q_2$};
+				\node[state, accepting] (q3) 	[right=of q2] 	{$q_3$};
+
+				\path[->] (q0)	edge[bend left]	node[above]	{\tiny a} (q1)
+					  	edge[bend left] node[left]	{\tiny b} (q2)
+					  (q1)	edge[bend left]	node[below]	{\tiny a} (q0)
+						edge[bend left]	node[left]	{\tiny b} (q3)
+					  (q2)	edge[bend left]	node[right]	{\tiny b} (q0)
+					  	edge[bend left] node[above]	{\tiny a} (q3)
+					  (q3)	edge[bend left] node[below]	{\tiny a} (q2)
+					  	edge[bend left] node[right]	{\tiny b} (q1);
+			\end{tikzpicture}
+		\end{center}
+		Da questo ricaviamo il sistema
+		$$ \left \{ \begin{array}{ll} X_0 &= aX_1 + bX_2 + \epsilon \\ X_1 &= aX_0 + bX_3 \\ X_2 &= bX_0 + aX_3 \\ X_3 &= bX_1 + aX_2 \end{array} \right. $$
+		Sostituendo $X_1$ ed $X_2$ in $X_3$ otteniamo
+		% $$ \left \{ \begin{array}{ll} X_0 &= aX_1 + bX_2 + \epsilon \\ X_1 &= aX_0 + bX_3 \\ X_2 &= bX_0 + aX_3 \\ X_3 &= bX_1 + aX_2 \end{array} \right. $$
+	\end{solution}
+\end{questions}
+\end{document}

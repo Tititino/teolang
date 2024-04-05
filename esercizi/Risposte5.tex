@@ -1,0 +1,112 @@
+\documentclass[12pt, answers]{exam}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage[italian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{embedall}
+\usepackage{etoolbox}
+\AtBeginEnvironment{align}{\setcounter{equation}{0}}
+\embedfile{\jobname.tex}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{tabularray}
+\usepackage{tikz}
+\usetikzlibrary{positioning, automata, decorations.pathreplacing, calligraphy}
+\usepackage{xcolor}
+\usepackage[bookmarks]{hyperref}
+
+\definecolor{codegray}{gray}{0.95}
+\lstdefinestyle{mystyle}{
+	numberstyle=\scriptsize\color{black},
+	basicstyle=\footnotesize,
+	numbers=left,
+	numbersep=5pt,
+}
+\lstset{style=mystyle}
+\overfullrule=10pt
+
+\newcommand{\grammar}[4]{\langle #1, #2, #3, #4 \rangle}
+\newcommand{\grammarP}[4]{\langle \{ #1 \}, \{ #2 \}, \{ #3 \}, #4 \rangle}
+\newcommand{\der}{\Rightarrow}
+\newcommand{\prd}{\rightarrow}
+\begin{document}
+\begin{questions}
+	\question Considerate il linguaggio
+	$$ \operatorname{DOUBLE}_k = \{ ww \mid w \in \{ a, b \}^k \} $$
+	dove $k > 0$ è un intero fissato.
+	È abbastanza facile trovare un fooling set di cardinalità $2^k$ per questo linguaggio.
+	Riuscite a trovare un fooling set o un extended fooling set di cardinalità maggiore?
+	\begin{solution}
+		Possiamo definire l'extended fooling set costituito 
+		$$ X = \bigcup_{i = 0}^k \{a, b\}^i \times \{a, b\}^{k - i} $$
+		Ad esempio definiamo questo insieme per $\text{DOUBLE}_2$, come
+		\begin{align*}
+			(\epsilon, aaaa), \\
+			(a, aaa), (b, bbb), \\
+			(aa, aa), (ab, ab), (ba, ba), (bb, bb), \\
+			(aaa, a), (bbb, b), \\
+			(bbbb, \epsilon)
+		\end{align*}
+		Questo contiene il set definito di sopra, e per ogni altra coppia possono avvenire due casi:
+		\begin{itemize}
+			\item i due elementi $x_i$ e $x_j$ hanno lunghezza diversa, allora per forza $x_i y_j$ non sarà in $\text{DOUBLE}_k$, perché sarà o troppo breve o troppo lungo
+			\item i due elementi avranno $x_i$ e $x_j$ di dimensione uguale, ma saranno per forza diversi, quindi la parola ancora non sarà in $\text{DOUBLE}_k$
+		\end{itemize}
+		Questo insieme ha cardinalità 
+		$$ 2^k + \sum_{i = 0}^{k - 1} 2 \cdot 2^i $$
+	\end{solution}
+	\question Considerate il linguaggio
+	$$ \text{PAL}_k = \{ w \in \{a, b\}^k \mid w = w^R \} $$
+	dove $k$ è un intero fissato.
+	Qual è l'extended fooling set per $\text{PAL}_k$ di cardinalità maggiore che riuscite a trovare?
+	\begin{solution}
+		Questo è definito similmente a quello di sopra
+		???
+		Ed ha lo stesso numero di membri
+		$$ 2^k + \sum_{i = 0}^{k - 1} 2 \cdot 2^i $$
+	\end{solution}
+
+	\question Considerate il linguaggio
+	$$ K_k = \{ w \mid w = x_1 \cdot x_2 \dots x_m \cdot x \mid m > 0, x_1, \dots, x_m, x \in \{a, b\}^k, \exists i, 1 \leq i \leq m, x_i = x\}$$
+	dove $k$ è un intero fissato.
+	Si può osservare che ogni stringa $w$ di questo linguaggio è la concatenazione di blocchi di lunghezza $k$, in cui l'ultimo blocco coincide con uno dei blocchi precedenti.
+	\begin{parts}
+		\part Riuscite a costruire un (extended) fooling set di cardinalità $2^k$ o maggiore per il linguaggio $K_k$?
+		\textit{Suggerimento: ispiratevi all'esercizio 1}
+		\begin{solution}
+			Si può generare il fooling se
+			$$ X = \{ (x, x) \mid x \in \{a, b\}^k \} $$
+			Questo ha dimensione $2^k$ ed è facile notare che ogni parola $xx$ appartiene a $K_k$, mentre per due indici diversi $xy$ non appartiene.
+		\end{solution}
+		\part Quale è l'informazione principale che un automa nondeterministico può scegliere di ricordare nel proprio controllo a stati finiti durante la lettura di una stringa per riuscire a riconoscere $K_k$?
+		\textit{Suggerimento: Che ``scommessa'' può fare l'automa mentre legge la stringa in ingresso e come può verificare tale scommessa leggendo l'ultimo blocco?}
+		\begin{solution}
+			L'insieme di tutte le possibili stringhe di $k$ elementi nel linguaggio è finito, quindi l'automa si deve ricordare quale sottoinsieme di queste stringhe ha visto, quindi $2^{\{a, b\}^k}$.
+			L'automa poi deve scegliere in uno stato in cui ha visto un certo sottoinsieme di stringhe da $k$ elementi, se la prossima che vede è la finale o se ritornare in sé stesso.
+		\end{solution}
+		\part Supponenete di costruire un automa deterministico per riconoscere $K_k$.
+		Cosa ha necessità di ricordare l'automa nel proprio controllo a stati finiti mentre legge la stringa in input?
+		\part Utilizzando il concetto di distinguibilità, dimostrate che ogni automa deterministico che riconosce $K_k$ deve avere almeno $2^{2^k}$ stati.
+	\end{parts}
+	\question Considerate il linguaggio
+	$$ J_k = \{ w \mid w = x \cdot x_1 \cdot x_2 \dots x_m \mid m > 0, x_1, \dots, x_m, x \in \{a, b\}^k, \exists i, 1 \leq i \leq m, x_i = x\} $$
+	dove $k$ è un intero fissato.
+	Si può osservare che ogni stringa $w$ di questo linguaggio è la concatenazione di blocchi di lunghezza $k$, in cui il primo blocco coincide con uno dei blocchi successivi; ogni stringa di $J_k$ si ottiene ``rovesciando'' una stringa del linguaggio $K_k$ dell'esercizio 3.
+	Supponete di costruire automi a stati finiti per $J_k$.
+	Valgono ancora gli stessi limiti inferiori per $K_n$ o si riescono a costruire automi più piccoli?
+	Rispondete sia nel caso di automi deterministici sia in quello di automi nondeterministici.
+	\begin{solution}
+		Non serve più ricordare gli stati visti, ma serve solo ricordare lo stato iniziale e accertarsi che ci sia un percorso che lo ripete, quindi la dimensione dell'automa (deterministico) sarà $2^k \cdot o(k)$.
+	\end{solution}
+	\question Ispirandovi all'esercizio 3, fornite limiti inferiori per il numero di stati degli automi che riconoscono il seguente linguaggio:
+	$$ E_k = \{ w \mid w = x_1 \cdot x_2 \dots x_m \mid m > 0, x_1, \dots, x_m \in \{a, b\}^k, \exists i, j, 0 \leq i < j \leq m, x_i = x_j \} $$
+	dove $k$ è un intero fissato.
+	Considerate sia il caso deterministico che quello nondeterministico.
+	\begin{solution}
+		Nel caso non deterministico questo automa è molto simile a quello precedente, tranne che prima si ammettono una coppia non definita di blocchi di $k$ simboli.
+		La scommessa è scegliere la coppia che si ripeterà.
+
+		% CASO DETERMINISTICO???
+	\end{solution}
+\end{questions}
+\end{document}

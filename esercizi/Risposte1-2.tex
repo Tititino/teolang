@@ -1,0 +1,527 @@
+\documentclass[12pt, answers]{exam}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage[italian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{embedall}
+\usepackage{etoolbox}
+\AtBeginEnvironment{align}{\setcounter{equation}{0}}
+\embedfile{\jobname.tex}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{tabularray}
+\usepackage{xcolor}
+\usepackage[bookmarks]{hyperref}
+
+\definecolor{codegray}{gray}{0.95}
+\lstdefinestyle{mystyle}{
+  numberstyle=\scriptsize\color{black},
+  basicstyle=\footnotesize,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+\overfullrule=10pt
+
+\newcommand{\grammar}[4]{\langle #1, #2, #3, #4 \rangle}
+\newcommand{\grammarP}[4]{\langle \{ #1 \}, \{ #2 \}, \{ #3 \}, #4 \rangle}
+\newcommand{\der}{\Rightarrow}
+\newcommand{\prd}{\rightarrow}
+\begin{document}
+\begin{questions}
+	\question Considerate l'alfabeto $\Sigma = \{ a, b \}$
+	\begin{parts}
+		\part Fornite una grammatica CF per il linguaggio delle stringhe palindrome di lunghezza pari su $\Sigma$, cioè dell'insieme $\operatorname{PAL}_{pari} = \{ w w^R \mid w \in \Sigma^* \} $
+		\begin{solution}
+			Se si intende $|w| \text{ pari}$ allora
+			\begin{align*}
+				S &\rightarrow \epsilon \mid a a S a a \mid b b S b b \mid a b S b a \mid b a S a b \\
+			\end{align*}
+			oppure
+			\begin{align*}
+				S &\rightarrow \epsilon \mid a A a \mid b A b \\
+				B &\rightarrow a S a \mid b S b 
+			\end{align*}
+			Altrimenti se si intende $|ww^R| \text{ pari}$ allora
+			\begin{align*}
+				S &\rightarrow \epsilon \mid a S a \mid b S b 
+			\end{align*}
+		\end{solution}
+		\part Modificate la grammatica precedente per generare l'insieme $\operatorname{PAL}$ di tutte le stringhe palindrome su $\Sigma$
+		\begin{solution}
+			\begin{align*}
+				S &\rightarrow \epsilon \mid a \mid b \mid a S a \mid b S b \\
+			\end{align*}
+		\end{solution}
+		\part Per ogni $k \in \{0, \dots, 3\}$, rispondete alla domanda ``il linguaggio PAL è di tipo $k$?'' giustificando la risposta.
+		\begin{solution}
+			$G_{PAL} = \grammarP{S}{a, b}{S \rightarrow \epsilon \mid a S a \mid b S b}{S}$ è una grammatica di tipo 2 (ammettendo le $\epsilon$-regole), quindi PAL è sicuramente un linguaggio context free.
+			Inoltre PAL deve per forza esser riconosciuto con una pila, quindi non può essere regolare.
+		\end{solution}
+		\part Se sostituiamo l'alfabeto con $\Sigma = \{ a, b, c\}$, le risposte al punto precedente cambiano? E se lo sostituiamo con $\Sigma = \{ a \}$.
+		\begin{solution}
+			Nel caso di $\Sigma = \{a, b, c\}$ le risposte non cambiano, infatti basta aggiungere all'alfabeto della pila dell'automa per riconoscere il linguaggio precedente il simbolo $c$.
+
+			Nel caso $\Sigma = \{ a \}$ una stringa palindroma su questo alfabeto è banalmente un numero pari di $a$, questo può essere descritto dalla grammatica regolare (ammenttendo $\epsilon$-regole all'assioma)
+			\begin{align*}
+				S &\rightarrow a A \mid \epsilon \\
+				A &\rightarrow a S \\
+			\end{align*}
+			Quindi il linguaggio è di tipo 3.
+		\end{solution}
+	\end{parts}
+	\question Considerate l'alfabeto $\Sigma = \{ a, b \}$. Scrivete una grammatica per generare il complemento di PAL.
+	\begin{solution}
+		Il complemento di PAL sono tutte le stringhe su $w \in \Sigma^*$ non palindrome.
+		\begin{align*}
+			S &\rightarrow a S a \mid b S b \mid A \\
+			A &\rightarrow a B b \mid b B a \\
+			% B &\rightarrow A \mid a B a \mid b B b \mid a \mid b \mid \epsilon
+			B &\rightarrow S \mid a \mid b \mid \epsilon
+		\end{align*}
+		Infatti per finire una stringa bisogna per forza passare per $A$, che introduce inevitabilmente asimmetria.
+	\end{solution}
+	\question Sia $\Sigma = \{ (, ) \}$ l'alfabeto i cui simboli sono la parentesi aperta e la parentesi chius.
+	\begin{parts}
+		\part Scrivete una grammatica context-free che generi il linguaggio formato da tutte le sequenze di parentesi correttamente bilanciate, come ad esempio $(()(()))()$.
+		\begin{solution}
+			\begin{align}
+				S &\prd \epsilon \\
+				S &\prd (S) \\
+				S &\prd S S 
+			\end{align}
+			\begin{align*}
+				S &\der_3 S S \\
+				  &\der_2 (S) S \\
+				  &\der_3 (S S) S \\
+				  &\der_2 ((S) S) S \\
+				  &\der_1 (() S) S \\
+				  &\der_2 (() (S)) S \\
+				  &\der_2 (() ((S))) S \\
+				  &\der_1 (()(())) S \\
+				  &\der_2 (()(())) (S) \\
+				  &\der_1 (())(()) ()
+			\end{align*}
+		\end{solution}
+		\part Risolvete il punto precedente per un alfabeto con due tipi di parentesi, come $\Sigma = \{(, ), [, ]\}$, nel caso non vi siano vincoli tra i tipi di parentesi (le tonde possono essere contenute tra le quadre e viceversa). Esempio $[()([])[]]$, ma non $[[][(])()]$.
+		\begin{solution}
+			\begin{align}
+				S &\prd \epsilon \\
+				S &\prd (S) \\
+				S &\prd [S] \\
+				S &\prd S S 
+			\end{align}
+			\begin{align*}
+				S &\der_3 [ S ] \\
+				  &\der_4 [ S S ] \\
+				  &\der_4 [ S S S ] \\
+				  &\der_2 [ (S) S S ] \\
+				  &\der_1 [ () S S ] \\
+				  &\der_2 [ () (S) S ] \\
+				  &\der_3 [ () ([S]) S ] \\
+				  &\der_1 [ () ([]) S ] \\
+				  &\der_3 [ () ([]) [S]] \\
+				  &\der_1 [()([])[]]
+			\end{align*}
+		\end{solution}
+		\part Risolvete il punto precedente con $\Sigma = \{ (, ), [, ]\}$, con il vincolo che le parentesi quadre non possano mai apparire all'interno di parentesi tonde. Ad esempio $[()(())[][]](()())$, ma non $[()([])[]]$.
+		\begin{solution}
+			\begin{align}
+				S &\prd [S] \\
+				S &\prd T \\
+				S &\prd S S \\
+				T &\prd \epsilon \\
+				T &\prd (T) \\
+				T &\prd T T \\
+			\end{align}
+			Per generare delle parentesi tonde bilanciate bisogna per forza entrare in $T$, ed una volta entrati non si possono più generare quadre.
+			\begin{align*}
+				S &\der_3 S S \\
+				  &\der_1 [ S ] S \\
+				  &\der_3 [ S S ] S \\
+				  &\der_3 [ S S S ] S \\
+				  &\der_3 [ S S S S ] S \\
+				  &\der_2 [ T S S S ] S \\
+				  &\der_5 [ (T) S S S ] S \\
+				  &\der_4 [ () S S S ] S \\
+				  &\der_2 [ () T S S ] S \\
+				  &\der_4 [ () (T) S S ] S \\
+				  &\der_4 [ () ((T)) S S ] S \\
+				  &\der_3 [ () (()) S S ] S \\
+				  &\der_1 [ () (()) [S] S ] S \\
+				  &\der_2 [ () (()) [T] S ] S \\
+				  &\der_4 [ () (()) [] S ] S \\
+				  &\der_1 [ () (()) [] [S] ] S \\
+				  &\der_2 [ () (()) [] [T] ] S \\
+				  &\der_4 [ () (()) [] [] ] S \\
+				  &\der_2 [ () (()) [] [] ] T \\
+				  &\der_5 [ () (()) [] [] ] (T) \\
+				  &\der_6 [ () (()) [] [] ] (T T) \\
+				  &\der_5 [ () (()) [] [] ] ((T) T) \\
+				  &\der_4 [ () (()) [] [] ] (() T) \\
+				  &\der_5 [ () (()) [] [] ] (() (T)) \\
+				  &\der_4 [ () (()) [] [] ] (() ())
+			\end{align*}
+		\end{solution}
+	\end{parts}
+	\question Sia $G = \langle V = \{ S, B, C\}, \Sigma = \{ a , b, c\}, P, S\rangle$, con produzioni
+	\begin{align*}
+		S &\rightarrow a S B C \\
+		S &\rightarrow a B C \\
+		C B &\rightarrow B C \\
+		a B &\rightarrow a b \\
+		b B &\rightarrow b b \\
+		b C &\rightarrow b c \\
+		c C &\rightarrow cc
+	\end{align*}
+	Dopo avere stabilito di che tipo è $G$, provate a derivare alcune stringhe. Riuscite a dire da quali stringhe è formato il linguaggio generato da $G$?.
+	\begin{solution}
+		La grammatica è di tipo 1, visto che nelle parti sinistre delle regole ci sono più elementi, ma i lati destri crescono in lunghezza.
+
+		Provando a fare alcune derivazioni otteniamo
+		\begin{align*}
+			S &\Rightarrow a B C \\
+			  &\Rightarrow a b C \\
+			  &\Rightarrow a b c \\
+			S &\Rightarrow a S B C \\
+			  &\Rightarrow a a B C B C \\
+			  &\Rightarrow a a B B C C \\
+			  &\Rightarrow a a b B C C \\
+			  &\Rightarrow a a b b C C \\
+			  &\Rightarrow a a b b c C \\
+			  &\Rightarrow a a b b c c \\
+			S &\Rightarrow a S B C \\
+			  &\Rightarrow a a S B C B C \\
+			  &\Rightarrow a a a B C B C B C \\
+			  &\Rightarrow a a a B C B B C C \\
+			  &\Rightarrow a a a B B C B C C \\
+			  &\Rightarrow a a a B B B C C C \\
+			  &\Rightarrow a a a b B B C C C \\
+			  &\Rightarrow a a a b b B C C C \\
+			  &\Rightarrow a a a b b b C C C \\
+			  &\Rightarrow a a a b b b c C C \\
+			  &\Rightarrow a a a b b b c c C \\
+			  &\Rightarrow a a a b b b c c c \\
+		\end{align*}
+		Quindi genera il linguaggio $L = \{ a^nb^nc^n \mid n > 0 \}$.
+	\end{solution}
+	\question Sia $G = \langle V = \{ S, B, C\}, \Sigma = \{ a , b, c\}, P, S\rangle$, con produzioni
+	\begin{align}
+		S &\rightarrow a B S c \\
+		S &\rightarrow a b c \\
+		B a &\rightarrow a B \\
+		B b &\rightarrow b b
+	\end{align}
+	Dopo aver stabilità di che tipo è $G$, provate a derivare alcune stringhe.
+	Riuscite a dire quali da stringhe formato il linguaggio generato da $G$?
+	\begin{solution}
+		La grammatica è di tipo 1, visto che nelle parti sinistre delle regole ci sono più elementi, ma i lati destri crescono in lunghezza.
+
+		Provando a fare alcune derivazioni otteniamo
+		\begin{align*}
+			S &\Rightarrow_2 a b c \\
+			S &\Rightarrow_1 a B S c \\
+			  &\Rightarrow_2 a B a b c c \\
+			  &\Rightarrow_3 a a B b c c \\
+			  &\Rightarrow_4 a a b b c c \\
+			S &\Rightarrow_1 a B S c \\
+			  &\Rightarrow_1 a B a B S c c \\
+			  &\Rightarrow_2 a B a B a B a b c c c c \\
+			  &\Rightarrow_3 a a B B a B a b c c c c \\
+			  &\Rightarrow_3 a a B a B B a b c c c c \\
+			  &\Rightarrow_3 a a a B B B a b c c c c \\ 
+			  &\Rightarrow_3 a a a B B a B b c c c c \\
+			  &\Rightarrow_3 a a a B a B B b c c c c \\
+			  &\Rightarrow_3 a a a a B B B b c c c c \\
+			  &\Rightarrow_4 a a a a B B b b c c c c \\
+			  &\Rightarrow_4 a a a a B b b b c c c c \\
+			  &\Rightarrow_4 a a a a b b b b c c c c 
+		\end{align*}
+		Quindi abbiamo ancora il linguaggio $L = \{ a^nb^nc^n \mid n > 0 \}$.
+	\end{solution}
+	\question Sia $G = \langle V = \{ S, A, B, C, D, E \}, \Sigma = \{ a, b \}, P, S \rangle$, con $P$
+	\begin{align}
+		S &\rightarrow A B C \\
+		A B &\rightarrow a A D \\
+		A B &\rightarrow b A E \\
+		D C &\rightarrow B a C \\
+		E C &\rightarrow B b C \\
+		D a &\rightarrow a D \\
+		D b &\rightarrow b D \\
+		E a &\rightarrow a E \\
+		E b &\rightarrow b E \\
+		A B &\rightarrow \epsilon \\
+		C   &\rightarrow \epsilon \\
+		a B &\rightarrow B a \\
+		b B &\rightarrow B b 
+	\end{align}
+	Dopo avere stabilito di che tipo è $G$, provate a derivare alcune stringhe. Riuscite a dire da quali stringhe è formato il linguaggio generato da $G$?
+
+	\textit{Suggerimento}. Per ogni $w \in \{a, b\}^*$ è possibile costruire una derivazione $S \overset{*}{\Rightarrow} w A B w C$ (provate a procedere per induzione sulla lunghezza di $w$ cercando di capire il ruolo di ciascuna delle variabili nel processo di derivazione).
+	\begin{solution}
+		Visto che i lati destri in alcuni casi decrescono, le grammatiche sono di tipo 0. (???).
+
+		Provando a fare alcune derivazioni otteniamo
+		\begin{align*}
+			S &\Rightarrow_1 A B C \\
+			  &\Rightarrow_{10} C \\
+			  &\Rightarrow_{11} \epsilon \\
+			S &\Rightarrow_1 A B C \\
+			  &\Rightarrow_2 a A D C \\
+			  &\Rightarrow_4 a A B a C \\
+			  &\Rightarrow_3 a b A E a C \\
+			  &\Rightarrow_8 a b A a E C \\
+			  &\Rightarrow_5 a b A a B b C \\
+			  &\Rightarrow_{12} a b A B a b C \\
+			  &\Rightarrow_{10} a b a b C \\
+			  &\Rightarrow_{11} a b a b 
+		\end{align*}
+
+		Questa genera il linguaggio $L = \{ w w \mid w \in \Sigma \}$, infatti per ogni $w$ è possibile costruire $S \overset{*}{\Rightarrow} w A B w C$ ed utilizzare le regole 10 e 11 per ottenere $S \overset{*}{\Rightarrow} w w $.
+		Procediamo su induzione sulla lunghezza di $w$.
+		\begin{itemize}
+			\item caso base, $w = \epsilon$, basta applicare
+				\begin{align*}
+					S &\Rightarrow_1 A B C \\
+					  &\Rightarrow_{10} C \\
+					  &\Rightarrow_{11} \epsilon 
+				\end{align*}
+			\item passo, supponiamo di poter derivare $w A B w C$, allora possiamo aggiungere una $a$ ad entrambe le parole utilizzando la sequenza di derivazioni
+				\begin{align*} 
+					w A B w C &\Rightarrow_2 w a A D w C \\
+						  &\overset{*}{\Rightarrow}_{6, 7} w a A w D C \\
+						  &\Rightarrow_4 w a A w B a C \\
+						  &\overset{*}{\Rightarrow}_{12, 13} w a A B w a C
+				\end{align*}
+				e possiamo aggiungere ad entrambe una $b$ utilizzando la sequenza di derivazioni
+				\begin{align*}
+					w A B w C &\Rightarrow_3 w b A E w C \\
+						  &\overset{*}{\Rightarrow}_{8, 9} w b A w E C \\
+						  &\Rightarrow_5 w b A w B b C \\
+						  &\overset{*}{\Rightarrow}_{12, 13} w b A B w b C
+				\end{align*}
+				Quindi, chiamando $w^\prime$ la prima parola e $w^{\prime\prime}$ la seconda parola, si utilizzando le produzioni 2 o 3 per aggiungere una $a$ o $b$ a $w^\prime$, si attraversa l'interezza di $w^{\prime\prime}$ da sinistra a destra fino a $C$.
+				Se ad attraversare $w^{\prime\prime}$ è stato $D$, allora una volta a $C$ possiamo generare una $a$, altrimenti se è stato $E$ possiamo generare una $b$.
+				Ora si ``ripassa il testimone'' indietro, e si riattraversa $w^{\prime\prime}$ con $B$ fino a tornare ad $A$, in modo tale da poter riapplicare o 2 o 3.
+		\end{itemize}
+	\end{solution}
+	\question Sia $G = \langle V = \{ S , A, B, C, X, Y, L, R \}, \Sigma = \{ a \}, P, S \rangle$, con $P$ definito come
+	\begin{align}
+		S &\rightarrow L X R \\
+		L X &\rightarrow L Y Y A \\
+		A X &\rightarrow Y Y A \\
+		A R &\rightarrow B R \\
+		Y B &\rightarrow B X \\
+		L B &\rightarrow L \\
+		L X &\rightarrow a C \\
+		C X &\rightarrow a C \\
+		C R &\rightarrow \epsilon
+	\end{align}
+	Riuscite a stabilire da quali stringhe è formato il linguaggio generato da $G$?
+	\textit{Suggerimento.} Si può osservare che $L X^i R \overset{*}{\Rightarrow} LY^{2i} AR \overset{*}{\Rightarrow} LX^{2i} R$ per ogni $i > 0$. Inoltre dal simbolo iniziale si ottiene la forma $LXR$. Le ultime tre produzioni sono utili per sostituire le variabili un una forma sentenziale con occorrenze di terminali.
+	\begin{solution}
+		Proviamo prima di tutto a svolgere alcune produzioni
+		\begin{align*}
+			S &\der_1 L X R \\
+			  &\der_7 a C R \\
+			  &\der_9 a \\
+		\end{align*}
+		\begin{align*}
+			S &\der_1 L X R \\
+			  &\der_2 L Y Y A R \\
+			  &\der_4 L Y Y B R \\
+			  &\der_5 L Y B X R \\
+			  &\der_5 L B X X R \\
+			  &\der_6 L X X R \\
+			  &\der_7 a C X R \\
+			  &\der_8 a a C R \\
+			  &\der_9 a a \\
+		\end{align*}
+%		\begin{align*}
+%			S &\der_1 L X R \\
+%			  &\der_2 L Y Y A R \\
+%			  &\der_4 L Y Y B R \\
+%			  &\der_5 L Y B X R \\
+%			  &\der_5 L B X X R \\
+%			  &\der_6 L X X R \\
+%			  &\der_2 L Y Y A X R \\
+%			  &\der_3 L Y Y Y Y A R \\
+%			  &\der_4 L Y Y Y Y B R \\
+%			  &\der_5 L Y Y Y B X R \\
+%			  &\der_5 L Y Y B X X R \\
+%			  &\der_5 L Y B X X X R \\
+%			  &\der_5 L B X X X X R \\
+%			  &\der_6 L X X X X R \\
+%			  &\der_7 a C X X X R \\
+%			  &\der_8 a a C X X R \\
+%			  &\der_8 a a a C X R \\
+%			  &\der_8 a a a a C R \\
+%			  &\der_9 a a a a \\
+%		\end{align*}
+% 		\begin{align*}
+% 			S &\der_1 L X R \\
+% 			  &\der_2 L Y Y A R \\
+% 			  &\der_4 L Y Y B R \\
+% 			  &\der_5 L Y B X R \\
+% 			  &\der_5 L B X X R \\
+% 			  &\der_6 L X X R \\
+% 			  &\der_2 L Y Y A X R \\
+% 			  &\der_3 L Y Y Y Y A R \\
+% 			  &\der_4 L Y Y Y Y B R \\
+% 			  &\der_5 L Y Y Y B X R \\
+% 			  &\der_5 L Y Y B X X R \\
+% 			  &\der_5 L Y B X X X R \\
+% 			  &\der_5 L B X X X X R \\
+% 			  &\der_6 L X X X X R \\
+% 			  &\der_1 L Y Y A X X X R \\
+% 			  &\der_3 L Y Y Y Y A X X R \\
+% 			  &\der_3 L Y Y Y Y Y Y A X R \\
+% 			  &\der_3 L Y Y Y Y Y Y Y Y A R \\
+% 			  &\der_4 L Y Y Y Y Y Y Y Y B R \\
+% 			  &\der_5 L Y Y Y Y Y Y Y B X R \\
+% 			  &\der_5 L Y Y Y Y Y Y B X X R \\
+% 			  &\der_5 L Y Y Y Y Y B X X X R \\
+% 			  &\der_5 L Y Y Y Y B X X X X R \\
+% 			  &\der_5 L Y Y Y B X X X X X R \\
+% 			  &\der_5 L Y Y B X X X X X X R \\
+% 			  &\der_5 L Y B X X X X X X X R \\
+% 			  &\der_5 L B X X X X X X X X R \\
+% 			  &\der_6 L X X X X X X X X R \\
+% 			  &\der_7 a C X X X X X X X R \\
+% 			  &\der_8 a a C X X X X X X R \\
+% 			  &\der_8 a a a C X X X X X R \\
+% 			  &\der_8 a a a a C X X X X R \\
+% 			  &\der_8 a a a a a C X X X R \\
+% 			  &\der_8 a a a a a a C X X R \\
+% 			  &\der_8 a a a a a a a C X R \\
+% 			  &\der_8 a a a a a a a a C R \\
+% 			  &\der_9 a a a a a a a a \\
+% 		\end{align*}
+		Dato $LX^i R$, abbiamo due casi:
+		\begin{itemize}
+			\item se $i$ è uno, allora possiano direttamente applicare la regola 2, ottenendo $Y^2$, per cui la regola vale
+			\item se $i > 1$, allora dopo aver applicato la regola 2, applichiamo una serie di regole 3, che per ogni $X$ genera due nuove $Y$
+		\end{itemize}
+		Una volta fatto questo si riconvertono tutte le $Y$ in $X$ utilizzando la regola 4 seguita dalla 5.
+		A questo punto si può scegliere se riapplicare la serie di regole predententi o trasformare le $X$ in $a$.
+		Quindi il linguaggio generato è $L = \{ a^{2^i} \mid i > 0 \}$.
+		\end{solution}
+		\question Modificate la grammatica dell'esercizio precedente in modo da ottenere una grammatica di tipo 1 che generi lo stesso linguaggio
+		\begin{solution}
+
+		\begin{align}
+			S &\prd a \\
+			S &\prd Z B \\
+			B &\prd \epsilon \\
+			B &\prd C B \\
+			a C &\prd C a a \\
+			Z C &\prd Z a \\
+			Z C &\prd a a
+		\end{align}
+		O, equivalentemente $Z a \prd a a$ invece che $Z C \prd a a$.
+
+		Svolgendo alcune derivazioni si vede che il linguaggio sembra corretto
+		Generiamo $a^{2^0} = a^1 = a$
+		\begin{align*}
+			S &\der_1 a
+		\end{align*}
+		Generiamo $a^{2^1} = a^2 = aa$
+		\begin{align*}
+			S &\der_2 Z B \\
+			  &\der_4 Z C B \\
+			  &\der_3 Z C \\
+			  &\der_7 a a 
+		\end{align*}
+		Generiamo $a^{2^2} = a^4 = aaaa$
+		\begin{align*}
+			S &\der_2 Z B \\
+			  &\der_4 Z C B \\
+			  &\der_4 Z C C B \\
+			  &\der_3 Z C C \\
+			  &\der_6 Z a C \\
+			  &\der_5 Z C a a \\
+			  &\der_7 a a a a \\
+		\end{align*}
+		Generiamo $a^{2^3} = a^8 = aaaaaaaa$
+		\begin{align*}
+			S &\der_2 Z B \\
+			  &\der_4 Z C B \\
+			  &\der_4 Z C C B \\
+			  &\der_4 Z C C C B \\
+			  &\der_3 Z C C C \\
+			  &\der_6 Z a C C \\
+			  &\der_5 Z C a a C \\
+			  &\der_6 Z a a a C \\
+			  &\der_5 Z a a C a a \\
+			  &\der_5 Z a C a a a a \\
+			  &\der_5 Z C a a a a a a \\
+			  &\der_7 a a a a a a a a \\
+		\end{align*}
+		Generiamo $a^{2^4} = a^{16} = aaaaaaaaaaaaaaaa$
+		\begin{align*}
+			S &\der_2 Z B \\
+			  &\der_4 Z C B \\
+			  &\der_4 Z C C B \\
+			  &\der_4 Z C C C B \\
+			  &\der_4 Z C C C C B \\
+			  &\der_3 Z C C C C \\
+			  &\der_6 Z a C C C \\
+			  &\der_5 Z C a a C C \\
+			  &\der_6 Z a a a C C \\
+			  &\der_5 Z a a C a a C \\
+			  &\der_5 Z a C a a a a C \\
+			  &\der_5 Z C a a a a a a C \\
+			  &\der_6 Z a a a a a a a C \\
+			  &\der_5 Z a a a a a a a C a a \\
+			  &\der_5 Z a a a a a a C a a a a \\
+			  &\der_5 Z a a a a a C a a a a a a \\
+			  &\der_5 Z a a a a C a a a a a a a a \\
+			  &\der_5 Z a a a C a a a a a a a a a a \\
+			  &\der_5 Z a a C a a a a a a a a a a a a \\
+			  &\der_5 Z a C a a a a a a a a a a a a a a \\
+			  &\der_5 Z C a a a a a a a a a a a a a a a a \\
+			  &\der_7 a a a a a a a a a a a a a a a a a a \\
+		\end{align*}
+		Analizzando più attentamente si può vedere che passando da destra a sinistra una singola $C$ trasforma $a^{2^i - 1}$ in $a^{2 \cdot (2^i - 1)} = a^{2^{i + 1} - 2}$ visto che raddoppia ogni $a$.
+		Infine arrivata alla fine -- utilizzando la regola 6 -- possiamo eliminare la $C$ da destra e ottenere $a^{2^{i + 1} - 2 + 1} = a^{2^{i + 1} - 1}$.
+
+		Infine quando si vuole finire la derivazione il simbolo finale $Z$ viene trasformato in $a$, così da terminare il processo. 
+		Infatti senza $Z$ una volta a destra non si possono più smaltire le $C$ e non si può ottenere una stringa senza variabili.
+
+	\end{solution}
+
+	\question Dimostrate che la grammatica $G = \grammar{\{ A, B, C\}}{\{a , b\}}{P}{S}$, con l'insieme delle produzioni $P$ seguenti
+	\begin{align*}
+		S &\prd A B \mid B A \mid A \mid B \\
+		A &\prd a A a \mid a A b \mid b A a \mid b A b \mid a \\
+		B &\prd a B a \mid a B b \mid b a B \mid b B b \mid b
+	\end{align*}
+	genera il linguaggio $L = \{ w \in \{ a , b\}^* \mid \forall x \in \{ a , b \}^* w \neq x x \}$.
+	\begin{solution}
+		Analizzando caso per caso le produzioni di $S$ abbiamo
+		\begin{itemize}
+			\item $S \prd A \mid B$ non può generare una parola formata da due stringhe uguali perché può generare solo parole di dimensioni dispari.
+			\item $S \prd A B \mid B A$.
+				Prendiamo il caso $A B$, e l'altro sarà simmetrico.
+				Visto che $A$ deve avere al centro una $a$ e $B$ una $b$, l'unico modo per cui si possa ottenere $w = x \cdot x$ è che le stringhe generate da $A$ e $B$ siano di dimensione diversa.
+				Supponiamo per assurdo di avere due stringhe $\alpha$ generata da $A$ e $\beta$ da $B$ tali per cui $\alpha \cdot \beta = x \cdot x$.
+				Deve valere che
+				$$ x \cdot x = (\alpha \cdot \underbrace{\delta) \cdot (\gamma \cdot \zeta}_{\beta}) $$
+				quindi $x = \alpha \cdot \delta = \gamma \cdot \zeta $ e
+				\begin{align*}
+					\alpha &= \gamma \\
+					\delta &= \zeta
+				\end{align*}
+				Ora sappiamo che la lettera centrale di $\alpha$ è $a$ perché è generata da $A$.
+				Invece la lettera centrale di $\beta$ sarà in posizione
+				$$ \frac{|\beta|}{2} = \frac{|\delta| + |\gamma| + |\zeta|}{2} = \frac{2 \cdot |\delta| + |\gamma|}{2} = |\delta| + \frac{|\gamma|}{2} $$
+				Quindi la lettera centrale di $\beta$ è per forza anche la lettera centrale di $\gamma$, e la lettera centrale di $\gamma$ è per forza $b$ perché $\beta$ è generata da $B$, di conseguenza
+				$$ \alpha \neq \gamma $$
+				Quindi vale sia che che $\alpha \cdot \delta \neq \gamma \cdot \zeta$ e $ \alpha \cdot \delta = x = \gamma \cdot \zeta$, che è assurdo.
+				Quindi il linguaggio non genera parole della forma $w = x x$.
+		\end{itemize}
+	\end{solution}
+
+
+\end{questions}
+\end{document}

@@ -1,0 +1,290 @@
+\documentclass[12pt, answers]{exam}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage[italian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{embedall}
+\usepackage{etoolbox}
+\AtBeginEnvironment{align}{\setcounter{equation}{0}}
+\embedfile{\jobname.tex}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{tabularray}
+\usepackage{tikz}
+\usetikzlibrary{positioning, automata, decorations.pathreplacing, calligraphy}
+\usepackage{xcolor}
+\usepackage[bookmarks]{hyperref}
+
+\definecolor{codegray}{gray}{0.95}
+\lstdefinestyle{mystyle}{
+	numberstyle=\scriptsize\color{black},
+	basicstyle=\footnotesize,
+	numbers=left,
+	numbersep=5pt,
+	}
+	\lstset{style=mystyle}
+	\overfullrule=10pt
+
+	\newcommand{\grammar}[4]{\langle #1, #2, #3, #4 \rangle}
+	\newcommand{\grammarP}[4]{\langle \{ #1 \}, \{ #2 \}, \{ #3 \}, #4 \rangle}
+	\newcommand{\der}{\Rightarrow}
+	\newcommand{\prd}{\rightarrow}
+	\begin{document}
+	\begin{questions}
+		\question Costruite un automa a stati finiti che riconosca il linguaggio formato da tutte le stringhe sull'alfabeto $\{a, b\}$ nelle quali ogni $a$ è seguita immediatamente da una $b$.
+		\begin{solution}
+			\begin{center}
+				\begin{tikzpicture}
+					\node[state, initial, accepting] 	(q0) {$q_0$};
+					\node[state] 				(q1) [right=of q0] {$q_1$};
+
+					\path[->] (q0)	edge[loop above]	node[above]	{b}	()
+					edge[bend left]		node[above]	{a}	(q1)
+					(q1)	edge[bend left]		node[below]	{b}	(q0);
+				\end{tikzpicture}
+			\end{center}
+		\end{solution}
+		\question Costruite un automata a stati finini che riconosca il linguaggio formato da tutte le stringhe sull'alfabeto $\{4, 5\}$ che, interpretate come numeri in base 10, rappresentano numeri interi che non sono divisibili per 3.
+		\begin{solution}
+			\begin{center}
+				\begin{tikzpicture}[state/.style=state with output]
+					\node[state, initial]	(q0) {$q_0$ \nodepart{lower} $00$};
+					\node[state] 		(q1) [right=of q0] {$q_1$ \nodepart{lower} $10$};
+					\node[state] 		(q2) [below=of q0] {$q_2$ \nodepart{lower} $01$};
+					\node[state, accepting]	(q3) [right=of q2] {$q_3$ \nodepart{lower} $11$}; 
+
+					\path[->] (q0)	edge[bend left]	node[above] {\tiny 4} (q1)
+					edge[bend left] node[right] {\tiny 5} (q2)
+					(q1)	edge[bend left] node[below] {\tiny 4} (q0)
+					edge[bend left] node[right] {\tiny 5} (q3)
+					(q2) 	edge[bend left] node[left]  {\tiny 5} (q0)
+					edge[bend left] node[above] {\tiny 4} (q3)
+					(q3) 	edge[bend left] node[left]  {\tiny 5} (q1)
+					edge[bend left] node[below] {\tiny 4} (q2);
+				\end{tikzpicture}
+			\end{center}
+		\end{solution}
+		\question Costruite un automa a stati finiti deterministico che riconosca il linguaggio formato da tutte le stringhe dell'alfabeto $\{0, 1\}$, che, interpreate come numeri in notazione binaria, denotano multipli di 4. Utilizzando il nondeterminismo si riesce a costruire una automa con meno stati? Generalizzate l'esercizio a multipli di $2^k$, dove $k > 0$ è un intero fissato
+		\begin{solution}
+			\begin{center}
+				\begin{tikzpicture}
+					\node[state, initial]	(q0) {$q_0$};
+					\node[state] 		(q1) [right=of q0] {$q_1$};
+					\node[state, accepting]	(q2) [right=of q1] {$q_2$};
+
+					\path[->] (q0)	edge[loop above]	node[above] {\tiny 1} ()
+					edge[bend left]		node[above] {\tiny 0} (q1)
+					(q1)	edge[bend left]		node[above] {\tiny 0} (q2)
+					edge[bend left]		node[below] {\tiny 1} (q0)
+					(q2)	edge[loop above]	node[above] {\tiny 0} ()
+					edge[bend left]		node[below] {\tiny 1} (q0);
+				\end{tikzpicture}
+			\end{center}
+			Questo, non deterministico, diventa
+			\begin{center}
+				\begin{tikzpicture}
+					\node[state, initial]	(q0) {$q_0$};
+					\node[state] 		(q1) [right=of q0] {$q_1$};
+					\node[state, accepting]	(q2) [right=of q1] {$q_2$};
+
+					\path[->] (q0)	edge[loop above]	node[above] {\tiny 0, 1} ()
+					edge			node[above] {\tiny 0} (q1)
+					(q1)	edge			node[above] {\tiny 0} (q2);
+				\end{tikzpicture}
+			\end{center}
+			Questo può essere generalizzato ai multipli di $2^k$ come
+			\begin{center}
+				\begin{tikzpicture}
+					\node[state, initial]	(q0) 			{$q_0$};
+					\node[state] 		(q1) 	[right=of q0] 	{$q_1$};
+					\node	 		(dot) 	[right=of q1] 	{$\dots$};
+					\node[state, accepting]	(qk) 	[right=of dot]	{$q_k$};
+
+					\draw[thick, decorate, decoration = {brace, mirror}] ([yshift=-0.65cm] q1.south) -- ([yshift=-0.65cm] qk.south) node[pos=0.5, below] {\tiny $k$ volte};
+					\path[->] (q0)	edge[loop above]	node[above] {\tiny 0, 1} ()
+					edge			node[above] {\tiny 0} (q1)
+					(q1)	edge			node[above] {\tiny 0} (dot)
+					edge[bend left]		node[above] {\tiny 1} (q0)
+					(dot) edge			node[above] {\tiny 0} (qk)
+					edge[bend left]		node[above] {\tiny 1} (q0)
+					(qk)	edge[loop above]	node[above] {\tiny 0} ()
+					edge[bend left]		node[above] {\tiny 1} (q0);
+
+				\end{tikzpicture}
+			\end{center}
+		\end{solution}
+		\question Costruite un automa a stati finiti che riconosca il linguaggio formato da tutte le stringhe sull'alfabeto $\{0, 1\}$ che, interpretate come numeri in notazione binaria, rappresentano multipli di 5.
+		\begin{solution}
+			% divisibility by five automaton (smiley face)
+		\end{solution}
+
+		\question Considerate il seguente linguaggio:
+		$$ L = \{ w \in \{a, b\}^* \mid \text{il penultimo e il terzultimo simbolo di $w$ sono uguali} \} $$
+		\begin{parts}
+			\part Costruite un automa a stati finiti deterministico che accetta $L$
+			\begin{solution}
+				\begin{center}
+					\begin{tikzpicture}
+						\node[state, initial]   (eps)   		{$\epsilon$};
+						\node[state] 		(aba) 	[below left=of eps] 	{$aba$};
+						\node[state, accepting]	(aab) 	[below=of aba] 	{$aab$};
+						\node[state] 		(bab) 	[below right=of eps] 	{$bab$};
+						\node[state] 		(abb) 	[below=of bab] 	{$abb$};
+						\node[state] 		(baa) 	[below left=of aba] 	{$baa$};
+						\node[state, accepting]	(aaa) 	[below=of aab]		{$aaa$};
+						\node[state, accepting]	(bba) 	[below right=of bab] 	{$bba$};
+						\node[state, accepting]	(bbb) 	[below=of abb] 	{$bbb$};
+
+						\path[->] (eps)	edge[bend right] node[left]  {\tiny a} (aba)
+						edge[bend left]  node[right] {\tiny b} (bab)
+						(aba) edge[bend left]  node[above] {\tiny b} (bab)
+						edge[bend right] node[right] {\tiny a} (baa)
+						(bab)	edge[bend left]  node[below] {\tiny a} (aba)
+						edge		 node[left]  {\tiny b} (abb)
+						(baa)	edge		 node[below] {\tiny b} (aab)
+						edge[bend right] node[left]  {\tiny a} (aaa)
+						(abb)	edge		 node[below] {\tiny a} (bba)
+						edge		 node[right] {\tiny b} (bbb)
+						(aaa) edge[loop below] node[below] {\tiny a} ()
+						edge             node[below] {\tiny b} (aab)
+						(bbb) edge[loop below] node[below] {\tiny b} ()
+						edge[bend right] node[below] {\tiny a} (bba)
+						(aab) edge             node[left]  {\tiny a} (aba)
+						edge		 node[above] {\tiny b} (abb)
+						(bba) edge[bend right] node[right] {\tiny b} (bab);
+
+						\draw[->] (bba) .. controls ([yshift=-3cm, xshift=4cm]bbb.south) and ([yshift=-3cm, xshift=-4cm]aaa.south) .. node[below] {\tiny a} (baa);
+					\end{tikzpicture}
+				\end{center}
+			\end{solution}
+			\part Costruite un automa a stati finiti nondeterministico che accetta $L$
+			\begin{solution}
+				\begin{center}
+					\begin{tikzpicture}
+						\node[state, initial] 	(q0) {$q_0$};
+						\node[state] 		(q1) [above right=of q0] {$q_1$};
+						\node[state] 		(q2) [below right=of q0] {$q_2$};
+						\node[state] 		(q3) [right=of q1] {$q_3$};
+						\node[state] 		(q4) [right=of q2] {$q_4$};
+						\node[state, accepting] (q5) [right=of q3] {$q_5$};
+						\node[state, accepting] (q6) [right=of q4] {$q_6$};
+
+						\path[->]
+						(q0)	edge[loop above]	node[above]	{a, b} 	()
+						edge			node[above]	{a}	(q1)
+						edge			node[below]	{b}	(q2)
+						(q1)	edge			node[above]	{a}	(q3)
+						(q2)	edge			node[below]	{a}	(q4)
+						(q3)	edge			node[above]	{a,b}	(q5)
+						(q4)	edge			node[below]	{a,b}	(q6);
+					\end{tikzpicture}
+				\end{center}
+			\end{solution}
+			\part Dimostrare che per il linguaggio $L$:
+			\begin{itemize}
+				\item tutte le stringhe di lunghezza 3 sono distinguibili tra loro
+				\item la parola vuota è distinguibile da tutte le stringhe di lunghezza 3
+			\end{itemize}
+			\begin{solution}
+				Per tutte le stringhe di lunghezza 3 costruiamo la seguente tabella.
+				\begin{center}
+					\begin{tblr}{ c | c c c c c c c c }
+						z          & aaa & aab & aba        & abb        & baa        & bab        & bba & bbb \\
+						\hline
+						aaa        &     & a   & $\epsilon$ & $\epsilon$ & $\epsilon$ & $\epsilon$ & a          & aa         \\
+						aab        &     &     & $\epsilon$ & $\epsilon$ & $\epsilon$ & $\epsilon$ & ba         & ba         \\
+						aba        &     &     &            & a          & a          & bb         & $\epsilon$ & $\epsilon$ \\
+						abb        &     &     &            &            & bb         & b          & $\epsilon$ & $\epsilon$ \\
+						baa        &     &     &            &            &            & a          & $\epsilon$ & $\epsilon$ \\
+						bab        &     &     &            &            &            &            & $\epsilon$ & $\epsilon$ \\
+						bba        &     &     &            &            &            &            &            & aa         \\
+						bbb        &     &     &            &            &            &            &            &            \\
+					\end{tblr}
+				\end{center}
+
+				Mentre per la parola vuota cosrtruiamo
+				\begin{center}
+					\begin{tblr}{ c | c c c c c c c c }
+						z          & aaa        & aab        & aba & abb & baa & bab & bba        & bbb \\
+						\hline
+						$\epsilon$ & $\epsilon$ & $\epsilon$ & aa  & b   & a   & bb  & $\epsilon$ & $\epsilon$
+					\end{tblr}
+				\end{center}
+				È facile invece notare che le stringhe di lunghezza uno e due non sono distinguibili 
+				\begin{center}
+					\begin{tblr}{ c | c c c c c c c c }
+						z          & aaa            & aab        & aba            & abb            & baa              & bab            & bba        & bbb \\
+						\hline
+						a          & $\epsilon$     & $\epsilon$ & \color{red}{?} & b              & a                & ba             & $\epsilon$ & $\epsilon$ \\
+						b          & $\epsilon$     & $\epsilon$ & ab             & b              & a                & \color{red}{?} & $\epsilon$ & $\epsilon$ \\
+						aa         & $\epsilon$     & $\epsilon$ & a              & aa             & \color{red}{?}   & a              & $\epsilon$ & $\epsilon$ \\
+						ab         & $\epsilon$     & $\epsilon$ & bb             & a              & a                & \color{red}{?} & $\epsilon$ & $\epsilon$ \\
+						ba         & $\epsilon$     & $\epsilon$ & \color{red}{?} & a              & a                & bb             & $\epsilon$ & $\epsilon$ \\
+						bb         & $\epsilon$     & $\epsilon$ & b              & \color{red}{?} & bb               & a              & $\epsilon$ & $\epsilon$ \\
+					\end{tblr}
+				\end{center}
+			\end{solution}
+			\part Utilizzando i risultati precedenti, ricavate un limite inferiore per il numero di stati di ogni automa deterministico che accetta $L$
+			\begin{solution}
+				Dai risultati precedenti si può capire che l'automa necessita di almeno $2^3 + 1$ stati.
+			\end{solution}
+		\end{parts}
+		\question Costruite un insieme di stringhe distinguibili tra loro per ognuno dei seguenti linguaggi:
+		\begin{parts}
+			\part $ \{ w \in \{a, b\}^* \mid \#_a(w) = \#_b(w) \} $
+			\begin{solution}
+				È facile vedere che tutte le parole in $\{a^n \mid n \geq 0 \}$ sono tra loro distinguibili, infatti
+				\begin{center}
+					\begin{tblr}{ c | c c c }
+						z   & a & aa & aaa & aaaa & \dots \\
+						\hline
+						a   &   & bb & bbb & bbbb & \dots \\
+						aa  &   &    & bbb & bbbb & \dots \\
+						aaa &   &    &     & bbbb & \dots 
+					\end{tblr}
+				\end{center}
+				Quindi l'insieme delle stringhe distinguibili $X = \{ a^n \mid n \geq 1 \} \cup \{ b^n \mid n \geq 1 \} \cup \{\epsilon\}$.
+				Infatti per ogni stringa $w \in L$, 
+				$$
+				\begin{cases} 
+					w \sim a^n & \text{se } \#_a(w) > \#_b(w) \wedge \#_a(w) - \#_b(w) = n \\
+					w \sim b^n & \text{se } \#_a(w) < \#_b(w) \wedge \#_b(w) - \#_a(w) = n \\
+					w \sim \epsilon & \text{altrimenti}
+				\end{cases}
+				$$
+			\end{solution}
+			\part $ \{ a^n b^n \mid n \geq 0 \}$
+			\begin{solution}
+				Qui si può fare un ragionamento simile a prima, quindi ragionando ancora sulle parole $\{ a^n \mid n \geq 0 \}$
+				\begin{center}
+					\begin{tblr}{ c | c c c }
+						z   & a & aa & aaa & aaaa & \dots \\
+						\hline
+						a   &   & bb & bbb & bbbb & \dots \\
+						aa  &   &    & bbb & bbbb & \dots \\
+						aaa &   &    &     & bbbb & \dots 
+					\end{tblr}
+				\end{center}
+				Queste sono ancora tutte distinguibili, quindi $X = \{a^n \mid n \geq 0 \}$.
+				Possiamo infatti vedere questo linguaggio come un caso speciale del superiore.
+			\end{solution}
+			\part $ \{ w w^R \mid w \in \{a, b\}^* \} $ dove, per ogni stringa $w$, $w^R$ indica la stringa $w$ scritta al contrario
+			\begin{solution}
+				L'insieme delle stringhe distinguibili per questo linguaggio è esattamente $X = \{a, b\}^*$.
+				Infatti una stringa $w$ determina univocamente il suo inverso $w^R$.
+			\end{solution}
+		\end{parts}
+		Per alcuni di questi linguaggi riuscite ad ottenere insiemi di stringhe distinguibili di cardinalità infinita? Cosa significa ciò?
+		\begin{solution}
+			Tutti gli insiemi per questi linguaggi sono infiniti, quindi non possono essere riconosciuti da automi a stati finiti.
+		\end{solution}
+		\question Considerate l'automa di Meyer\&Fischer $A_n$ presentato nella Lezione 4 (caso peggiore della costruzione per sottoinsiemi) e mostrato nella seguente figura:
+		% manca
+		Descrivete a parole la proprietà che deve soddisfare una stringa per essere accettata da $A_n$.
+		Riuscite a costruire un automa non deterministico, diverso da $A_n$, per lo stesso linguaggio, basandovi su tale proprietà?
+		\begin{solution}
+			Qualsiasi che finisce con multipli di $n$ $a$, oppure con un numero qualsiasi di $b$.
+		\end{solution}
+
+	\end{questions}
+\end{document}

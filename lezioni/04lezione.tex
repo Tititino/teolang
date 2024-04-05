@@ -1,0 +1,405 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{cancel}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{tabularray}
+\usepackage{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata, decorations.pathmorphing, positioning, decorations.pathreplacing, calligraphy}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\newtheorem{teorema}{Teorema}
+\newtheorem{corollario}{Corollario}
+\newtheorem{proposizione}{Proposizione}
+\newtheorem{proprietà}{Proprietà}
+\newtheorem{fatto}{Fatto}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage{teolang}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+
+\section{Corrispondenza tra grammatiche di tipo 3 e automi a stati finiti}
+\begin{teorema} 
+	Dato un automa a stati finiti posso costruire una grammatica equivalente e viceversa.
+	Per ora esclundendo le $\epsilon$-regole e mosse.
+\end{teorema}
+\begin{proof}
+	Iniziamo dal primo lato, da un automa 
+	$$ \mathcal{A} = \langle Q, \Sigma, \delta, q_0, F \rangle $$
+	costruiamo la grammatica che genera lo stesso linguaggio (salvo la parola vuota se questa è in $L(\mathcal{A})$).
+	La grammatica è della forma
+	$$ G = \langle Q, \Sigma, P, q_0 \rangle $$
+	Le produzioni sono costruite a partire dalle transizioni dell'automa: per ogni transizione $\delta(q, a) = p$, aggiungo la produzione $q \rightarrow a p$ e la produzione $q \rightarrow a$ se $p \in F$.
+
+	Ora mostriamo il caso opposto.
+	Sia
+	$$ G = \langle V, \Sigma, P, S \rangle $$
+	e l'automa corrispondente
+	$$ \mathcal{A} = \langle Q, \Sigma, \delta, q_0, F \rangle $$
+	con 
+	\begin{align*}
+		Q &= V \cup \{q_F\} \\
+		F &= \{ q_F \} \\
+		q_0 &= S 
+	\end{align*}
+	con $q_F$ nuovo.
+	Per ogni produzione in $G$ definisco $\delta$
+	$$
+	\delta(A, a) = 
+	\begin{cases}
+		B \in \delta(A, a) & \text{per } A \rightarrow a B \\
+		q_F \in \delta(A, a) & \text{per } A \rightarrow a
+	\end{cases}
+	$$
+
+	Ovviamente l'automa generato è non deterministico.
+\end{proof}
+
+\begin{tcolorbox}
+	Ad esempio costruiamo la grammatica corrispondente a 
+	\begin{center}
+		\begin{tikzpicture}
+			\node[state, initial, accepting] 	(q0) {$q_0$};
+			\node[state] 				(q1) [right=of q0] {$q_1$};
+
+			\path[->] (q0)	edge[loop below] node[below]	{\tiny b}	()
+					edge[bend left]	 node[above]	{\tiny a}	(q1)
+				  (q1)	edge[loop below] node[below]	{\tiny a}	()
+					edge[bend left]	 node[below]	{\tiny b}	(q0);
+		\end{tikzpicture}
+	\end{center}
+	Questo corrisponde alla grammatica
+	$$ G = \langle \{ q_0, q_1 \}, \{ a, b \}, P, q_0 \rangle$$
+	con $P$ definita come
+	\begin{align*}
+		q_0 &\rightarrow a q_1 \\
+		q_0 &\rightarrow b q_0 \\
+		q_1 &\rightarrow a q_1 \\
+		q_1 &\rightarrow b q_0 \\
+		q_1 &\rightarrow b \\
+		q_0 &\rightarrow b
+	\end{align*}
+	E si può dimostrare che
+	$$ q_0 \overset{*}{\Rightarrow} x p, x \in \Sigma^* \Leftrightarrow \delta(q_0, x) = p $$
+\end{tcolorbox}
+\begin{tcolorbox}
+	Data la grammatica
+	$$ G = \langle \{S, A\}, \{a, b\}, P, S \rangle$$
+	con $P$ definita come
+	\begin{align*}
+		S &\rightarrow a A \mid b S \\
+		A &\rightarrow a A \mid a 
+	\end{align*}
+	Otteniamo
+	\begin{center}
+		\begin{tikzpicture}
+			\node[state, initial] 	(q0) {$q_0$};
+			\node[state] 		(q1) [right=of q0] {$q_1$};
+			\node[state, accepting] (q2) [below=of q1] {$q_2$};
+
+			\path[->] (q0)	edge[loop below] node[below]	{\tiny b}	()
+					edge		 node[above]	{\tiny a}	(q1)
+				  (q1)	edge[loop above] node[above]	{\tiny a}	()
+					edge	 	 node[left]	{\tiny a}	(q2);
+		\end{tikzpicture}
+	\end{center}
+\end{tcolorbox}
+
+\section{Limiti inferiori di automi non deterministici}
+\begin{tcolorbox}
+	Dimostriamo la non-regolarità di un linguaggio dal suo insieme di parole distinguibili
+	$$ L = \{ w \in \Sigma^* \mid \#_a(w) = \#_b(w) \} $$
+	intuitivamente visto che gli automi a stati finiti hanno una memoria finita, non possono contare un numero arbitrario di valori.
+
+	Si può dimostrare che per l'insieme
+	$$ X = \{ a^n \mid n \geq 0 \} $$
+	tutti i suoi elementi sono distinguibili, quindi $L$ non può essere regolare.
+\end{tcolorbox}
+
+Questo limite sul minimo numero di stati non vale per automi non deterministici.
+\begin{tcolorbox}
+	Dato il linguaggio
+	$$ L_n = \{ x \in \{a, b\}^* \mid P(x) \} $$
+	Dove $P$ è la proprietà per cui $x$ contiene due simboli uguali tra loro a distanza $n$.
+
+	Ad esempio $ababba \in L_3$, infatti la seconda e l'ultima $a$ e la prima e l'ultima $b$ corrispondono.
+	Costruiamo l'automa per $L_3$
+	\begin{center}
+		\begin{tikzpicture}
+			\node[state, initial] 	(q0) {$q_0$};
+			\node[state] 		(q1) [above right=of q0] {$q_1$};
+			\node[state] 		(q2) [below right=of q0] {$q_2$};
+			\node[state] 		(q3) [right=of q1] {$q_3$};
+			\node[state] 		(q4) [right=of q2] {$q_4$};
+			\node[state] 		(q5) [right=of q3] {$q_5$};
+			\node[state] 		(q6) [right=of q4] {$q_6$};
+			\node[state, accepting]	(q7) [below right=of q5] {$q_7$};
+
+			\path[->] (q0)	edge[loop above] node[above]	{\tiny a,b}	()
+					edge		 node[above]	{\tiny a}	(q1)
+					edge		 node[above]	{\tiny b}	(q2)
+				  (q1)  edge		 node[above]	{\tiny a, b}	(q3)
+				  (q2)  edge		 node[above]	{\tiny a, b}	(q4)
+				  (q3)  edge		 node[above]	{\tiny a, b}	(q5)
+				  (q4)  edge		 node[above]	{\tiny a, b}	(q6)
+				  (q5)  edge		 node[above]	{\tiny a}	(q7)
+				  (q6)  edge		 node[above]	{\tiny b}	(q7)
+				  (q7)	edge[loop below] node[below]	{\tiny a,b}	();
+		\end{tikzpicture}
+	\end{center}
+	Questo ha $2n + 2$ stati, l'automa deterministico corrispondente deve ricordare la finestra degli utlimi $n$ simboli, quindi dovrebbe avere almeno $2^n$ stati.
+	Si può anche ragionare sull'insieme di stringhe distinguibili, infatti scegliamo
+	$$ X = \{a, b\}^n $$
+	queste sono tutte distinguibili tra loro?
+	Prendiamo due stringhe $x, y \in X$, con $ x \neq y $, tali che
+	\begin{align*}
+		x &= x_1 x_2 \dots x_i \dots x_n \\
+		y &= y_1 y_2 \dots y_i \dots y_n 
+	\end{align*}
+	Sia $i$ la prima la posizione in cui le due stringhe sono diverse.
+	Sia $z = \overline{x_1} \; \overline{x_2} \dots \overline{x_{i - 1}} a$.
+	Quindi abbiamo trovato un insieme di $2^n$ stringhe distinguibili, quindi ogni DFA ha almeno $2^n$ stati.
+\end{tcolorbox}
+\begin{tcolorbox}
+	Sia
+	$$ L^\prime_n = \{ x \in \{a, b\}^* \mid P(x) \} $$
+	Dove $P$ è la proprietà per cui per ogni coppia di simboli di $x$ a distanza $n$ i due coincidono.
+
+	Quindi per esempio $abbabba \in L^\prime_3$.
+	Alternativamente possiamo dire che $x \in L^\prime_n$ sse $\exists w \in \{a, b\}^n$ e $\exists y$ prefisso di $w$ per cui $\exists k \geq 0 \mid x = w^k y$.
+	% fig 1
+	\begin{center}
+		\begin{tikzpicture}[
+				scale=0.3,
+				every node/.append style={transform shape},
+				level 1/.style={sibling distance=20cm},
+				level 2/.style={sibling distance=10cm},
+				level 3/.style={sibling distance=5cm}
+			]
+
+			\node[state, accepting] (root) {0}
+				child { node[state, accepting] {1} 
+					child { node[state, accepting] {2} edge from parent[->]
+						child { node[state, accepting] {3} edge from parent[->] node[above left]  {a} }
+						child { node[state, accepting] {4} edge from parent[->] node[above right] {b} }
+						edge from parent[->] node[above left]  {a}
+					} 
+					child { node[state, accepting] {7} 
+						child { node[state, accepting] {8} edge from parent[->] node[above left]  {a} }
+						child { node[state, accepting] {11} edge from parent[->] node[above right] {b} }
+						edge from parent[->] node[above right] {b}
+					} edge from parent[->] node[above left] {a}
+				}
+				child { node[state, accepting] {14} 
+					child { node[state, accepting] {15} 
+						child { node[state, accepting] {16} edge from parent[->] node[above left] {a} }
+						child { node[state, accepting] {19} edge from parent[->] node[above right] {b} }
+						edge from parent[->] node[above left] {a}
+					}
+					child { node[state, accepting] {22} 
+						child { node[state, accepting] {23} edge from parent[->] node[above left] {a} }
+						child { node[state, accepting] {26} edge from parent[->] node[above right] {b} }
+						edge from parent[->] node[above right] {b}
+					} edge from parent[->] node[above right] {b}
+				};
+			\draw[->, loop below] (root-1-1-1) to node[below] {a} ();
+
+			\node[state, accepting] (a21) [below left=of root-1-1-2] {5};
+			\node[state, accepting] (a22) [below right=of root-1-1-2] {6};
+			\draw[->] (root-1-1-2) to node[above left] {a} (a21);
+			\draw[->] (a21) to node[above] {a} (a22);
+			\draw[->] (a22) to node[above right] {b} (root-1-1-2);
+
+			\node[state, accepting] (a31) [below left=of root-1-2-1] {9};
+			\node[state, accepting] (a32) [below right=of root-1-2-1] {10};
+			\draw[->] (root-1-2-1) to node[above left] {a} (a31);
+			\draw[->] (a31) to node[above] {b} (a32);
+			\draw[->] (a32) to node[above right] {a} (root-1-2-1);
+
+			\node[state, accepting] (a41) [below left=of root-1-2-2] {12};
+			\node[state, accepting] (a42) [below right=of root-1-2-2] {13};
+			\draw[->] (root-1-2-2) to node[above left] {a} (a41);
+			\draw[->] (a41) to node[above] {b} (a42);
+			\draw[->] (a42) to node[above right] {b} (root-1-2-2);
+
+			\node[state, accepting] (a51) [below left=of root-2-1-1] {17};
+			\node[state, accepting] (a52) [below right=of root-2-1-1] {18};
+			\draw[->] (root-2-1-1) to node[above left] {b} (a51);
+			\draw[->] (a51) to node[above] {a} (a52);
+			\draw[->] (a52) to node[above right] {a} (root-2-1-1);
+
+			\node[state, accepting] (a61) [below left=of root-2-1-2] {20};
+			\node[state, accepting] (a62) [below right=of root-2-1-2] {21};
+			\draw[->] (root-2-1-2) to node[above left] {b} (a61);
+			\draw[->] (a61) to node[above] {a} (a62);
+			\draw[->] (a62) to node[above right] {b} (root-2-1-2);
+
+			\node[state, accepting] (a71) [below left=of root-2-2-1] {24};
+			\node[state, accepting] (a72) [below right=of root-2-2-1] {25};
+			\draw[->] (root-2-2-1) to node[above left] {b} (a71);
+			\draw[->] (a71) to node[above] {b} (a72);
+			\draw[->] (a72) to node[above right] {a} (root-2-2-1);
+
+			\draw[->, loop below] (root-2-2-2) to node[below] {b} ();
+
+			\node (empty) [above=of root] {};
+			\draw[->] (empty.south) to (root.north);
+		\end{tikzpicture}
+	\end{center}
+	Questo DFA è maggiore di $2^n$ stati.
+
+	Ma anche l'NFA corrispondente non ci permette di risparmiare un gran numero di spazi.
+
+	Come mai l'NFA corrispondente a questo e al precedente hanno una così grande differenza di stati?
+	Il primo utilizza un esiste e questo un per ogni, e il non determinismo è utile per l'esiste.
+\end{tcolorbox}
+Dato un linguaggio $L \subseteq \Sigma^*$ e $P \subseteq \Sigma^* \times \Sigma^* = \{ (x_i, y_i) \mid i \in 1, \dots n\}$, diciamo che $P$ è un \textbf{fooling set} per $L$ sse valgono le seguenti condizioni
+\begin{itemize}
+	\item $\forall i \in 1, \dots n \mid x_i y_i \in L$
+	\item $\forall i, j \in 1, \dots n \mid i \neq j \Rightarrow x_i y_j \not \in L$
+\end{itemize}
+Noi in particolare ci interessiamo all'\textit{extended} fooling set, con la seconda condizione modificata:
+\begin{itemize}
+	\item $\forall i, j \in 1, \dots n \mid i \neq j \Rightarrow x_i y_j \not \in L \vee x_j y_i \not \in L $
+\end{itemize}
+
+\begin{teorema}
+	Sia $L \subseteq \Sigma^*$ e $P$ un extended fooling set per $L$, allora ogni automa non deterministico per $L$ ha almeno $|P|$ stati.
+\end{teorema}
+\begin{proof}
+	Sia $\mathcal{A}$ un NFA per $L$.
+	Per ogni membro $(x_i, y_i) \in P$ abbiamo che
+	$$ \delta(q_0, x_i) = P_i  \text{ e } \delta(P_i, y_i) = F_i $$
+	con $F_i$ finale.
+	\begin{center}
+		\begin{tikzpicture}[
+				SQUIGGLY/.style={->
+				, decorate
+				, decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}},
+			]
+			\node[state, initial] 	(q0) {};
+			\node[state]		(q1) [above right=of q0] {$P_1$};
+			\node 			(dots1) [below=of q1] {$\vdots$};
+			\node 			(dots2) [below=of q3] {$\vdots$};
+			\node[state]		(q2) [below right=of q0] {$P_n$};
+			\node[state, accepting] (q3) [right=of q1] {};
+			\node[state, accepting] (q4) [right=of q2] {};
+
+			\draw[SQUIGGLY, bend left] 	(q0)	to node[above left] {$x_1$} (q1);
+			\draw[SQUIGGLY] 		(q0)	to (dots1);
+			\draw[SQUIGGLY, bend right] 	(q0)	to node[below left] {$x_n$} (q2);
+			\draw[SQUIGGLY]			(q1)	to node[above]      {$y_1$} (q3);
+			\draw[SQUIGGLY]			(q2)	to node[below]	    {$y_n$} (q4);
+			\draw[SQUIGGLY] 		(dots1)	to (dots2);
+		\end{tikzpicture}
+	\end{center}
+
+	Ora supponiamo per assurdo che per due elementi del fooling set $P$ $x_i$ e $x_j$ portino entrambi nello stato $P_i$.
+	\begin{center}
+		\begin{tikzpicture}[
+				SQUIGGLY/.style={->
+				, decorate
+				, decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}},
+			]
+			\node[state, initial] 	(q0) {};
+			\node[state]		(q1) [right=of q0] {$P_i$};
+			\node[state, accepting] (q2) [above right=of q1] {};
+			\node[state, accepting] (q3) [below right=of q1] {};
+
+			\draw[SQUIGGLY, bend left]  (q0) to node[above] {$x_i$} (q1);
+			\draw[SQUIGGLY, bend right] (q0) to node[below] {$x_j$} (q1);
+			\draw[SQUIGGLY, bend left ] (q1) to node[above left] {$y_i$} (q2);
+			\draw[SQUIGGLY, bend right] (q1) to node[below left] {$y_j$} (q3);
+		\end{tikzpicture}
+	\end{center}
+	Allora è facile vedere che anche le parole $x_i y_j$ e $x_j y_i$ sarebbero accettare, infrangendo la seconda proprietà del fooling set.
+	Quindi ad ogni $x_i$ deve essere associato uno almeno uno stato che nessun'altro elemento condivide, quindi ci sono almeno $|P|$ stati.
+\end{proof}
+ % !!! RECOVER FROM PDF
+
+\begin{tcolorbox}
+Ritornando all'esempio di prima, sia $P = \{ (x, x) \mid x \in \{a, b\}^n \}$, vale che ogni elemento $xx \in L^\prime_n$, mentre per elementi diversi, $xy \not \in L^\prime_n$.
+Quindi questo è un fooling set valido per $L^\prime_n$.
+E dato che l'NFA ha almeno $|P|$ stati, ne servono almeno $2^n$.
+\end{tcolorbox}
+
+\begin{tcolorbox}
+	Prendiamo il linguaggio
+	$$ L_k = \{ 0^n 1^n 2^n \mid n \leq k \} $$
+	questo è rappresentabile dal DFA
+	\begin{center}
+		\begin{tikzpicture}[
+				SQUIGGLY/.style={->
+				, decorate
+				, decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}},
+			]
+			\node[state, initial] 	(q0) {};
+			\node[state]		(q1) [right=of q0] {};
+			\node[state]		(q2) [right=of q1] {};
+			\node			(dots) [right=of q2] {$\dots$};
+			\node[state]		(qn) [right=of dots] {};
+
+			\node[state]		(q11) [below=of q1] {};
+			\node[state, accepting] (q12) [below=of q11] {};
+
+			\node[state]		(q21) [below=of q2] {};
+			\node[state]		(q22) [below=of q21] {};
+			\node[state]		(q23) [below=of q22] {};
+			\node[state, accepting]	(q24) [below=of q23] {};
+
+			\node[state]		(qn1) [below=of qn] {};
+			\node			(dotsn1) [below=of qn1] {$\vdots$};
+			\node[state]		(qn2) [below=of dotsn1] {};
+			\node			(dotsn2) [below=of qn2] {$\vdots$};
+			\node[state, accepting]	(qnn) [below=of dotsn2] {};
+
+			\draw[thick, decorate, decoration = {brace}] ([yshift=0.25cm] q0.north) -- ([yshift=0.25cm] qn.north) node[pos=0.5, above] {\tiny $k$ volte};
+			\draw[thick, decorate, decoration = {brace}] ([xshift=0.25cm] qn.east) -- ([xshift=0.25cm, yshift=0.1cm] qn2.east) node[pos=0.5, right] {\tiny $k$ volte};
+			\draw[thick, decorate, decoration = {brace}] ([xshift=0.25cm, yshift=-0.1cm] qn2.east) -- ([xshift=0.25cm] qnn.east) node[pos=0.5, right] {\tiny $k$ volte};
+
+			\path[->] (q0) 	 edge	node[above]	{\tiny 0}	(q1)
+			(q1)	 edge	node[above]	{\tiny 0}	(q2)
+			edge	node[right]	{\tiny 1}	(q11)
+			(q2)	 edge	node[above]	{\tiny 0}	(dots)
+			edge	node[right]	{\tiny 1}	(q21)
+			(dots) edge	node[above]	{\tiny 0}	(qn)
+			(qn)	 edge	node[right]	{\tiny 1}	(qn1)
+			(q11)	 edge	node[right]	{\tiny 2}	(q12)
+			(q21)	 edge	node[right]	{\tiny 1}	(q22)
+			(q22)	 edge	node[right]	{\tiny 2}	(q23)
+			(q23)	 edge	node[right]	{\tiny 2}	(q24)
+			(qn1)	 edge	node[right]	{\tiny 1}	(dotsn1)
+			(dotsn1) edge node[right]	{\tiny 1}	(qn2)
+			(qn2)	 edge	node[right]	{\tiny 2}	(dotsn2)
+			(dotsn2) edge	node[right]	{\tiny 2}	(qnn);
+		\end{tikzpicture}
+	\end{center}
+	Ma è facile mostrare che anche l'automa deterministico corrispondente non ci permette di risparmiare molto.
+	% calcolo del fooling set
+\end{tcolorbox}
+\end{document}

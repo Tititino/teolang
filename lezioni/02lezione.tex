@@ -1,0 +1,299 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{cancel}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{tabularray}
+\usepackage{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\usepackage{teolang}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+La gerarchia di Chomksy vale per alfabeti di almeno due lettere.
+
+\section{Parola vuota ed $\epsilon$-produzioni}
+Supponendo di avere una grammatica $G$ di tipo 1, supponiamo di voler aggiungere la parola vuota al linguaggio generato.
+Se si aggiunge banalmente la regola per la parola vuota
+$$ S \prd \epsilon $$
+non ci sono garanzie che noi non abbiamo aggiunto anche altre stringhe al linguaggio, ad esempio nel caso
+$$ \alpha \der \dots S \dots $$
+inoltre perdiamo la proprietà della monotonicità delle forme sentenziali.
+
+Quindi bisogna essere leggermente più delicati, dato $L = L(G)$, voglio costruire $G^\prime$ tale che $L^\prime = L(G^\prime) = L(G) \cup \{ \epsilon \}$.
+Per gare ciò definisco $G^\prime = \grammar{V \cup \{S^\prime\}}{\Sigma}{P \cup \{ S^\prime \prd \epsilon \mid S\}}{S^\prime}$.
+
+Dal simbolo iniziale posso utilizzare $S \prd \epsilon$ purché $S$ non appaia su lato destro di nessuna produzione.
+Questo ovviamente vale anche per grammatiche di tipo 2 e 3.
+
+Data una grammatica di tipo 2 che utilizza $\epsilon$-produzioni 
+$$ A \prd \epsilon $$
+è possibile trovare una grammatica di tipo 2 equivalente che genera lo stesso linguaggio, meno la parola vuota, che non utilizza $\epsilon$-produzioni.
+
+Anche nelle gramamtiche di tipo 3 possiamo ammettere $\epsilon$-produzioni
+$$ A \prd \epsilon $$
+
+\section{Automa a stati finiti}
+Un automa è un dispositivo che ha
+\begin{itemize}
+	\item un nastro diviso in celle che contiene l'input, ogni cella contiene un simbolo dell'alfabeto
+		Questo non può essere modificato.
+	\item una testina che passa il nastro da sinistra a destra, per questo vengono chiamati anche automi $one-way$.
+		Quando questa finisce il nastro deve poter rispondere se la parola appartiene o no al linguaggio.
+		La testina contiene una macchina che ha un insieme finito di stati.
+\end{itemize}
+Un automa è quindi una quintupla $\mathscr{A} = \langle Q, \Sigma, \delta, q_0, F \rangle$, dove
+\begin{itemize}
+	\item $Q$ è l'insieme degli stati
+	\item $\Sigma$ è l'alfabeto finito di input
+	\item $\delta$ è il programma dell'automa, o funzione di transizione
+	\item $q_0 \in Q$ è lo stato iniziale
+	\item $F \subseteq Q$ è l'insieme degli stati finali
+\end{itemize}
+Ad ogni passo l'automa legge un simbolo, ed in base allo stato attuale e il simbolo in input sceglie il prossimo stato con $\delta$
+$$ \delta : Q \times \Sigma \rightarrow Q $$
+Definiamo 
+$$ \delta^* : Q \times \Sigma^* \rightarrow Q $$
+per induzione sulla lunghezza delle stringhe in input:
+\begin{itemize}
+	\item $\forall q \in Q \mid \delta^*(q, \epsilon) = q $
+	\item $\forall q \in Q, x \in \Sigma^*, a \in \Sigma \mid \delta^*(q, x a) = \delta(\delta^*(q, x), a)$
+\end{itemize}
+Visto che $\delta^*$ è effettivamente una estensione di $\delta$, chiameremo $\delta^*$ $\delta$.
+
+Ora possiamo definire il linguaggio riconosciuto dall'automa $\mathscr{A}$ come
+$$ L(\mathscr{A}) = \{ w \in \Sigma^* \mid \delta(q_0, w) \in F \} $$
+
+\begin{tcolorbox}
+	Ad esempio $\mathscr{A} = \langle Q = \{ q_0, q_1 \}, \Sigma = \{ a, b \}, \delta, q_0, F = \{ q_1 \} \rangle$, con $\delta$ definita come
+	\begin{center}
+	%	\begin{tblr}{c| c c }
+	%		\delta & a & b \\
+	%		\hline
+	%		q_0    & q_0 & q_1 \\
+	%		q_1    & q_1 & q_0 \\
+	%	\end{tblr}
+	\end{center}
+	Per $aabb$ abbiamo
+	$$ q_0 \overset{a}{\rightarrow} q_0 \overset{a}{\rightarrow} q_0 \overset{b}{\rightarrow} q_1 \overset{b}{\rightarrow} q_0 $$
+	quindi la stringa non è accettata perché $q_0 \not \in F$.
+	Questo è linguaggoi di tutte le stringhe con un numero dispari di $b$.
+\end{tcolorbox}
+Invece che rappresentare $\delta$ come una tabella, di solito è comodo rappresentarla come un diagramma di transizione:
+\begin{itemize}
+	\item Lo stato iniziale è rappresentato da una freccia entrante
+	\item gli stati finali da un doppio cerchio.
+\end{itemize}
+Quindi una derivazione non è altro che un cammino in questo grafo, e la parola è accettata se si finisce in uno stato finale.
+
+\begin{tcolorbox}
+	Dato $\Sigma = \{ a, b \}$, e il linguaggio 
+	$$ \mathscr{L} = \{ x \in \Sigma^* \mid P(x) \}$$
+	con $P$ definita come la proprietà per cui tra ogni coppia di $b$ successive in $x$ c'è un numero di $a$ pari.
+	\begin{center}
+		\begin{tikzpicture}
+			\node[state, initial, accepting] 	(q_0) {$q_0$};
+			\node[state, accepting] 		(q_1) [right=of q_0] {$q_1$};
+			\node[state, accepting]			(q_2) [right=of q_1] {$q_2$};
+			\node[state]				(q_3) [right=of q_2] {$q_3$};
+
+			\path[->] (q_0)	edge[loop above]	node[above]	{a}	()
+					edge			node[above]	{b}	(q_1)
+				  (q_1)	edge[loop above]	node[above]	{b}	()
+					edge			node[above]	{a}	(q_2)
+				  (q_2)	edge			node[above]	{}	(q_1)
+				  	edge			node[above]	{b}	(q_3)
+				  (q_3)	edge[loop above]	node[above]	{a, b}	();
+		\end{tikzpicture}
+	\end{center}
+	% 
+	%  init(final(q_0)) --b--> final(q_1) <--a--> final(q_2) --b--> trap(q_3)
+	%         \_a_/             \_b_/                                \_a,b_/
+	Visto che 
+	$$ \delta : Q \times \Sigma \rightarrow Q $$
+	nello stato $q_2$ bisogna aggiungere una freccia ad uno stato da cui non si può uscire, infatti se siamo in quello stato vuol dire che abbiamo trovato un numero dispari di $a$ e una $b$, quindi la parola non è valida.
+	Questo tipo di stati è detto stato trappola, e di solito vengono lasciati impliciti.
+\end{tcolorbox}
+
+\begin{tcolorbox}
+	Dato $\Sigma = \{ a, b \}$, e il linguaggio 
+	$$ \mathscr{L} = \{ x \in \Sigma^* \mid \text{Il terzo simbolo di $x$ è una $a$}\}$$
+	% init(q_0) --a,b--> q_1 --a,b--> q_2 --a--> final(q_3)
+	%                                             \_a,b_/
+	\begin{center}
+		\begin{tikzpicture}
+			\node[state, initial] 	(q_0) {$q_0$};
+			\node[state]		(q_1) [right=of q_0] {$q_1$};
+			\node[state]		(q_2) [right=of q_1] {$q_2$};
+			\node[state, accepting]	(q_3) [right=of q_2] {$q_3$};
+
+			\path[->] (q_0)	edge			node[above]	{a, b}	(q_1)
+				  (q_1)	edge			node[above]	{a,b}	(q_2)
+				  (q_2)	edge			node[above]	{a}	(q_3)
+				  (q_3)	edge[loop above]	node[above]	{a, b}	();
+		\end{tikzpicture}
+	\end{center}
+\end{tcolorbox}
+\begin{tcolorbox}
+	Dato $\Sigma = \{ a, b \}$, e il linguaggio 
+	$$ \mathscr{L} = \{ x \in \Sigma^* \mid \text{ Il terzultimo simbolo di $x$ è una $a$} \} $$
+	Teniamo uno stato per ogni tripla di $a, b$, quindi $2^3 = 8$ stati
+	% graph automa {
+	% aaa -b-> aab
+	% aaa -a-> aaa
+	% aab -a-> aba
+	% aab -b-> abb
+	% aba -a-> baa
+	% aba -b-> bab
+	% bab -a-> aba
+	% bab -b-> abb
+	% abb -a-> bba
+	% abb -b-> bbb
+	% baa -a-> aaa
+	% baa -b-> aab
+	% bbb -b-> bbb
+	% bbb -a-> bba
+	% bba -a-> baa
+	% bba -b-> bab
+	% fin(aaa)
+	% fin(aab)
+	% fin(aba)
+	% fin(abb)
+	% init(bbb)
+	% }
+\end{tcolorbox}
+
+Una operazione che può interessare per le stringhe è costruire il linguaggio che riconosce le stringhe roversciate di uno.
+Dato un linguaggio $\mathscr{L}$, il linguaggio che riconosce le sue stringhe inverse è detto il reversal di $\mathscr{L}$.
+Nel caso dei due linguaggi precedenti se prendiamo l'automa del primo e lo invertiamo ottieniamo un automa valido (non deterministico) per il secondo.
+
+\subsection{Automi non deterministici}
+Definiamo un automa non deterministico come la quintupla $\mathscr{A} = \langle Q, \Sigma, \delta, q_0, F \rangle$, ma ora $\delta$ è definita come
+$$ \delta : Q \times \Sigma \rightarrow 2^Q $$
+quindi $\delta$ non ritorna più un singolo insieme ma un insieme di possibili stati.
+
+Una stringa viene accettata se esiste almeno un cammino che mi porta in uno stato finale.
+Estensiamo ancora $\delta$ alle stringhe 
+$$ \delta^* : Q \times \Sigma \rightarrow 2^Q $$
+è definita come
+\begin{itemize}
+	\item $\forall q \in Q \mid \delta^*(q, \epsilon) = \{ q \} $
+	\item $\forall q \in Q, x \in \Sigma^*, a \in \Sigma \mid \delta^*(q, xa) = \bigcup_{p \in \delta^*(q, x)} \delta(p, a) $
+\end{itemize}
+
+Come prima chiameremo $\delta^*$ semplicemente $\delta$.
+
+Ora il linguaggio accettato dall'automa $\mathscr{A}$ non deterministico è $L(\mathscr{A}) = \{ w \in \Sigma^* \mid \delta(q_0, w) \cap F \neq \varnothing \}$.
+
+\begin{tcolorbox}
+	Dato l'automa non deterministico
+	\begin{center}
+		\begin{tikzpicture}
+			\node[state, initial] 	(r_0) {$r_0$};
+			\node[state] 	      	(r_1) [right=of r_0] {$r_1$};
+			\node[state] 	      	(r_2) [right=of r_1] {$r_2$};
+			\node[state, accepting]	(r_3) [right=of r_2] {$r_3$};
+
+			\path[->] (r_0)	edge	[loop above]	node[above]	{a, b}	()
+					edge			node[above]	{a}	(r_1)
+				  (r_1)	edge			node[above]	{a, b}	(r_2)
+				  (r_2)	edge			node[above]	{a, b}	(r_3);
+		\end{tikzpicture}
+	\end{center}
+	con la stringha $ababb$ mostriamo tutte le possibili strade che si possono prendere
+	\begin{center}
+		\begin{tikzpicture}
+			\node {$r_0$}
+				child { node {$r_0$}
+					child {	node {$r_0$}
+						child {	
+							node {$r_0$} 
+							child {
+								node {$r_0$}
+								child {
+									node {$\cancel{r_0}$}
+									edge from parent node[left] {b}
+								}
+								edge from parent node[left] {b}
+							}
+							edge from parent node[left] {a}
+						}
+						child { 
+							node {$r_1$} 
+							child {
+								node {$r_2$}
+								child {
+									node {$r_3$}
+									edge from parent node[right] {b}
+								}
+								edge from parent node[right] {b}
+							}
+							edge from parent node[right] {a}
+						}
+						edge from parent node[left] {b}
+					}
+					edge from parent node[left] {a}
+				}
+				child {	
+					node {$r_1$}
+					child {
+						node {$r_2$}
+						child {
+							node {$\cancel{r_3}$}
+							edge from parent node[right] {a}
+						}
+						edge from parent node[right] {b}
+					}
+					edge from parent node[right] {a}
+				};
+		\end{tikzpicture}
+	\end{center}
+	è necessario che esista almeno una strada dell'albero che risponda sì per accettare.
+	Questa struttura è chiamato albero di computazione, e un cammino descrive una computazione.
+
+	Bisogna supporre che l'automa riesca a sceglie la strada esatta.
+	Alternativamente si può pensare che l'automa possa visitare tutte le strade in parallelo, quindi possiamo trasformare l'albero in
+	\begin{center}
+		\begin{tikzpicture}
+			\node[state, initial] 	(r0) {$\{ r_0 \}$};
+			\node[state] 	      	(r0r1)	[right=of r0] {$\{ r_0, r_1 \}$};
+			\node[state] 	      	(r0r2)	[right=of r0r1] {$\{ r_0, r_2 \}$};
+			\node[state] 	      	(r0r1r3)[below right=of r0r2] {$\{ r_0, r_1, r_3 \}$};
+			\node[state, accepting]	(r0r3) 	[right=of r0r2] {$\{ r_0, r_3 \}$};
+
+			\path[->] (r0)		edge	node[above]	{a}	(r0r1)
+				  (r0r1) 	edge	node[above]	{b}	(r0r2)
+				  (r0r2)	edge	node[above]	{a}	(r0r1r3)
+				  		edge 	node[above]	{b}	(r0r3)
+				  (r0r1r3)	edge	node[above]	{a}	(r0r2);
+		\end{tikzpicture}
+	\end{center}
+	Questo 
+\end{tcolorbox}
+Ogni autma non deterministico (NFA) con $n$ stati può sempre essere trasformato in un automa deterministico con al più $2^n$ stati.
+Nel caso degli automi a pila invece il modello non deterministico è più potente.
+Qui invece tra DFA e NFA non cambia la potenza computazionale, ma la semplicità descrittiva.
+\end{document}

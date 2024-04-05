@@ -1,0 +1,270 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{cancel}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{tabularray}
+\usepackage{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\newtheorem{teorema}{Teorema}
+\newtheorem{corollario}{Corollario}
+\newtheorem{proposizione}{Proposizione}
+\newtheorem{proprietà}{Proprietà}
+\newtheorem{fatto}{Fatto}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage{teolang}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+\section{Numero di stati}
+Dato un linguaggio riconoscibile da un automa a stati finiti, quanti stati sono necessari per riconoscerlo?
+
+Nell'ambito degli automi deterministici definiamo il concetto di \textbf{distribuibilità} tra stringhe rispetto al linguaggio $L \subseteq \Sigma^*$.
+Due stringhe qualunque $x, y \in \Sigma^*$ sono distinguibili per $L$ se 
+$$ \exists z \in \Sigma^* (xz \in L \wedge yz \not \in L) \vee (xz \not \in L \wedge yz \in L) $$
+
+Molto semplicemente se $x$ e $y$ sono distinguibili queste ci porteranno in due stati diversi.
+Da questi due stati diversi si può costruire una $z$ che in un caso ci porta in uno stato finale e nell'altro no.
+Quindi in un automa deterministico se due stringhe sono distinguibili, non ci possono mandare nello stesso stato.
+
+\begin{teorema}
+	Sia $L \subseteq \Sigma^*$ e $X \subseteq \Sigma^*$ tale che ogni coppia di stringhe in $X$ è distinguibile in rispetto ad $L$.
+ 	Allora ogni DFA che accetta $L$ deve avere almeno $\# X$ stati (cardinalità di $X$).
+\end{teorema}
+\begin{proof}
+	Supponiamo che $X = \{x_1, x_2, \dots, x_k \}$.
+	Sia $\mathcal{A} = \langle Q, \Sigma, \delta, q_0, F \rangle$ un DFA per $L$.
+	Sia $\forall i \in 1, \dots, k \mid p_i = \delta(q_0, x_i)$.
+	Se $\# Q < k$ allora esistono due stati uguali
+	$$ \exists i, j \in 1, \dots, k \mid i \neq j \wedge p_1 = p_j $$
+	Ma $x_i, x_j$ sono distinguibili, quindi
+	$$ \exists z \mid (xz \in L \wedge yz \not \in L) \vee (xz \not \in L \wedge yz \in L) $$
+	Ma questo $z$ non può esistere, quindi la $\# Q$ deve per forza essere $\leq k$.
+\end{proof}
+Questo può essere anche utile per determinare se un linguaggio non può essere definito da un automa a stati finiti.
+Infatti se si trova un insieme $X$ infinito, allora il linguaggio non può essere regolare.
+
+\begin{tcolorbox}
+	Sia $\Sigma = \{ a, b \}$ e 
+	$$L = \{ x \in \Sigma^* \mid \#_a(x) \text{ è pari } \wedge \#_b(x) \text{ è pari } \} $$
+	\begin{center}
+		\begin{tikzpicture}
+			\node[state, initial, accepting] 	(00) {$00$};
+			\node[state] 				(10) [right=of 00] {$10$};
+			\node[state]				(01) [below =of 00] {$01$};
+			\node[state]				(11) [right=of 01] {$11$};
+
+			\path[->] (00)	edge[bend left]	node[above]	{\tiny a}	(10)
+					edge[bend left]	node[right]	{\tiny b}	(01)
+				  (10)	edge[bend left]	node[right]	{\tiny b}	(11)
+					edge[bend left]	node[below]	{\tiny a}	(00)
+				  (01)	edge[bend left]	node[left]	{\tiny b}	(00)
+					edge[bend left]	node[above]	{\tiny a}	(11)
+				  (11)	edge[bend left]	node[left]	{\tiny b}	(10)
+					edge[bend left]	node[below]	{\tiny a}	(01);
+		\end{tikzpicture}
+	\end{center}
+	Costruisco $X = \{ \epsilon, a, b, ab, \}$, per vedere che sono distinguibili costruiamo
+	\begin{center}
+		\begin{tblr}{ c | c c c c }
+			z          & $\epsilon$ & a 	     & b          & ab \\
+			\hline
+			$\epsilon$ &            & $\epsilon$ & $\epsilon$ & $\epsilon$ \\
+			a          &            &            & a          & a \\
+			b          &            &            &            & b \\
+			ab         &            &            &            &
+		\end{tblr}
+	\end{center}
+\end{tcolorbox}
+\begin{tcolorbox}
+	Dato il linguaggio 
+	$$ \mathcal{L}_n = \{ x \in \{ a, b \}^* \mid \text{l'$n$-esimo simbolo da destra di $x$ è una $a$} \} $$
+	L'automa si ricorda gli ultimi $n$ simboli, quindi ha $2^n$ stati.
+	Mentre l'NFA corrispondente è 
+	\begin{center}
+		\begin{tikzpicture}
+			\node[state, initial] 	(q_0) {$q_0$};
+			\node[state] 		(q_1) [right=of q_0] {$q_1$};
+			\node[state]		(q_2) [right =of q_1] {$q_2$};
+			\node			(dots) [right =of q_2] {$\dots$};
+			\node[state, accepting]	(q_k) [right=of dots] {$q_k$};
+
+			\path[->] (q_0)		edge[loop above]	node[above]	{a, b}	()
+						edge	node[above]	{a}	(q_1)
+				  (q_1)		edge	node[above]	{a}	(q_2)
+				  (q_2)		edge	node[above]	{a,b}	(dots)
+				  (dots)	edge	node[above]	{a,b}	(q_k);
+		\end{tikzpicture}
+	\end{center}
+	% aggiungo graffa con scritto $n$ volte
+	questo ha $n + 1$ stati.
+
+	Possiamo fare meglio per il deterministico?
+	Costruiamo $X = \{a, b\}^n = \{ x \in \{a, n\}^* \mid |x| = n \} $.
+	Siano $x, y \in X$, con 
+	\begin{align*}
+		x &= x_1 x_2 \dots x_i \dots x_n \\
+		y &= y_1 y_2 \dots y_i \dots y_n 
+	\end{align*}
+	Visto che $x \neq y$, $\exists i \mid x_i \neq y_i$.
+	Supponiamo che $x_i = a$, ed $y_i = b$, quindi
+	\begin{align*}
+		x &= x_1 x_2 \dots a \dots x_n \\
+		y &= y_1 y_2 \dots b \dots y_n 
+	\end{align*}
+	Ora per distinguere le tue parole basta scegliere $z = \{a, b\}^{i - 1}$, ad esempio $z = a^{i - 1}$, con questa $z$ $xz \in \mathcal{L}$ e $yz \not \in \mathcal{L}$.
+	Visto che la cardinalità di $X$ è di $2^n$ allora non possiamo costruire un automa di meno di $2^n$ stati.
+
+	Questo mostra come gli automi non deterministici possano essere molto più compatti.
+\end{tcolorbox}
+\begin{tcolorbox}
+	Se definiamo $\mathcal{L} = \{ w \in \{ a, b\}^* \mid \#_a(w) = \#_b(w) \}$ ha $X$ infinito % ???
+\end{tcolorbox}
+
+\subsection{Costruzione coi sottoinsiemi}
+\begin{center}
+	\begin{tikzpicture}
+		\node[state, initial] 	(q_0) {$q_0$};
+		\node[state, accepting]	(q_1) [right=of q_0] {$q_1$};
+
+		\path[->] (q_0)		edge[loop above]	node[above]	{a}	()
+					edge			node[above]	{a, b}	(q_1)
+			(q_1)		edge[loop above]	node[above]	{b}	()
+			edge	node[above]	{b}	(q_0);
+	\end{tikzpicture}
+\end{center}
+$\mathcal{A} = \langle Q, \Sigma, \delta, q_0, F \rangle$ NFA definisco $\mathcal{A}^\prime = \langle Q^\prime, \Sigma, \delta^\prime, q_0^\prime, F^\prime \rangle$, con $Q^\prime = 2^Q$ e $q_0^\prime = \{ q_0 \}$.
+% \begin{center}
+% 	\begin{tikzpicture}
+% 		\node[state, initial] 	(q0) {$\{q_0}$};
+% 		\node[state] 		(q0q1) {$\{q_0, q_1}$};
+% 		\node[state, accepting]	(q1) {$\{q_1}$};
+% 		\node[state] 		(empty) {$\varnothing}$};
+% 
+% 		\path[->] (q0)		edge	node[above]	{a}	(q0q1)
+% 					edge	node[above]	{b}	(q1)
+% 		(q1)			edge[loop above]	node[above]	{b}	()
+% 		edge	node[above]	{b}	(q_0);
+% 		% finisco costruzione
+% 	\end{tikzpicture}
+% \end{center}
+Quindi
+$$\forall a \in Q^\prime, a \in \Sigma \mid \delta^\prime(\alpha, a) = \bigcup_{q \in \alpha} \delta(q, a) $$
+ed
+$$ F^\prime = \{ \alpha \in Q^\prime \mid \alpha \cap F \neq \varnothing\} $$
+
+Se l'NFA ha $n$ stati, il DFA ottenuto ha $2^n$ stati.
+
+	Costruiamo ora l'automa $M_n$, o automa di Meyer\&Fisher (1971), non deterministico tale per cui l'automa deterministico corrispondente ha necessariamente $2^n$ stati.
+	% \begin{center}
+	% 	\begin{tikzpicture}
+	% 		\node[state, initial, final] 	(q0) {$q_0$};
+	% 		\node[state] 			(q1) [right=of q0]{$q_1$};
+	% 		\node[state]			(q2) [right=of q1]{$q_2$};
+	% 		\node[state] 			(q3) [right=of q2]{$q_3}$};
+	% 		\node[state]			(q_k) [right=of q3] {$q_4$};
+	% 
+	% 		\path[->] (q0)		edge	node[above]	{a}	(q0q1)
+	% 					edge	node[above]	{b}	(q1)
+	% 		(q1)			edge[loop above]	node[above]	{b}	()
+	% 		edge	node[above]	{b}	(q_0);
+	% 		% finisco costruzione
+	% 	\end{tikzpicture}
+	% 	% per ogni stato la b crea un loop e può riportare l'automa allo stato q_0
+	% \end{center}
+	Quindi è l'automa $\mathcal{A} = \langle Q = \{0, 1, \dots, n - 1\}, \{a, b \}, \delta, q_0 = 0, F = \{ 0 \} \rangle$ con $\delta$ definita come
+	\begin{align*}
+		\delta(i, a) &= (i + 1) \mod n \\
+		\delta(i, b) &= \begin{cases} 0 	& \text{se } i = 0 \\ \{i, 0\} & \text{altrimenti} \end{cases}
+	\end{align*}
+	Sia $S \subseteq \{0, \dots, n - 1 \}$, definisco $w_s$ come
+	$$ w_s = \begin{cases} b & \text{se } S = \varnothing \\ a^i & \text{se } S = \{ i \} \\ a^{e_k - e_{k - 1}}ba^{e_{k - 1} - e_{k - 2}}b\dots ba^{e_2 - e_1}ba^{e_1} & \text{se } S = \{e_1, e_2, \dots, e_k \} \text{ con } k \geq 2, e_1 < e_2 < \dots < e_k \end{cases} $$
+	Ad esempio prendiamo $S = \{1, 3, 4\}$, la $w_S$ corrispondente è
+	$$w_S = aba^2ba = abaaba $$
+	% disegno l'albero di computazione per questa parola
+	Mostriamo che l'insieme di stati raggiunto da questa stringa è esattamente $\{1, 3, 4\} = S$.
+	Mostriamo anche per $S = \{0, 2\}$, $w_S = a^2b$.
+	O ancora $S = \varnothing$, $w_S = b$.
+
+	% proprietà 1
+	\begin{proprietà}
+	\`E possibile dimostrare che $\forall S \subseteq \{0, \dots, n - 1\} \mid \delta(0, w_S) = S$. \todo{Proprietà 1}
+	\end{proprietà}
+	% proprietà 2
+	\begin{proprietà}
+	Siano $S, T \subseteq \{0, \dots, n - 1\}$, se $S \neq T$ allora $w_S$ e $w_T$ sono distinguibili. \todo{Proprietà 2}
+	\end{proprietà}
+	\begin{proof}	% proprietà 2
+		Se $S \neq T$ esiste un numero che appartiene a $S$ ma non a $T$, chiamiamolo $x \in S \ T$ \todo{Complemento, non ricordo il simbolo}.
+		Abbiamo che
+		\begin{align*}
+			\delta(0, w_S) &= S \\
+			\delta(0, w_T) &= T \\
+		\end{align*}
+		Dato uno stato $y$ ci si mettono $a^{n - y}$ per arrivare allo stato finale.
+		Quindi da $w^S$ ci si mettono $a^{n - x}$ per arrivare ad uno stato finale.
+		$$ 0 \overset{w_S}{\rightsquigarrow} x \overset{a^{n - x}}{\rightsquigarrow} 0 $$
+		Sia $y \in T$, se $y \neq x$, allora
+		$$ 0 \overset{w_T}{\rightsquigarrow} y \not \overset{a^{n - x}}{\rightsquigarrow} 0 $$
+		Allora $a^{n - x}$ distingue $S$ e $T$.
+
+		Ed abbiamo che $X = \{ w_S | S \subseteq \{0, \dots, n - 1 \} \}$ è foramto da stringhe a coppie di stringhe % ???
+		Quindi ogni DFA ha almeno $2^n$ stati.
+	\end{proof}
+	Questo è il linguaggio (più o meno) delle stringhe che hanno un suffisso della forma $bx$ dove $\#_a(x)$ è multiplo di $n$.
+
+\subsection{$\epsilon$-mosse}
+Possiamo, in certi casi, introdurre delle transizioni sulle parole vuote.
+\begin{tcolorbox}
+	Supponiamo di volere l'automa che riconosce i numeri con segno (opzionale)
+	% init -+,-,eps-> q_1 -0,...,9-> fin(q_1) 
+	%                                \0,...,9/
+	Oppure supponiamo di volere l'automa per $a^lb^mc^n$
+	% init -eps-> q_1 -eps-> fin(q_2)
+	% \a/         \b/          \c/
+\end{tcolorbox}
+Generalmente se ho
+$$ q_0 \overset{\epsilon}{\rightarrow} q_1 \overset{a}{\rightarrow} q_2 \overset{\epsilon}{\rightarrow} q_3 $$
+diventa
+$$ q \overset{\epsilon}{\rightarrow} q_3 $$
+
+Inoltre se uno stato ha un cammino formato da $\epsilon$-mosse fino ad uno stato finale, esso stesso è finale.
+
+Questo necessariamente introduce non determinismo.
+
+\subsection{Stati iniziali multipli}
+Questa è un'altra estensione che genera non determinismo.
+% fin(init(q_0)) -a-> fin(init(q_1))
+%   \_b_/        <-b-    
+% non mi ricordo di che linguaggio fosse
+Per renderli deterministici si crea lo stato iniziale che è l'insieme dei diversi stati iniziali.
+
+Se si prende un automa con stati iniziali multipli, ma transizioni deterministiche, si può comunque avere un gap esponenziale tra il numero di stati del'NFA e del DFA.
+
+\end{document}

@@ -1,0 +1,205 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{cancel}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{tabularray}
+\usepackage{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\newtheorem{teorema}{Teorema}
+\newtheorem{corollario}{Corollario}
+\newtheorem{proposizione}{Proposizione}
+\newtheorem{proprietà}{Proprietà}
+\newtheorem{fatto}{Fatto}
+\newtheorem{definizione}{Definizione}
+\newtheorem{nota}{Nota}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage{teolang}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+\section{Minimizzazione di DFA}
+Parleremo principalmente di minimizzazione di DFA, perché questo è di interesse pratico e gli NFA non possono essere implementeati praticamente.
+
+\subsection{Notazione}
+Sia $S$ un insieme, definiamo una relazione binaria come $S \subseteq S \times S$, e possiamo dire $(x, y) \in R$ o alternativamente $x R y$.
+Una relazione è di equivalenza se è
+\begin{itemize}
+	\item riflessiva: $ \forall x \mid x R x $
+	\item simmetrica: $ \forall x, y \mid x R y \Rightarrow y R x $
+	\item transitiva: $\forall x, y, z \mid x R y \wedge y R z \Rightarrow x R z $
+\end{itemize}
+Se abbiamo una relazione di equivalenza su un certo insieme $S$, questa induce una partizione dell'insieme $S$.
+Supponiamo che un certo elemento $x$ appartenga ad una di queste classi di equivalenza, chiamiamo questa $[x]_R$.
+L'indice di una relazione di equivalenza è il numero di classi di equivalenza.
+
+\begin{tcolorbox}
+	Sia $S = \mathbb{N}$, diciamo che $x R y$ sse $x \mod 3 = y \mod 3$.
+	Questa genera tre classi di equivalenza $[0], [1], [2]$.
+	Questa relazione ha indice 3.
+\end{tcolorbox}
+
+Diciamo che $R$ è \textit{invariante} a destra rispetto ad una operazione $\cdot$, se
+$$ \forall x, y, z \in S \mid x R y \Rightarrow x z R y z $$
+
+\begin{tcolorbox}
+	La relazione di sopra è invariante a destra rispetto all'operazione di somma.
+\end{tcolorbox}
+
+Siano $R_1, R_2 \subseteq S \times S$ due relazioni di equivalenza.
+Diciamo che $R_1$ è un \textit{raffinamento} di $R_2$ quando ogni classe di equivalenza di $R_1$ è contenuta in una classe di equivalenza di $R_2$.
+Alternativamente ogni classe di $R_2$ sarà l'unione di alcune classi di equivalenza di $R_1$, e vale che
+$$ x R_1 y \Rightarrow x R_2 y $$
+
+\begin{tcolorbox}
+	Utilizziamo le due relazioni
+	\begin{align*}
+		x R_1 &\Leftrightarrow x \mod 2 = y \mod 2 \\
+		x R_2 &\Leftrightarrow x \mod 6 = y \mod 6 \\
+	\end{align*}
+	La relazione $R_1$ induce due classi di equivalenza, mentre $R_2$ induce sei classi di equivalenza.
+	Abbiamo che $R_2$ è un raffinamento di $R_1$ e $[0]_{R_1} = [0]_{R_2} \cup [2]_{R_2} \cup [4]_{R_2}$, e $[1]_{R_1} = [1]_{R_2} \cup [3]_{R_2} \cup [5]_{R_2}$.
+\end{tcolorbox}
+
+Sia $M = \langle Q, \Sigma, \delta, q_0, F \rangle$ un DFA, costruiamo una relazione $R_M \subseteq \Sigma^* \times \Sigma^*$ definita come
+$$ \forall x, y \mid x R_M y \Leftrightarrow \delta(q_0, x) = \delta(q_0, y) $$
+Si può mostrare che questa è una relazione di equivalenza.
+
+L'indice di questa relazione è il numero di stati raggiungibili, quindi è $\leq |Q|$.
+
+Questa relazione è invariante a destra rispetto alla concatenazione, infatti
+$$ \forall x, y, z \in \Sigma^* x R_M y \Rightarrow xz R_M y z $$
+% fig 08.1
+
+Vale che $x R_M y$ implica che $x$ e $y$ non sono distinguibili per il linguaggio accettato dall'automa $L(M)$.
+E vale che o entrambe appartengono al linguaggio, o entrambe non appartengono.
+Quindi abbiamo che $L(M)$ è l'unione di alcune classi di equivalenza di $R_M$.
+
+\begin{tcolorbox}
+	% fig 08.2
+	La partizione corrispondente a $q_0$ è $[\epsilon]_{R_M}$, o la classe delle parole con un numero pari di $a$ e di $b$.
+	La partizione corrispondente a $q_3$ è $[b]_{R_M}$, o la classe delle parole con un numero pari di $a$ e un numero dispari di $b$.
+	E cosi via.
+
+	Il linguaggio riconosciuto è il linguaggio delle parole con $a$ pari.
+\end{tcolorbox}
+
+Dato un linguaggio $L \subseteq \Sigma^*$ qualsiasi (non per forza regolare).
+Definiamo $R_L \subseteq \Sigma^* \times \Sigma^*$ tale che
+$$ \forall x, y, z \in \Sigma^* \mid x R_L y \Leftrightarrow (x z \in L \Leftrightarrow yz \in L) $$
+Quindi $x$ e $y$ non sono distinguibili.
+
+Si può mostrare che questa è una relazione di equivalenza.
+Mostriamo che è anche invariante a destra rispetto alla concatenazione, infatti
+$$ \forall x, y, w \in \Sigma^* \mid x R_L y \Rightarrow x w R_L y w $$
+questo vale banalmente per la proprietà associativa della concatenazione.
+% metto dimostrazione
+
+Visto che è per un linguaggio qualsiasi, l'indice potrebbe essere anche non finito.
+
+Visto che $x R_L y \Rightarrow x, y \in L \vee x, y \not \in L$, allora posso dire che $L$ è l'unione di alcune classi di equivalenza di $R_L$.
+
+\begin{tcolorbox}
+	Prendiamo ad esmepio
+	$$ \mathcal{L} = \{ x \in \{a, b\}^* \mid \#_a(x) \text{ è pari } \} $$
+	$R_{\mathcal{L}}$ induce due classi di equivalenza: le stringhe con un numero di $a$ pari, e le stringhe con un numero di $a$ dispari.
+	Questo è anche il linguaggio accettato dall'automa di % fig 08.2
+	Ed è facile vedere che questo può essere ristretto ad
+	% fig 08.3
+\end{tcolorbox}
+
+\begin{teorema}[Teorema di Myhill-Nerode] % ???
+	Sia $L \subseteq \Sigma^*$ un linguaggio, allora le seguenti affermazioni sono equivalenti:
+	\begin{itemize}
+		\item[(a)] $L$ è regolare
+		\item[(b)] $L$ è l'unione di alcune classi di equivalenza di una relazione di equivalenza invariante a destra rispetto alla concatenazione di indice finito
+		\item[(c)] La relazione $R_L$ associata a $L$ ha indice finito
+	\end{itemize}
+\end{teorema}
+\begin{proof}
+	Dimostreremo che $a \Rightarrow b$, $b \Rightarrow c$ ed infine che $c \Rightarrow a$.
+	\begin{itemize}
+		\item Dimostriamo che $a \Rightarrow b$.
+			Assumento $L$ regolare, esiste un automa $M = \langle Q, \Sigma, \delta, q_0, F\rangle$ che accetta $L$.
+			Allora abbiamo già visto primo che $R_M$ è una relazione di equivalenza invariante a destra rispetto alla concatenazione, ed abbiamo anche visto che $L$ è l'unione di alcune delle sue classi di equivalenza.
+		\item Dimostriamo che $b \Rightarrow c$.
+			Sia $E \subseteq \Sigma^* \times \Sigma^*$ una relazione di equivalenza invariante a destra di indice finito tale che $L$ è l'unione di alcune sue classi di equivalenza.
+			Se $x E y$ allora per ogni $z$, $(xz E yz)$ per l'invarianza.
+			Quindi $ \forall z \in Sigma^* (xz \in L \Leftrightarrow yz \in L)$, sfruttando l'ipotesi che $L$ è l'unione di alcune classi di $E$.
+			Dalla definizione di $R_L$ segue che $x R_L y$, quindi $E$ è un raffinamento di $R_L$.
+			Quindi l'indice di $E$ è maggiore o uguale all'indice di $R_L$, e visto che l'indice di $E$ è finito, allora anche l'indice di $R_L$ è finito.
+		\item Dimostraimo che $c \Rightarrow a$.
+			Suppongo che $R_L$ abbia indice finito, allora costruisco l'automa $M^\prime = \langle Q^\prime, \Sigma, \delta^\prime, q_0^\prime, F^\prime \rangle$, dove 
+			\begin{itemize}
+				\item $Q^\prime = \{ [ x ] | x \in \Sigma^* \}$ è l'insieme della classi di equivalenza di $R_L$
+				\item $q_0^\prime = [\epsilon]$
+				\item $\delta^\prime([x], a) = [xa]$, siccome la relazione è invariante a destra, non dipende dalla scelta della $x$, va bene qualsiasi elemento della classe di equivalenza
+				\item $F^\prime = \{ [x] \mid x \in L \}$, l'insieme delle classi $x$ tale che $x$ appartiene ad $L$
+			\end{itemize}
+			Si può mostrare che $\forall x \in \Sigma^* \mid \delta^\prime (q_0^\prime, x) = [x]$, quindi si può mostrare che $L(M^\prime) = L$.
+	\end{itemize}
+\end{proof}
+Si può mostrare che $R_M$ è un raffinamento di $R_L$.
+E dato l'automa $M$ vale che
+$$ \delta(q_0, x) = \delta(q_0, y) \Rightarrow \delta^\prime(q_0^\prime, x) = \delta^\prime(q_0^\prime, y)$$
+quindi gli stati di $M^\prime$ sono delle unioni degli stati di $M$.
+
+\begin{teorema}[Teorema dell'automa minimo]
+	Dato $L \subseteq \Sigma^*$ regolare, l'automa deterministico minimo che accetta $L$ è unico a meno di isomorfismi ed è l'automa $M^\prime$ ottenuto nella dimostrazione $c \Rightarrow a$.
+\end{teorema}
+
+\begin{tcolorbox}
+	% 08.4
+	Ci sono algoritmo che in tempo efficiente (polinomiale) possono minimizzare automi a stati finiti.
+
+	E possiamo definire l'insieme di stati distinguibili $X = \{\epsilon, 1, 11\}$.
+
+	Vale che $q_a \cup q_b = q_0$, $q_c \cup q_d \cup q_e = q_1$ e $q_f = q_2$.
+\end{tcolorbox}
+
+Nel caso di NFA valgono alcuni risultati diversi.
+Prima di tutto l'automa minimo non è detto che sia unico, e.g.
+% 08.5
+E il problema di trovare uno degli automi minimi per un NFA è un problema difficile (PSPACE-completo, più difficile di NP-completo).
+
+Vediamo ora un algoritmo di minimizzazione non polinomiale, ma interessante.
+% fig 08.6
+Si può vedere che lo stato $q_2$ è inutile.
+
+\subsection{Algoritmo di Brzozowski}
+L'algoritmo funziona nel seguente modo
+\begin{enumerate}
+	\item costruiamo l'automa per il reversal
+	\item rendiamo l'automa ottenuto deterministico
+	\item costruiamo l'automa per il reversa
+	\item rendiamo l'automa ottenuto deterministico
+\end{enumerate}
+Quindi
+% fig 08.7
+\end{document}

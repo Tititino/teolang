@@ -1,0 +1,169 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage{siunitx}
+\usepackage{tabularray}
+\usepackage{tcolorbox}
+\usepackage{tikz}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+
+\section{Convenevoli}
+Studieremo dei sistemi particolari (macchine/grammatiche) e il loro comportamento (il linguaggio descritto) e le risorse utilizzate (risorse utilizzate, risorse per trasformazioni da una macchina e l'altra, \dots). 
+
+\section{Definizione di un linguaggio}
+Quando si parla di un linguagio ci sono due aspetti fondamentali:
+\begin{itemize}
+	\item sintassi, formata da
+	\begin{itemize}
+		\item i segni o simboli utilizzati
+		\item le regole che ci permettono di combinarli
+	\end{itemize}
+	\item semantica, il processo che associa alle frasi del linguaggio un significato
+\end{itemize}
+
+Noi ci occuperemo principalmente di sintassi.
+
+In ambito linguistico nel 1956 Chomsky introduce le grammatiche formali.
+Questi sono degli oggetti matematici, il cui scopo originale era descrivere in modo rigoroso la grammatica dell'inglese.
+Nello stesso periodo si stava sviluppando l'idea di compilatore, specificamente il compilatore Fortran.
+Si vide che il modello proposto da Chomksy andava benissimo per formalizzare i linguaggi di programmazione.
+
+Definiamo
+\begin{itemize}
+	\item l'alfabeto ($\Sigma$) è un insieme finito non vuoto di simboli, e.g. 
+		$$ \Sigma = { a , b , c } $$
+	\item una stringa o parola è una sequenza di simboli sull'alfabeto.
+		La sua lunghezza è definita come il numero di simboli che la compongono
+		$$ | abc | = 3 $$
+		Tra tutte le parole abbiamo una parola speciale, che è la parola vuota costituita da zero simboli.
+		Questa è indicata con $\epsilon$ (alcuni la indicano con $\lambda$ o $\Lambda$).
+		La lunghezza di questa è 0.
+
+		Sia $a \in \Sigma$ e $x \in \Sigma^*$, definiamo 
+		$$ \#_a(x) : \Sigma \times \Sigma^* \mapsto \mathbb{N} $$
+		come il numero di $a$ in $x$.
+	\item indichiamo l'insieme di tutte le possibili stringhe sull'alfabeto $\Sigma$ con $\Sigma^*$.
+		Queste sono enumerabili.
+
+		Chiamiamo $\Sigma^n$ l'insieme di tutte le stringhe di $n$ lettere sull'alfabeto $\Sigma$.
+	\item definiamo un'operazione 
+		$$ \cdot : \Sigma^* \times \Sigma^* \mapsto \Sigma^*$$
+		come la concatenazione o prodotto di due stringhe.
+		Ad esmepio 
+		\begin{align*}
+			x &= abbac \\
+			y &= ca \\
+			xy &= abbacca \\
+			yx &= caabbac
+		\end{align*}
+		La parola vuota $\epsilon$ è l'identità sia destra che sinistra di questa operazione.
+		L'operazione è associativa ma non commutativa.
+		La struttura $\langle \Sigma^*, \cdot, \epsilon \rangle$ è detto monoide libero generato dall'alfabeto $\Sigma$.
+	\item data una stringa $x \in \Sigma^*$ diciamo che $y$ è prefisso di $x$ se
+		$$ \exists z \in \Sigma^* | x = yz $$
+		Una stringa ha un numero di prefissi pari alla sua lunghezza + 1.
+		$y$ è prefisso proprio di $x$ se è prefisso e non è $\epsilon$.
+		Similmente definiamo il suffisso di una parola $x$, quindi $y$ è suffisso di $x$ se 
+		$$ \exists x \in \Sigma^* | x = zy $$
+		Infine diciamo che $y$ è fattore di $x$ se
+		$$ \exists z, w \in \Sigma^* | x = zyw $$
+		I prefissi e i suffissi sono particolari tipi di fattori.
+		Ogni parola ha all'incirca $\frac{n^2}{2}$ fattori, infatti è facile notare che $x = aaaa$ ha diversi fattori uguali.
+
+		Una sottosequenza di solito è una serie di elementi scelti da una parola, quindi un fattore può essere definito come una sottosequenza contigua. 
+		Ad esmepio una sottosequenza di $x = abbac$ può essere $abc$.
+		Sottostringa e sottoparola di solito sono sinonimi di fattore, ma a volte possono essere utilizzate come sinonimo di sottosequenza.
+	\item un linguaggio $L$ è definito come un qualunque sottoinsieme di $\Sigma^*$.
+		Abbiamo alcuni linguaggi particolari:
+		\begin{itemize}
+			\item il linguaggio vuoto $L = \empty$
+			\item il linguaggio della parola vuota $L = { \epsilon }$
+			\item il linguaggio pieno $L = \Sigma^*$
+		\end{itemize}
+		Ad esempio definiamo il linguaggio delle parole che finiscono con due $a$ come
+		$$ L = { w \in \Sigma^* | \exists y \in \Sigma^* w = yaa } $$
+		quindi con un insieme finito di simboli siamo risuciti a rappresentare un insieme infinito.
+		Questo tipo di descrizione è detta dichiarativa.
+
+		Definiamo l'alfabeto $\Sigma = { 0, 1, \dots, 9 }$, e definiamo $L$ come tutte le sequenze formate da 3 cifre decimali che appaiono consecutivamente nella rappresentazione del $\pi$ greco.
+
+		In altri casi utilizzeremo delle descrizioni:
+		\begin{itemize}
+			\item generative: fornisco un insieme di regole che permette di costruire tutte le possibili stringhe del linguaggio, ad esempio le grammatiche
+			\item riconoscitive: fornisco un riconoscitore che riceve una stringa $x$ e risponde alla domanda $x \overset{?}{\in} L$, in alcuni casi queste macchine si limitano a dire sì se la stringa appartiene o non terminare in altro caso
+		\end{itemize}
+
+		Non tutti i linguaggi si possono descrivere in maniera finita.
+		Prendiamo come alfabeto $\Sigma = { (, ) }$, e voglio descrivere $L$ l'insieme delle sequenze di parentesi bilanciate correttamente.
+		Definiamo la rappresentazione generativa che genera $L_G$:
+		\begin{enumerate}
+			\item $\epsilon \in L_G$
+			\item se $x \in L_G$ allora $(x) \in L_G$
+			\item se $x, y \in L_G$ allora $xy \in L_G$
+		\end{enumerate}
+
+		E definiamo un riconoscitore, che riconosca $L_R$:
+		\begin{itemize}
+			\item il numero di aperte deve essere uguale al numero di chiuse, quindi $\#_((x) = \#_)(x)$
+			\item per ogni prefisso il numero di parentesi aperte è maggiore o uguale del numero di chiuse, quindi per $y$ prefisso $\#_((y) \geq \#_)(y)$.
+		\end{itemize}
+		Questo può essere generato come un automa con contatore.
+
+		Si può dimostrare che questi due definiscono lo stesso linguaggio. \todo{Da fare}
+
+		Ora prendiamo l'alfabeo $\Sigma = {(, ), [, ]}$, e definiamo $L$ come il linguaggio delle sequenze di parentesi bilanciate correttamente.
+		Definiamo la rappresentazione generativa che genera $L_G$:
+		\begin{enumerate}
+			\item $\epsilon \in L_G$
+			\item se $x \in L_G$ allora $(x) \in L_G$ e $[x] \in L_G$
+			\item se $x, y \in L_G$ allora $xy \in L_G$
+		\end{enumerate}
+
+		E definiamo un riconoscitore, che riconosca $L_R$:
+		\begin{itemize}
+			\item il numero di aperte deve essere uguale al numero di chiuse, quindi $\#_((x) = \#_)(x)$ e $\#_[(x) = \#_](x)$
+			\item si utilizza una pila in cui si mette ogni parentesi aperta e si toglie quando si trova una parentesi chiusa nel caso corrisponda
+		\end{itemize}
+		Quindi un automa a pila.
+
+		In alcuni casi è più facile definire come si genera, e in altri come riconoscere.
+\end{itemize}
+
+\section{Materiale}
+\begin{itemize}
+	\item Hopcroft Ullman, Introduction to Automata Theory and Languages of Computation (?), edizione 1979
+		C'è una prima versione con un altro titolo del 1969 che si può reperire lagalmente dall'università; mancano alcune parti perché non erano ancora state scoperte.
+	\item Shallit, A second course in ??? and Automata Theory, edizione 2008
+\end{itemize}
+L'esame è orale e può essere fatto in due modi:
+\begin{itemize}
+	\item approfondire un arogmento prefissato
+	\item approfondire un articolo di ricerca
+\end{itemize}
+In ogni caso nella parte di orale viene fatto fare un esercizio simile a quelli assegnati durante il corso, non sullo stesso argomento presentato.
+
+Inizio 8:45.
+
+\end{document}

@@ -1,0 +1,254 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{cancel}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{tabularray}
+\usepackage{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\newtheorem{teorema}{Teorema}
+\newtheorem{corollario}{Corollario}
+\newtheorem{proposizione}{Proposizione}
+\newtheorem{proprietà}{Proprietà}
+\newtheorem{lemma}{Lemma}
+\newtheorem{fatto}{Fatto}
+\newtheorem{definizione}{Definizione}
+\newtheorem{nota}{Nota}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage{teolang}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+Nell'automa minimo tutti gli stati sono -- ovviamente -- distinguibili.
+
+\section{Algoritmo di Brzozowski}
+Studiamo la proprietà su cui è basata la correttezza dell'algoritmo di Brzozowski.
+
+Sia
+$$ M = \langle Q, \Sigma, \delta, q_0, F \rangle$$
+un DFA, e ipotizziamo di aver eliminato ogni stato non raggiungibile.
+
+Dato questo DFA costruiamo l'NFA 
+$$ M_R = \langle Q, \Sigma, \delta^R, F, \{ q_0 \} \rangle $$ % finali e iniziali scambiati
+per il reversal.
+La funzione 
+$$ \forall p \in Q, a \in \Sigma^* \mid \delta^R(p, a) = \{ q \mid \delta(q, a) = p \} $$
+Applichiamo la costruzione dei sottoinsiemi $sub$ (avendo eliminato gli stati irraggiungibili).
+$$ N = sub(M^R) = \langle Q'', \Sigma, \delta'', q_0'', F'' \rangle $$
+Con
+\begin{itemize}
+	\item $Q'' \subseteq 2^Q $
+	\item $\forall \alpha \in Q'', a \in \Sigma \delta''(\alpha, a) = \bigcup_{p \in \alpha} \delta^R (p, a) $
+	\item $ q_0'' = F $
+	\item $ F'' = \{ \alpha \in Q'' \mid q_0 \in \alpha \} $
+\end{itemize}
+
+\begin{lemma}
+	$N$ è un DFA minimo per $L(M)^R$.
+\end{lemma}
+\begin{proof}
+	Quello che vogliamo mostrare è che se $A, B \in Q''$ e non sono distinguibili, allora $A = B$.
+	Visto che $A$ e $B$ sono due sottoinsiemi, mostriamo che $A \subseteq B$ e $B \subseteq A$.
+
+	Sia $p \in A$, questo è anche uno stato di $M$, quindi per ipotesi è raggiungibile, quindi
+	$$ \exists w \in \Sigma^* \mid \delta(q_0, w) = p $$
+	e di conseguenza, seguendo il cammino al contrario
+	$$ q_0 \in \delta^R (p, w^R) $$
+	e quindi
+	$$ q_0 \in \delta'' (A, w^R) $$
+	e quindi $w^R$ è accettata a partire da $A$.
+
+	Siccome $A$ e $B$ non sono distinguibili, allora $w^R$ è accettata anche a partire da $B$.
+	Quindi
+	$$ \exists p' \in B \mid q_0 \in \delta''(p', w^R) $$
+	Quindi, visto che $\delta''$ è un cammino rovesciato, $\delta(q_0, w) = p'$.
+	E visto che $M$ è deterministico $p = p'$ e $p \in B$.
+
+	Quindi abbiamo che $A \subseteq B$, e si può procedere ugualmente per $B \subseteq A$, quindi $A = B$.
+\end{proof}
+
+Rivediamo i passi dell'algoritmo di Brzozowski:
+\begin{center}
+	\begin{tblr}{ colspec = { c c c c } }
+		& automa & tipo & linguaggio \\
+		0 & $ K $            & DFA & $L$ \\
+		1 & $ K^R $          & NFA & $L^R$ \\
+		2 & $ M = sub(K^R) $ & DFA & $L^R$ \\
+		3 & $ M^R $          & NFA & $L$ \\
+		4 & $ N = sub(M^R)$  & DFA & $L$ 
+	\end{tblr}
+\end{center}
+E $N = sub(M^R)$ è minimo per il lemma.
+
+\section{?}
+Sia $L$ un linguaggio regolare, definitamo 
+$$\frac{1}{2}L = \{ x \in \Sigma^* \mid \exists y |x| = |y| \wedge xy \in L \} $$
+come il linguaggio delle prime metà del linguaggio $L$.
+Questo è ancora regolare.
+
+Definiamo prima la versione semplicifcata, 
+$$ g(L) = \{ x \in \Sigma^* \mid xx \in L \} $$
+In questo caso si può utilizzare il non determinismo per scommettere sullo stato $p$ a cui ci porterà leggere $x$.
+Poi facciamo andare in parallelo $L$ da $q_0$ e $p$, e alla fine di $x$ si deve controllare che da $q_0$ siamo effettivamente arrivati in $p$ e che da $p$ siamo effettivamente arrivati in uno stato finale.
+In questo modo ogni stato deve avere tre informazioni: lo stato $p$ scelto e la coppia degli stati della prima e della seconda parte.
+
+Tornando al linguaggio della prima metà, questo è simile al precedente, ma senza la condizione che le due metà siano uguali, ma che solo le lunghezze siano uguali.
+
+In questo caso si scommette sia sullo stato $p$ finale, che sul simbolo che troveremo nella seconda metà.
+
+Quindi dato $\mathcal{A} = \langle Q, \Sigma, \delta, q_0, F \rangle$ definiamo 
+$$ \mathcal{A}' = \langle Q', \Sigma, \delta', I', F' \rangle$$
+tale che
+\begin{align*}
+	Q' &\subseteq Q \times Q \times Q \\
+	I' &= \{ (q_0, p, p) \mid p \in Q \} \\
+	F' &= \{ (p, p, q_F) \mid q_F \in F \} \\
+	\delta'((q', p, q''), a) &= \{ (\delta(q', a), p \delta(q'', b)) \mid b \in \Sigma \} 
+\end{align*}
+Dove -- in $Q'$ -- la prima $Q$ rappresenta la simulazione della prima metà, la seconda lo stato intermedio previsto, e l'utlima la simulazione della seconda metà
+
+\section{Rappresentazione matriciale}
+Dato un automa
+$$ \mathcal{A} = \langle Q, \Sigma, \delta, q_0, F \rangle $$
+con $Q = \{q_0, q_1, \dots, q_{n - 1} \}$, definiamo per un elemento $x \in \Sigma$
+$$ M_x[i, j] = 1 \Leftrightarrow q_j \in \delta(q_i, x) $$
+Nel caso $\mathcal{A}$ sia un DFA vale che ogni riga contiene un singolo uno.
+
+Per un DFA, possiamo definire $ M_\epsilon$ come la matrice identità, e, attraverso questa, definire induttivamente la matrice per una parola $w \in \Sigma^*$ come
+$$ \forall x \in \Sigma, \forall w \in \Sigma^* \mid M_{xw} = M_x \cdot M_w $$
+
+\begin{tcolorbox}
+	Dato l'automa seguente
+	\begin{center}
+		\begin{tikzpicture}
+			\node[state, initial, accepting] 	(q0) {$q_0$};
+			\node[state] 				(q1) [right=of q0] {$q_1$};
+			\node[state, accepting] 		(q2) [below=of q1] {$q_2$};
+
+			\path[->] (q0)	edge[loop above] node[above]	{\tiny b}	()
+					edge		 node[above]	{\tiny a}	(q1)
+				  (q1)	edge[bend left]	 node[right]	{\tiny a,b}	(q2)
+				  (q2)	edge[bend left]	 node[left]	{\tiny b}	(q1)
+					edge		 node[below left]	{\tiny a}	(q0);
+		\end{tikzpicture}
+	\end{center}
+	Questo è rappresentato da
+	\begin{align*}
+		M_a &= \begin{bmatrix} 0 & 1 & 0 \\ 0 & 0 & 1 \\ 1 & 0 & 0 \end{bmatrix} \\
+		M_b &= \begin{bmatrix} 1 & 0 & 0 \\ 0 & 0 & 1 \\ 0 & 1 & 0 \end{bmatrix}
+	\end{align*}
+	E, ad esempio,
+	$$ M_{aa} = M_a \cdot M_a = \begin{bmatrix} 0 & 1 & 0 \\ 0 & 0 & 1 \\ 1 & 0 & 0 \end{bmatrix} \cdot \begin{bmatrix} 0 & 1 & 0 \\ 0 & 0 & 1 \\ 1 & 0 & 0 \end{bmatrix} = \begin{bmatrix} 0 & 0 & 1 \\ 1 & 0 & 0 \\ 0 & 1 & 0 \end{bmatrix} $$
+\end{tcolorbox}
+
+Definiamo il vettore iniziale come
+$$ \pi = \begin{pmatrix} 1 & 0 & 0 \end{pmatrix} $$
+e il vettore di accettazione come
+$$ \eta = \begin{pmatrix} 1 & 0 & 1 \end{pmatrix} $$
+In questo modo una parola $w$ è accettata se
+$$ \pi M_w \eta^T = 1 $$
+
+Con questa rappresentazione si possono fare i tipici calcoli che si fanno sui grafi, ad esempio sia 
+$$ M = \sum_{x \in \Sigma} M_x $$
+allora $M[i, j]$ è il minimo numeri di simboli necessario per passare dallo stato $i$ allo stato $j$.	% o viceversa?
+
+Mentre $M^k[i, j]$ rappresenta ???.
+
+Ritornando all'esempio di sopra dell'automa per la metà, dato l'automa $\mathcal{A} = \langle Q, \Sigma, \delta, q_0, F\rangle$, con $|Q| = n$, definiamo
+$$ \mathcal{A}' = \langle Q', \Sigma, \delta', q_0', F' \rangle $$
+Con
+\begin{align*}
+	Q' &= \{ [q, C] \mid q \in Q, C \in \text{Mat}_{n \times n}(\mathbb{B}) \}  \\
+	\delta'([q, C], a) &= [\delta(q, a), C \cdot M ] \\
+	q_0' &= [q_0, I] 
+\end{align*}
+Dove $\text{Mat}_{n \times n}(\mathbb{B})$ è l'insieme delle matrici su valori booleani e $I$ è la matrice identità.
+In questo caso 
+$$ M = \bigvee_{x \in \Sigma} M_x $$
+è la matrice in cui $M[i, j] = 1$ sse $\exists a \mid \delta(q_i, a) = q_j$.
+Data questa matrice vale che data una parola $x$
+$$ q_0' \overset{x}{\rightsquigarrow} \left [\delta(q_0, x), M^{|x|} \right ] $$
+Dove $M^{|x|}$ rappresenta i cammini di lunghezza $|x|$.
+
+\begin{tcolorbox}
+	Utilizzando l'esempio di prima abbiamo che
+	$$ q_0' \overset{aab}{\rightsquigarrow} [\delta(q_0, aab), M^3 ] $$
+	% finisco
+\end{tcolorbox}
+
+Ora se mi trovo in $[p, M]$, per accettare controllo che in $M$ ci sia un uno corrispondente ad uno stato finale alla riga $p$, quindi
+$$ M[q, f] = 1 \Leftrightarrow \exists y \mid |x| = |y| \Rightarrow \delta(q, y) = f $$
+
+Nel caso di NFA una riga può avere più di un uno.
+Con queste matrici se si utilizza l'and si ottiene la raggiungibilità dell'automa, mentre utilizzando il prodotto si ottiene il numero di cammini.
+
+Esistono anche versioni di NFA con pesi sugli archi, un caso particolare sono gli NFA con probabilità associate agli archi.
+Ad esempio
+\begin{center}
+	\begin{tikzpicture}
+		\node[state, initial] 	(q0) {$q_0$};
+		\node[state, accepting]	(q2) [right=of q0] {$q_1$};
+
+		\path[->] (q0) edge[loop above] 	node[above]	{\tiny b, $\frac{1}{2}$} ()
+			       edge[bend left]		node[above]	{\tiny b, $\frac{1}{2}$} (q1)
+			       edge[loop below]		node[below]	{\tiny a, 1}		 ()
+			  (q1) edge[loop above]		node[above]	{\tiny b, 1}		 ()
+			       edge[loop below]		node[below]	{\tiny a, $\frac{1}{2}$} ()
+			       edge[bend left]		node[below]	{\tiny a, $\frac{1}{2}$} (q0);
+	\end{tikzpicture}
+\end{center}
+Anche allo stato iniziale può essere associata una probabilità.
+
+In questo automa le varie matrici sono definite
+\begin{align*}
+	\pi  &= \begin{pmatrix} 1 & 0 \end{pmatrix} \\
+	\eta &= \begin{pmatrix} 0 & 1 \end{pmatrix} \\
+	M_a  &= \begin{bmatrix} 1 & 0 \\ \frac{1}{2} & \frac{1}{2} \end{bmatrix} \\
+	M_a  &= \begin{bmatrix} \frac{1}{2} & \frac{1}{2} \\ 0 & 1 \end{bmatrix} \\
+\end{align*}
+Ovviamente vale che nelle matrici $M$ la somma delle righe deve essere 1.
+
+Questo tipo di automa associa ad una stringha una probabilità che questa venga accettata.
+\begin{tcolorbox}
+	Dato l'automa di sopra, la stringa $w = bb$ ha i seguenti percorsi accettanti
+	\begin{center}
+		\begin{tblr}{ colspec = {cccccc}, cells = { mode = math } }
+			q_0 &\overset{b, \frac{1}{2}}{\rightarrow} & q_0 &\overset{b, \frac{1}{2}}{\rightarrow} &  q_1 &= \frac{1}{4} \\
+			q_0 &\overset{b, \frac{1}{2}}{\rightarrow} & q_1 &\overset{b, 1}{\rightarrow} & q_1 &= \frac{1}{2} \\
+		\end{tblr}
+	\end{center}
+	Quindi una probabilità di $\frac{1}{4} \cdot \frac{1}{2} = \frac{3}{4}$ di essere accettata.
+\end{tcolorbox}
+Di solito si definisce una soglia $\lambda$ e
+$$ L_\lambda = \{ w \in \Sigma^* \mid \mathbb{P}(\delta(q_0, w) \in F) > \lambda \} $$
+Diciamo che una soglia è non isolata se riusciamo ad avvicinarci a piacere a $\lambda$
+\begin{teorema}[Teorema di Rabin]
+	Se la soglia è isolata, il linguaggio è regolare.
+\end{teorema}
+\end{document}

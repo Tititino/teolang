@@ -1,0 +1,275 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{cancel}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{tabularray}
+\usepackage{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\newtheorem{teorema}{Teorema}
+\newtheorem{corollario}{Corollario}
+\newtheorem{proposizione}{Proposizione}
+\newtheorem{proprietà}{Proprietà}
+\newtheorem{fatto}{Fatto}
+\newtheorem{definizione}{Definizione}
+\newtheorem{nota}{Nota}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage{teolang}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+\begin{center}
+	\begin{tblr}{c c c}
+		op & DFA & NFA \\
+		\hline
+		unione & $n^\prime \cdot n^{\prime\prime}$ & $1 + n^\prime + n^{\prime\prime} $ \\
+		concatenazione & $n^\prime \cdot 2^{n^{\prime\prime}} $ & $n^\prime + n^{\prime\prime}$ \\
+		star           & $1 + 2^{n^\prime} $ & $n^\prime + 1$ \\
+		intersezione   & $n^\prime \cdot n^{\prime\prime}$ & $ n^\prime \cdot n^{\prime\prime} $ \\
+		complemento    & $n^\prime$ & $2^{n^\prime}$
+	\end{tblr}
+\end{center}
+L'intersezione di automi funziona anche con NFA con la stessa costruzione dei DFA.
+
+Date tre espressioni regolari
+$$ (a*b*)* \equiv (a + b)* \equiv b*(ab*)* $$
+Sono tre linguaggi equivalenti.
+
+Ci si può chiedere qual è il numero massimo di star innestate necessarie per generare un linguaggio.
+Introduciamo l'\textit{altezza di start}, o star height $h$, come il numero massimo di star innestate.
+Definita nel seguente modo
+$$ h(E) = 
+\begin{cases}
+	0 & \text{se } E = \varnothing \vee E = \epsilon \vee E \in \Sigma^* \\
+	\max(h(E^\prime), h(E^{\prime\prime})) & \text{se } E = E^\prime \cdot E^{\prime\prime} \vee E = E^\prime + E^{\prime\prime} \\
+	1 + h(E^\prime) & \text{se } E = E^\prime*
+\end{cases}
+$$
+Definiamo poi la minima altezza per un linguaggio $L \subseteq \Sigma^*$ come
+$$ h(L) = \min \{ h(E) \mid \text{ $E$ denota $L$ } \} $$
+
+\begin{teorema}[Dejan, Schutzenberger]
+	$$\forall q > 0 \exists W_q \subseteq \{a, b\}^* \mid h(W_q) = q $$
+	Equesto è definito come
+	$$ W_q = \{ w \in \{a, b\}^* \mid \#_a(w) \equiv \#_b(w) \mod 2^q \} $$
+\end{teorema}
+
+La misura dei cicli è collegata al numero di cicli in un automa.
+\begin{tcolorbox}
+	% fig 07.1
+	Per $q = 1, 2, \dots$, definiamo $W_q$ ed abbiamo che
+	$$ W_2 = ((ab + ba) + (aa + bb)(ab + ba)^*(bb + aa))^* $$
+\end{tcolorbox}
+
+\begin{nota}
+	Se $|\Sigma| = 1$, allora $\forall L \subseteq \Sigma^* \mid h(L) \leq 1$.
+\end{nota}
+
+\section{Espressioni regolari estese}
+Supponiamo di avere il linguaggio
+$$ L = \{ w \in \{a, b\}^* \mid \#_a(w) \text{ è pari } \wedge \#_b(w) \text{ è pari } \} $$
+
+Costruiamo prima il linguaggio con solo le $a$ pari
+$$ (b + ab*a)* $$
+e con solo le $b$ pari
+$$ (a + ba*b)* $$
+intuitivamente il linguaggio $L$ sarebbe, se avessimo l'intersezione, 
+$$ (b + ab*a)* \cap (a + ba*b)* $$
+Intoduciamo quindi le \textbf{espressioni regolari estese}.
+
+Definiamo queste come le espressioni con, oltre alle operazioni di concatenazione, unione e star; l'intersezione ($\cap$) e il complemento ($E^-$).
+Introducendo il complemento possiamo ottenere l'intersezione attraverso l'unione.
+
+\begin{tcolorbox}
+	Dato il linguaggio su $\Sigma = \{a, b\}$ delle stringhe con 3 $a$ consecutive
+	% fig 07.2
+	vogliamo riconoscere il suo complemento (senza 3 $a$ consecutive).
+	Questo diventa semplicemente
+	$$ \overline{\overline{\varnothing} a a a \overline{\varnothing}} $$
+	Quindi ora senza usare la star possiamo esprimere anche linguaggi infiniti.
+\end{tcolorbox}
+Si può definire il problema di trovare il l'altezza di star minima ($eh$) nelle espressioni regolari estese.
+Questo è un problema aperto.
+Si sa che valgono
+\begin{align*}
+	\exists L \mid eh(L) = 0 \\
+	\exists L \mid eh(L) = 1 
+\end{align*}
+
+Definiamo l'operazione di inversione o reversal.
+Data una stringa 
+$$ w = a_1 a_2 \dots a_n $$
+definiamo
+$$ w^R = a_n \dots a_2 \dots a_1 $$
+Per DFA e NFA basta invertire stati iniziali e finali e le transizioni.
+Però può accadere che un DFA invertito diventi non deterministico (e.g. stati finali multiplo diventano stati iniziali multipli, o più transizioni con lo stesso simbolo entranti in uno stato diventano più transizioni uscenti con lo stesso simbolo).
+\begin{tcolorbox}
+	Ad esempio il linguaggio il cui terzo simbolo è una $a$ è un semplice DFA, mentre il linguaggio il cui terzultimo simbolo è una $a$ ha $2^3$ stati.
+
+	In generale se chiediamo l'$n$-esimo simbolo da destra servono $n + 1$ stati, mentre se chiediamo l'$n$-esimo simbolo da sinistra ne servono $2^n$.
+\end{tcolorbox}
+Mentre per le espressioni regolari, per la costruzione del reversal, basta solo invertire l'espressione.
+O più precisamente
+\begin{itemize}
+	\item nei casi in cui $E = \varnothing \vee E = \epsilon \vee E \in \Sigma^*$, non cambia niente
+	\item nei casi in cui $E = E^\prime + E^{\prime\prime}$, abbiamo $E^{\prime R} + E^{\prime\prime R}$
+	\item nei casi in cui $E = E^\prime \cdot E^{\prime\prime}$, abbiamo $E^{\prime\prime R} \cdot E^{\prime R}$
+	\item nei casi in cui $E = E^{\prime}*$, abbiamo $(E^{\prime R})*$
+\end{itemize}
+
+Definiamo l'operazione di \textit{shuffle}
+$$ sh(x, y) $$
+che produce ogni possibile combinazione dei suoi argomenti (più complicato di così, produce ogni possibile interpolazione, $a$ non è mai dopo $b$ e $c$ non è mai dopo $d$), ad esempio
+$$ sh(ab, cd) = \{ abcd, acdb, acbd, cabd, \dots  \} $$
+Dati due linguaggi, abbiamo che
+$$ sh(L^\prime, L^{\prime\prime}) = \bigcup_{x \in L^\prime, y \in L^{\prime\prime}} sh(x, y) $$
+
+Supponiamo che $L^\prime \subseteq \Sigma^{\prime *}$ e $L^{\prime\prime} \subseteq \Sigma^{\prime\prime *}$ e $\Sigma^\prime \cap \Sigma^{\prime\prime} = \varnothing$.
+% Esercizio, costruisco questo automa, e.g. due sottoinsiemi
+
+Definiamo l'operazione di quoziente tra due linguaggi
+$$ L_1 \setminus L_2 = \{ x \in \Sigma^* \mid \exists y \in L_2 . xy \in L_1 \} $$
+Quindi le stringhe di $L_1$ in cui ho tolto un suffisso di $L_2$.
+\begin{tcolorbox}
+	Ad esempio
+	\begin{align*}
+		L_1 &= a+bc+ \\
+		L_2 &= bc+ 
+		L_3 &= c+
+	\end{align*}
+	Ho che
+	$$ L_1 \setminus L_2 = a+ $$
+	e che
+	$$ L_1 \setminus L_3 = a+bc* $$
+\end{tcolorbox}
+
+\begin{tcolorbox}
+	Ad esempio da un linguaggoi su $\Sigma = \{0, 1\}$, voglio togliere tutti gli zeri finali
+	$$(L \setminus 0*) \cap ((0 + 1)*1 + \epsilon)$$
+\end{tcolorbox}
+\begin{fatto}
+	Dato $R$ linguaggio regolare ed $L$ un linguaggio qualsiasi, allora
+	$$ R \setminus L $$
+	è ancora un linguaggio regolare.
+\end{fatto}
+\begin{proof}
+	Dato
+	$$ \mathcal{A} = \langle Q, \Sigma, \delta, q_0, F \rangle $$
+	l'automa per $R$.
+
+	Definisco 
+	$$ \mathcal{A}^\prime = \langle Q, \Sigma, \delta, q_0, F^\prime = \{ q \mid \exists y \in L . \delta(q, y) \in F \} \rangle $$
+	come l'automa per $R \setminus L$.
+
+	Non è detto che sappiamo trovare una $y \in L$.
+	Quindi questa dimostrazione non è costruttiva per tutti i linguaggi.
+\end{proof}
+
+\subsection{Morfismo}
+Il linguaggio delle parentesi bilanciate (Dick) non è regolare.
+Dato un linguaggio di programmazione, lo possiamo ricondurre al linguaggio di Dick, ad esempio
+\begin{align*}
+	\{ &\rightarrow ( \\
+	\} &\rightarrow ) \\
+	a  &\rightarrow \epsilon 
+\end{align*}
+
+Stiamo definendo un morfismo tra due alfabeti
+$$ h : \Sigma \rightarrow \Delta^* $$
+In qenerale un morfismo su una strina è definito come
+$$
+\begin{cases}
+	h(\epsilon) = \epsilon \\
+	h(xa) = h(x) h(a) 
+\end{cases}
+$$
+e il morfismo su un linguaggio come
+$$ h(L) = \{ h(w) \mid w \in L \} $$
+
+\begin{tcolorbox}
+	Dati $\Sigma = \{a, b \}$, e $\Delta = \{0, 1\}$, definiamo il morfismo $h$ come
+	\begin{align*}
+		h(a) &= 01 \\
+		h(b) &= 1 
+	\end{align*}
+	E vale che se abbiamo
+	$$ L = a b*$$
+	questo corrisponde a
+	$$ 011* $$
+	E agli automi corrisponde
+	% fig 07.3
+\end{tcolorbox}
+
+\subsection{Sostituzione}
+In questa si lettere di un linguaggio con un altro linguaggio, quindi
+$$ s : \Sigma \rightarrow 2^{\Delta^*} $$
+Ad esempio dato $ \Sigma = \{a, b\}$ e $\Delta = \{0, 1\}$, posso dire che
+\begin{align*}
+	s(a) &= (01 + 0)* \\
+	s(b) &= 1
+\end{align*}
+e dato
+$$ L = (ab)*(a + b) $$
+ottengo
+$$ ((01 + 0)*1)*((01 + 0)* + 1) $$
+e nel caso di automi, basta sostituire una transizione con un automa.
+% fig 07.4
+
+Se le sostituzioni sono ancora regolari, allora il linguaggio risultante è regolare.
+
+\begin{tcolorbox}
+	Dato un linguaggio $L \subseteq \{a, b\}^*$, voglio creare il linguaggio $L^\prime$ in cui ogni $a$ e $b$ è circondata da un numero arbitrario di $c$, questo è
+	\begin{align*}
+		s(a) &= c* a c* \\
+		s(b) &= c* b c*
+	\end{align*}
+	Manca però la stringa vuota, quindi abbiamo
+	$$ 
+	L^\prime = 
+	\begin{cases}
+		s(L) & \text{se } \epsilon \not \in L \\
+		s(L) \cup c^* &\text{altrimenti}
+	\end{cases}
+	$$
+	Questo povtevamo farlo anche con lo shuffle, quindi
+	$$ L^\prime = sh(L, c^*) $$
+\end{tcolorbox}
+
+\subsection{Cycle}
+Definiamo l'operazione di \textit{cycle}, come
+$$ cycle(L) = \{ yx \mid xy \in L \} $$
+ad esempio, se
+$$ L = a*b* $$
+$$ cycle(L) = a*b*a* + b*a*b* $$
+
+Dato un automa che riconosca $L$, possiamo costruire un automa che riconosca $cycle(L)$?.
+% fig 07.5
+
+
+\end{document}

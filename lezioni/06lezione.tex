@@ -1,0 +1,226 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{cancel}
+\usepackage{caption}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{subcaption}
+\usepackage{tabularray}
+\usepackage{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\newtheorem{teorema}{Teorema}
+\newtheorem{corollario}{Corollario}
+\newtheorem{proposizione}{Proposizione}
+\newtheorem{proprietà}{Proprietà}
+\newtheorem{fatto}{Fatto}
+\newtheorem{definizione}{Definizione}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage{teolang}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+
+% continua la dimostrazione
+\begin{proof}
+	Cominciamo dal disegnare gli automi per gli stati base:
+	\begin{figure}[h!]
+		\centering
+		\begin{subfigure}{0.3\textwidth}
+			\centering
+			\begin{tikzpicture}
+				\node[state, initial] 	(q0) {};
+			\end{tikzpicture}
+		\end{subfigure}
+		\begin{subfigure}{0.3\textwidth}
+			\centering
+			\begin{tikzpicture}
+				\node[state, initial, accepting] 	(q0) {};
+			\end{tikzpicture}
+		\end{subfigure}
+		\begin{subfigure}{0.3\textwidth}
+			\centering
+			% missing
+		\end{subfigure}
+	\end{figure}
+	% fig 06.1
+	E ora occupiamoci delle operazioni:
+	\begin{itemize}
+		\item unione: dati due automi $\mathcal{A}^\prime$ con $n^\prime$ stati e $\mathcal{A}^{\prime\prime}$ con $n^{\prime\prime}$ stati che riconoscano rispettivamente $L^\prime$ e $L^{\prime\prime}$ posso costruire l'automa $\mathcal{A}$ che riconosce $L^\prime \cup L^{\prime\prime}$.
+			% fig 06.2
+			L'unione $\mathcal{A}$ allora è un automa non determinisico con $1 + n^\prime + n^{\prime\prime}$.
+			Quindi l'automa determinisitco corrispondente ha al massimo $2^{1 + n^\prime + n^{\prime\prime}}$ stati.
+
+			Alternativamente si può pensare che data una stringa $s$, se prendiamo i due automi $\mathcal{A}^\prime$ e $\mathcal{A}^{\prime\prime}$, possiamo far andare entrambi gli automi su due computer diversi per la stessa stringa, e se almeno uno risponde positivamente, allora la stringa fa parte dell'unione.
+			Definiamo 
+			\begin{align*}
+				\mathcal{A}^\prime &= \langle Q^\prime, \Sigma, \delta^\prime, q_0^\prime, F^\prime \rangle \\
+				\mathcal{A}^{\prime\prime} &= \langle q^{\prime\prime}, \Sigma, \delta^{\prime\prime}, q_0^{\prime\prime}, F^{\prime\prime} \rangle
+			\end{align*}
+			Definisco
+			$$ \mathcal{A} = \langle Q = Q^\prime \times Q^{\prime\prime}, \Sigma, \delta, (q_0^\prime, q_0^{\prime\prime}), F = \{ (q^\prime, q^{\prime\prime}) \mid q^\prime \in F^\prime \vee q^{\prime\prime} \in F^{\prime\prime} \} \rangle$$
+			con $\delta$ definita come
+			$$ \forall (q^\prime, q^{\prime\prime}) \in Q \forall a \in \Sigma \delta((q^\prime, q^{\prime\prime}), a) = (\delta^\prime(q^prime, a), \delta^{\prime\prime}(q^{\prime\prime}, a)) $$
+			Con questa costruzione se entrambi gli automi $\mathcal{A}^\prime$ con $n^\prime$ stati e $\mathcal{A}^{\prime\prime}$ con $n^{\prime\prime}$ stati sono entrambi deterministici, allora $\mathcal{A}$ ha al massimo $n^\prime \cdot n^{\prime\prime}$ stati ed è deterministico.
+
+			Questo tipo di automa è detto \textit{automa prodotto}.
+
+			Con lo stesso metodo possiamo anche realizzare l'intersezione, definendo 
+			$$ F = F^\prime \times F^{\prime\prime} $$
+			Mentre l'intersezione con le $\epsilon$-mosse non permette anche di realizzare l'intersezione.
+
+			Questa costruzione dovrebbe funzionare anche per automi non deterministici. % provo
+		\item complemento: dato un automa deterministico 
+			$$\mathcal{A} = \langle Q, \Sigma, \delta, q_0, F \rangle $$
+			accetti $L$.
+			Costruriamo il complemento come
+			$$ \mathcal{A}^C = \langle Q, \Sigma, \delta, q_0, F^C \rangle $$
+			riconosce il complemento.
+			Quindi se il numero di stati era $n$, questo non cambia.
+
+			Bisogna stare attenti agli stati trappola omessi, quindi l'automa $\mathcal{A}$ deve essere completo.
+
+			Nel caso di NFA non si può applicare la stessa costruzione.
+			Il modo più semplice per fare il complemento di un NFA è prima costruire il DFA corrispondente e poi complementare.
+			$$ \mathcal{A} \rightarrow \mathcal{A}_d \rightarrow \mathcal{A}^C_d $$
+			Quindi in questo caso se $\mathcal{A}$ ha $n$ stati, il complemento ne avrà nel caso peggiore $2^n$.
+			Questo deriva dal fatto che negli NFA accettazione e non accettazione non è simmetrica.
+		\item concatenazione o prodotto: dati 
+			\begin{align*}
+				\mathcal{A}^\prime &= \langle Q^\prime, \Sigma, \delta^\prime, q_0^\prime, F^\prime \rangle \\
+				\mathcal{A}^{\prime\prime} &= \langle Q^{\prime\prime}, \Sigma, \delta^{\prime\prime}, q_0^{\prime\prime}, F^{\prime\prime} \rangle \\
+			\end{align*}
+			che riconoscono rispettivamente $L^\prime$ e $L^{\prime\prime}$ ed hanno rispettivamente $n^\prime$ ed $n^{\prime\prime}$, voglio riconoscrere $L^\prime \cdot L^{\prime\prime}$
+			% fig 06.8
+			Con questa costruzione ottengo un automa non deterministico ($\epsilon$-mosse) da $n^\prime + n^{\prime\prime}$ stati.
+
+			Se gli automi iniziali erano DFA, ottengo un NFA da $n^\prime + n^{\prime\prime}$ stati, quindi al peggio un DFA da $2^{n^\prime + n^{\prime\prime}}$.
+			
+			Si può ancora pensare con il modello dei più computer: una volta che il primo mi dice sì, faccio partice un secondo sul resto, ma il primo continua ad andare, se il primo dice ancora sì faccio partire un terzo e così via.
+			Definiamo 
+			$$ \mathcal{A} = \langle Q = Q^\prime \times 2^{Q^{\prime\prime}}, \Sigma, \delta, q_0 = \begin{cases} (q_0^\prime, \varnothing) & \text{se } q_0^\prime \not \in F^\prime \\ (q_0^\prime, \{q_0^{\prime\prime}) & \text{altrimenti} \end{cases}, F = \{ (q, \alpha) \in Q^\prime \times 2^{Q^{\prime\prime}} \mid \alpha \cap F^{\prime\prime} \neq \varnothing \} \rangle $$
+			con $\delta$ definito come
+			$$ \forall q \in Q^\prime, \alpha \subseteq Q^{\prime\prime}, a \in \Sigma \mid \delta((q, \alpha), a) = 
+			\begin{cases}
+				(\delta^\prime(q, a), \{ \delta^{\prime\prime}(p, a) \mid p \in \alpha \} ) & \text{se } \delta^\prime(p, a) \not \in F^\prime \\
+				(\delta^\prime(q, a), \{ \delta^{\prime\prime}(p, a) \mid p \in \alpha \} \cup \{q_0^{\prime\prime}\} ) & \text{altrimenti}
+			\end{cases}
+			$$
+			Se gli stati erano $n^\prime$ e $n^{\prime\prime}$ gli stati del prodotto sono $n^\prime \cdot 2^{\prime\prime}$.
+
+		\item chiusura di Kleene: data una stringa in input $w$ devo trovare un numero arbitrario di volte in cui scomporla.
+			% fig 06.9
+			In questo caso partendo da $n$ stati generiamo un NFA da $n + 1$ stati.
+			Utilizzando una costruzione simile a quella di prima possiamo arrivare al meno ad un DFA da $2^n + 1$ stati invece che $2^{n + 1}$.
+			Se l'automa è non deterministico possiamo definire
+			$$ \mathcal{A}^\prime = \langle Q^\prime = 2^{Q} \cup \{ q_0^\prime \}, \Sigma, \delta^\prime, F^\prime = \{ \alpha \subseteq Q \mid \alpha \cap F \neq \varnothing \} \rangle $$
+			con $q_0^\prime$ nuovo, e con $\delta^\prime$ definito come
+			$$ \forall a \in \Sigma \mid \delta^\prime(q_0^\prime, a) = 
+			\begin{cases}
+				\{ \delta(q_0, a) \} & \text{se } \delta(q_0, a) \not \in F \\
+				\{ \delta(q_0, a), q_0\} & \text{altrimenti}
+			\end{cases}
+			$$
+			e 
+			$$ \forall \alpha \subseteq Q, a \in \Sigma \mid \delta(\alpha, a) = 
+			\begin{cases}
+				\beta & \text{se } \beta \cap F = \varnothing \\
+				\beta \cup \{q_0\} & \text{altrimenti}
+			\end{cases}
+			$$
+			con
+			$$ \beta = \{ \delta(p, a) \mid p \in \alpha, a \subseteq Q \} $$
+
+			E si può vedere che questo da $n$ stati passa a $2^n + 1$.
+	\end{itemize}
+\end{proof}
+
+\begin{tcolorbox}
+	Per esempio definiamo l'unione dei due automi 
+	% fig 06.03
+
+	Scegliendo 00 come unico stato finale si realizza invece l'intersezione dei due automi.
+\end{tcolorbox}
+
+\begin{tcolorbox}
+	Costruiiamo il complemento di $\mathcal{A}$
+	% fig 06.4
+	 
+	Supponiamo ora di applicare la stessa costruzione ad un NFA.
+	% fig 06.5
+\end{tcolorbox}
+
+\begin{tcolorbox}
+	Mostriamo che il complemento di un NFA di $m$ stati ha al peggio $2^m$ stati.
+	Prendiamo 
+	$$ K_n = \{ w \in \{a, b\}^* \mid \text{i simboli a distanza $n$ in $w$ son ouguali} \} $$
+	utilizzando la tecnica del fooling set abbiamo mostrato che ogni automa non deterministico ha al peggio $2^n$ stati.
+
+	Ora definiamo
+	$$ K_n^C = \{ w \in \{a, b\}^* \mid \text{esistono due simboli a distanza $n$ in $w$ diversi tra loro} \} $$
+	% fig 06.6
+	questo ha $2n + 2$ stati.
+
+	Un NFA come quello che riconosce il linguaggio il cui terzultimo simbolo è una $a$, il suo complemento ha lo stesso numero di stati (con stati iniziali multipli).
+	% fig 06.7
+\end{tcolorbox}
+
+\begin{tcolorbox}
+	Il nondeterminismo è necessaria nel caso del prodotto, infatti supponiamo di avere i linguaggi $L^\prime = abaa*$ e $L^{\prime\prime} = aab*$, e la parola $w = abaaaaaaaab$, la suddifivisione corretta va scelta
+	$$ abaaaaaa\mid aab$$
+\end{tcolorbox}
+
+\begin{tcolorbox}
+	Sia $L^\prime = a + b*$ e sia $L^{\prime\prime} = a(a + b)^{n - 1}$.
+	Il primo è riconosciuto in uno stato, il secondo in $n + 1$, ma il prodotto è l'automa che riconosce che l'ennesimo simbolo dalla fine è una $a$, quindi sono $2^n$ stati.
+\end{tcolorbox}
+
+\begin{tcolorbox}
+	Non possiamo mettere come stato finale il primo stato dell'automa con il perché c'è il rischio di riconoscere qualcosa in più. 
+	
+	% fig 06.10
+\end{tcolorbox}
+
+Diciamo che $X \subseteq \Sigma^*$ è un codice sse
+$$ \forall w \in X^* \exists ! \text{ decomposizione di $w$ in stringhe di $X$ } $$
+I codici hanno quindi la caratteristica di essere scomponibili velocemente.
+
+\begin{tcolorbox}
+	Ad esempio $X = \{ab, aab \} $ è un codice, infatti basta scomporre dopo ogni $b$:
+	$$ ab \mid aab \mid aab \mid ab $$
+	Ancora $X = aba + ab$ è un codice, infatti
+	$$ aba \mid ab \mid ab \mid aba $$
+
+	Infine $X = \{ abaa, ab, a, aa \}$ non è un codice, infatti $abaa$ è sia una parola di $X$ che può essere scomposto in
+	$$ ab \mid aa$$
+\end{tcolorbox}
+In particolare parliamo di codice prefisso se questo non contiene stringhe che sono prefisse di altre.
+Se il nostro linguaggio è un codice prefisso, allora la costruzione dell'automa della chiusura di Kleene è più semplice.
+
+
+\end{document}

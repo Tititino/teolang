@@ -1,0 +1,168 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{tabularray}
+\usepackage{tcolorbox}
+\usepackage{tikz}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+\section{Grammatiche}
+Una grammatica è una quadrupla $\langle V, \Sigma, P, S \rangle$, dove
+\begin{itemize}
+	\item $V$ è l'insieme finito e non vuoto delle variabili, questi vengono anche chiamati non terminali.
+		Questo lo possiamo chiamare anche l'alfabeto delle variabili.
+	\item $\Sigma$ è l'insieme finito e non vuoto dei termianli, o anche alfabeto dei terminali.
+	\item $P$ è l'insieme finito delle regole di produzione.
+		Queste sono della forma
+		$$ \alpha \rightarrow \beta $$
+		con $\alpha \in (V \cup \Sigma)^+$ e $\beta \in (V \cup \Sigma)^*$.
+	\item $S$ è un elemento di $V$ che chiamiamo simbolo iniziale o assioma.
+\end{itemize}
+Per $x, y \in (V \cup \Sigma)^*$, diciamo che $x$ deriva $y$, indicato con $x \Rightarrow y$ (opzionalmente indicando la grammatica $x \underset{G}{\Rightarrow} y$), se e solo se 
+$$ \exists (\alpha \rightarrow \beta) \in P, \exists \eta, \delta \in (V \cup \Sigma)^* \mid x = \eta \alpha \delta \wedge y = \eta \beta \delta $$
+Inoltre diciamo che $x$ deriva $y$ in $k$ passi, con $k \in \mathbb{N}$, indicato $x \overset{k}{\Rightarrow} y$, se e solo se
+$$ \exists x_0, x_1, \dots, x_k \mid x_0 = x \wedge x_k = y \wedge \forall i \in 1, \dots, k x_{i-1} \Rightarrow x_i $$
+Infine diciamo che $x$ deriva $y$ in un certo numero di passi, indicato con $x \overset{*}{\Rightarrow} y$, se e solo se
+$$ \exists k \geq 0 \mid x \overset{*}{\Rightarrow} y $$
+e che $x$ deriva $y$ in almeno un passo, indicato con $x \overset{+}{\Rightarrow} y$, se e solo se
+$$ \exists k > 0 \mid x \overset{*}{\Rightarrow} y $$
+
+Definiamo il linguaggio generato dalla grammatica $G$ 
+$$L(G) = { w \in \Sigma^* \mid S \overset{*}{\Rightarrow} w } $$
+
+Una stringa di terminali e non terminali è detta forma sentenziale.
+
+Due grammatiche $G_1$ e $G_2$ sono equivalenti se e solo se $L(G_1) = L(G_2)$.
+
+\begin{tcolorbox}% [breakable]
+	Sia $\Sigma = { (, ) }$.
+	Costruiamo $V$, inizialmente contentente solo $S$.
+	Ora la sequenza vuota è bilanciata, quindi $S \rightarrow \epsilon$.
+	Una sequenza di parentesi bilanciata rimane bilanciata se inserita tra due parentesi, quindi $S \rightarrow (S)$.
+	Infine la concatenazione di due sequenze bilanciate è ancora bilanciata, quindi $S \rightarrow S S $.
+
+	Ad esempio 
+	\begin{align*}
+		S &\Rightarrow ( S ) \\
+		  &\Rightarrow ( ( S ) ) \\
+		  &\Rightarrow ( ( S S ) ) \\
+		  &\Rightarrow ( ( ( S ) S ) ) \\
+		  &\Rightarrow ( ( ( S ) ( S ) ) ) \\
+		  &\Rightarrow ( ( ( ) ( S ) ) ) \\
+		  & \Rightarrow ( ( ( ) ( ) ) ) 
+	\end{align*}
+\end{tcolorbox}
+\todo{Esercizio: costruire il linguaggio delle sequenze correttamente bilanciate di quadre e tonde aperte e chiuse in cui le quadre non possono stare tra le tonde}
+
+\begin{tcolorbox}
+	Data la grammatica $\langle {S, B}, {a, b, c}, \dots, S \rangle$.
+	\begin{align*}
+		S &\rightarrow a B S c \\
+		S &\rightarrow a b c \\
+		B a &\rightarrow a B \\
+		B b &\rightarrow b b 
+	\end{align*}
+	Eseguiamo una derivazione
+	\begin{align*}
+		S &\Rightarrow a B S c \\
+		  &\Rightarrow a B a b c c \\
+		  &\Rightarrow a a B b c c \\
+		  &\Rightarrow a a b b c c \\
+		S &\Rightarrow a B S c \\
+		  &\Rightarrow a B a B S c c \\
+		  &\Rightarrow a a B B S c c \\
+		  &\Rightarrow a a B B a b c c c \\
+		  &\Rightarrow a a B a B b c c c \\
+		  &\Rightarrow a a a B B b c c c \\
+		  &\Rightarrow a a a B b b c c c \\
+		  &\Rightarrow a a a b b b c c c
+	\end{align*}
+	Si può dimostrare che il linguaggio generato da questa grammatica è $L = {a^nb^nc^n \mid n > 0 }$.
+\end{tcolorbox}
+
+Le grammatiche sono classificate in base alla forma delle produzioni, possiamo definire quattro tipi di grammatiche:
+\begin{center}
+\begin{tblr}{c c c}
+	tipo 0 & nessuna restrizione &  \\
+	tipo 1 & Se $\alpha \rightarrow \beta$ è una produzione, allora $|\beta| \geq |\alpha|$. Equivalentemente una grammatica in cui tutte le produzioni sono della forma $\alpha_1 A \alpha_2 \rightarrow \alpha_1 \beta \alpha_2$ dove $\alpha_1, \alpha_2 \in (V \cup \Sigma)^*, A \in V, \beta \in (V \cup \Sigma)^+$ & anche dette context sensitive o dipendenti da contensto \\
+	tipo 2 & Se $\alpha \rightarrow \beta \in P$, allora $\alpha \in V$ e $\beta \in (V \cup \Sigma)^+$  & contenxt free o libere da contesto \\
+	tipo 3 & Possiamo avere produzioni solo della forma $A \rightarrow \alpha B$ o $A \rightarrow \alpha$, con $A, B \in V, \alpha \in \Sigma$ & grammatiche regolari 
+\end{tblr}
+\end{center}
+Ogni grammatica restringe il livello precedente
+
+\subsection{Classificazione dei linguaggi}
+Sia $\mathscr{L} \subseteq \Sigma^*$, diciamo che $\mathscr{L}$ è di tipo $0 \leq i \leq 3$, se e solo se $\exists G$ di tipo $i$ tale che $\mathscr{L} = L(G)$.
+Questa classificazione genera una gerachia dei linguaggi, detta gerarchia di Chomksy, e chiamiamo
+\begin{itemize}
+	\item i linguaggi di tipo 3 come linguaggi regolari
+	\item i linguaggi di tipo 2 come linguaggi conxtext free o CF
+	\item i linguaggi di tipo 1 come linguaggi context sensitive o CS
+	\item i linguaggi di tipo 0 come linguaggi ricorsivamente enumerabili (RE) o semidecibili
+\end{itemize}
+I linguaggi di tipo 1, 2 e 3 sono anche detti decidibili o ricorsivi.
+(Un insieme ricorsivo è un insieme per cui posso avere una macchina che può rispondere sì o no alla domanda se un insieme appartenga)
+
+E per ognuna di queste classi esiste un modello di macchina riconoscitrice:
+\begin{itemize}
+	\item per i linguaggi di tipo 3 sono gli automi a stati finiti
+	\item per i linguaggi di tipo 2 sono gli automi a pila
+	\item per i linguaggi di tipo 1 sono gli automi limitati linearmente, questi hanno un nastro finito che possono modificare
+	\item per i linguaggi di tipo 0 sono le macchine di Turing, nella variante più semplice queste sono macchine con un nastro infinito su cui inizialmente c'è scritto l'input.
+		Per questi linguaggi se la stringa appartiene al linguaggio il riconoscitore termina sempre con sì, mentre se la stringa non appartiene al linguaggio il riconoscitore può anche non terminale ($\bot$)
+\end{itemize}
+
+Sia $G$ una grammatica di tipo 1 e $w$ una stringa di terminali di lunghezza $n = |w|$, voglio sapere se $w$ apparteiene a $G$.
+Siccome la grammatica di tipo 1 è monotonica (le regole forme sentenziali non possono decrescere), queste non possono mai superare $n$ durante la derivazione di $w$.
+Chiamiamo 
+$$T_i = { \gamma \in (V \cup \Sigma)^{\leq n} \mid S \overset{\leq i}{\Rightarrow} \gamma }$$
+Costruiamo gli insiemi $T_i$ per $i = 0, 1, \dots$
+\begin{align*}
+	T_0 &= { S } \\
+	    &\vdots \\
+	T_i &= T_{i - 1} \cup { \gamma \in (V \cup \Sigma)^{\leq n} \mid \exists \beta \in T_{i - 1} . \beta \Rightarrow \gamma } 
+\end{align*}
+Allora 
+$$T_0 \subseteq T_1 \subseteq \dots \subseteq T_{i - 1} \subseteq T_{i} \subseteq \dots \subseteq (V \cup \Sigma)^{\leq n}$$
+Dato che $(V \cup \Sigma)^{\leq n}$ è un insieme finito, quindi esiste un certo $i$ tale che $T_i = T_{i - 1}$.
+A questo punto ho trovato tutte le forme sentenziali di lunghezza $n$, e per vedere se $w$ appartiene al linguaggio basta controllare che $w \in T_i$.
+
+
+Quello che posso fare è considerare l'insieme 
+$$U_i = { \gamma \in (V \cup \Sigma)^* \mid S \overset{\leq i}{\Rightarrow} \gamma }$$
+Quindi ancora
+\begin{align*}
+	U_0 &= { S } \\
+	    &\vdots \\
+	U_i &= U_{i - 1} \cup { \gamma \in (V \cup \Sigma)^* \mid \exists \beta \in U_{i - 1} . \beta \Rightarrow \gamma } 
+\end{align*}
+$$U_0 \subseteq U_1 \subseteq \dots \subseteq U_{i - 1} \subseteq U_{i} \subseteq \dots \subseteq (V \cup \Sigma)^*$$
+Quindi che nei linguaggi di tipo 0 perdo la monotonicità delle derivazioni, non posso più trovare una $i$ tale che $U_i = U_{i - 1}$.
+Però per ogni $U_i$ posso controllare se $w \in U_i$, infatti se la grammatica genera $w$, prima o poi questa la troverò, se non la genera non la troverò mai.
+
+Si dicono ricorsivamente enumerabili perché significa che con un programma posso elencare tutti gli elementi del linguaggi.
+
+\end{document}
