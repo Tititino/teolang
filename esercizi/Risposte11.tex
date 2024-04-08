@@ -1,0 +1,221 @@
+\documentclass[12pt, answers]{exam}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[italian]{babel}
+\usepackage{caption}
+\usepackage[utf8]{inputenc}
+\usepackage{embedall}
+\usepackage{etoolbox}
+\usepackage{float}
+\AtBeginEnvironment{align}{\setcounter{equation}{0}}
+\embedfile{\jobname.tex}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{mathtools}
+\usepackage{subcaption}
+\usepackage{tabularray}
+\usepackage{tikz}
+\usetikzlibrary{positioning, automata, decorations.pathreplacing, calligraphy}
+\usepackage{xcolor}
+\usepackage[bookmarks]{hyperref}
+
+\definecolor{codegray}{gray}{0.95}
+\lstdefinestyle{mystyle}{
+	numberstyle=\scriptsize\color{black},
+	basicstyle=\footnotesize,
+	numbers=left,
+	numbersep=5pt,
+}
+\lstset{style=mystyle}
+\overfullrule=10pt
+
+\newcommand{\grammar}[4]{\langle #1, #2, #3, #4 \rangle}
+\newcommand{\grammarP}[4]{\langle \{ #1 \}, \{ #2 \}, \{ #3 \}, #4 \rangle}
+\newcommand{\der}{\Rightarrow}
+\newcommand{\prd}{\rightarrow}
+\begin{document}
+\begin{questions}
+	\question Fissato un intero $n > 0$, sia $K_n$ il linguaggio sull'alfabeto $\{a, b\}$ denotato dall'espressione $(a + b)^* a(a + b)^{n - 1} a(a + b)^*$.
+	\begin{parts}
+		\part A lezione abbiamo discusso come riconoscere il linguaggio $K_n$ con un automa deterministico two-way con $O(n)$ stati.
+		Scrivete formalmente la funzione di transizione di tale automa (rispetto al parametro $n$).
+		\begin{solution}
+			\begin{align*}
+				\delta(b, q_0) &= (q_0, +1) \\
+				\delta(\lhd, q_0) &= (q_0, +1) \\
+				\delta(a, q_0) &= (q_{f_1}, +1) \\
+				\delta(*, q_{f_1}) &= (q_{f_2}, +1) \\
+				                   &\vdotswithin{=} \\
+				\delta(a, q_{f_n}) &= (q_F, +1) \\
+				\delta(\lhd, q_{f_n}) &= (q_{f_n}, +1) \\
+				\delta(b, q_{f_n}) &= (q_{b_1}, -1) \\
+				\delta(*, q_{b_1}) &= (q_{b_2}, -1) \\
+				                   &\vdotswithin{=} \\
+				\delta(*, q_{b_{n - 2}}) &= (q_0, -1) \\
+				\delta(*, q_F) &= (q_F, +1) \\
+			\end{align*}
+			Dove gli stati $q_{f_k}$ indicano gli $n$ stati in cui la testina procede in avanti in cerca della $a$, mentre $q_{b_k}$ indicano gli $n - 1$ stati in cui la testina torna indietro.
+
+			Vediamo ad esempio che per $n = 3$ e per la parola $\rhd aabba \lhd$ abbiamo
+			\begin{align*}
+				\delta(\rhd \underline{a}abba \lhd, q_0) &= (q_{f_1}, +1) \\
+				\delta(\rhd a\underline{a}bba \lhd, q_{f_1}) &= (q_{f_2}, +1) \\
+				\delta(\rhd aa\underline{b}ba \lhd, q_{f_2}) &= (q_{f_3}, +1) \\
+				\delta(\rhd aab\underline{b}a \lhd, q_{f_3}) &= (q_{b_1}, -1) \\
+				\delta(\rhd aa\underline{b}ba \lhd, q_{b_1}) &= (q_0, -1) \\
+				\delta(\rhd a\underline{a}bba \lhd, q_0) &= (q_{f_1}, +1) \\
+				\delta(\rhd aa\underline{b}ba \lhd, q_{f_1}) &= (q_{f_2}, +1) \\
+				\delta(\rhd aab\underline{b}a \lhd, q_{f_2}) &= (q_{f_3}, +1) \\
+				\delta(\rhd aabb\underline{a} \lhd, q_{f_3}) &= (q_F, +1) \\
+				\delta(\rhd aabba\underline{\lhd}, q_F) &= (q_F, +1) \\
+			\end{align*}
+		\end{solution}
+		\part Abbiamo inoltre accennato a come riconoscere $K_n$ con un automa sweeping con $O(n^2)$ stati, cioè un automa two way che può cambiare la direzione della testina di input solo sugli end-marker.
+		(Nell'$i$-esima ``passata'' del nastro di input, l'automa ispezione i simboli nelle posizioni $k$ tali che $k \equiv i \mod n$).
+		Scrivete la funzione di transizione di tale automa nel caso $n = 3$ e generalizzatela poi a ogni $n$ fissato.
+		\begin{solution}
+			La parte principale dell'automa sono gli $n$ stati che si ripetono mentre si scandisce l'intera stringa.
+			Questi devono tenere tre informazioni: due contatori da uno ad $n$, uno che indica la attuale iterazione sulla stringa e uno che tiene conto della distanza tra due simboli, ed infine lo scorso simbolo.
+			Quindi abbiamo una serie di transizioni
+			\begin{align*}
+				\delta(a, q_{i, j, a}) &= (q_{i, j + 1, a}, +1) \\
+				\delta(b, q_{i, j, a}) &= (q_{i, j + 1, a}, +1) \\
+				\delta(a, q_{i, j, b}) &= (q_{i, j + 1, b}, +1) \\
+				\delta(b, q_{i, j, b}) &= (q_{i, j + 1, b}, +1) \\
+			\end{align*}
+			Allo stato $q_{i, 0, *}$ ci si entra attraverso uno stato $q_i$.
+			Abbiamo tre casi particolari:
+			\begin{itemize}
+				\item abbiamo trovato due $a$ a distanza $n$:
+					$$ \delta(a, q_{i, n, a}) = (q_F, +1) $$ 
+					l'automa va nello stato finale
+				\item non abbiamo trovato due $a$ a distanza $n$ perché ci troviamo in uno stato $q_{i,n,b}$, allora si ricomincia a contare
+					\begin{align*}
+						\delta(a, q_{i, n, b}) &= (q_{i, 0, a}, +1) \\
+						\delta(b, q_{i, n, b}) &= (q_{i, 0, b}, +1) \\
+					\end{align*}
+				\item non abbiamo trovato due $a$ a distanza $n$ perché il simbolo attuale è una $b$, allora si ricomincia a contare
+					$$ \delta(b, q_{i, n, a}) = (q_{i, 0, b}, +1) $$
+				\item troviamo l'end-marker di destra, abbiamo finito la stringa e cominciato a tornare indietro fino all'end-marker di sinitra:
+					\begin{align*}
+						\delta(\lhd, q_{i, j, *}) &= (q_{b_i}, -1) \\
+						\delta(a, q_{b_i}) &= (q_{b_i}, -1) \\
+						\delta(b, q_{b_i}) &= (q_{b_i}, -1) \\
+						\delta(\rhd, q_{b_i}) &= (q_{i,0}, -1)
+					\end{align*}
+					Nello stato $q_{i, j}$ si saltano simboli finché $j \leq i$, a quel punto si passa a $q_{i, 0, *}$.
+				\item siamo arrivati all'end-marker all'ultima iterazione: 
+					$$ \delta(\lhd, q_{n - 1, j, *}) = (q_{n - 1, j, *}, +1) $$
+					si sfora oltre perché la stringa non è accettata.
+			\end{itemize}
+%			\begin{align*}
+%				\delta(a, q_0) &= (q_{0, 0, a}, +1) \\
+%				\delta(b, q_0) &= (q_{0, 0, b}, +1) \\
+%				\delta(\lhd, q_0) &= (q_0, +1) \\
+%				\delta(\{a, b\}, q_{0, 0, a}) &= (q_{0, 1, a}, +1) \\
+%				\delta(\lhd, q_{0, 0, a}) &= (q_{b_0}, -1) \\
+%				\delta(\{a, b\}, q_{0, 0, b}) &= (q_{0, 1, b}, +1) \\
+%				\delta(\lhd, q_{0, 0, b}) &= (q_{b_0}, -1) \\
+%				\delta(\{a, b\}, q_{0, 1, a}) &= (q_{0, 2, a}, +1) \\
+%				\delta(\lhd, q_{0, 1, a}) &= (q_{b_0}, -1) \\
+%				\delta(\{a, b\}, q_{0, 1, b}) &= (q_{0, 2, b}, +1) \\
+%				\delta(\lhd, q_{0, 1, b}) &= (q_{b_0}, -1) \\
+%				\delta(\{a, b\}, q_{0, 2, a}) &= (q_{0, 3, a}, +1) \\
+%				\delta(\lhd, q_{0, 2, a}) &= (q_{b_0}, -1) \\
+%				\delta(\{a, b\}, q_{0, 2, b}) &= (q_{0, 3, b}, +1) \\
+%				\delta(\lhd, q_{0, 2, b}) &= (q_{b_0}, -1)\\
+%				\delta(a, q_{0, 3, a}) &= (q_F, +1) \\
+%				\delta(b, q_{0, 3, a}) &= (q_{0, 0, b}, +1) \\
+%				\delta(\lhd, q_{0, 3, a}) &= (q_{b_0}, -1) \\
+%				\delta(\{a, b\}, q_{0, 3, b}) &= (q_{0, 0, b}, +1) \\
+%				\delta(\lhd, q_{0, 3, b}) &= (q_{b_0}, -1) \\
+%				\delta(\{a, b\}, q_{b_0}) &= (q_{b_0}, -1) \\
+%				\delta(\rhd, q_{b_0}) &= (q_{1,0}, +1) \\
+%				\delta(*, q_{1,0}) &= (q_{1,1}, +1) \\
+%				\delta(a, q_{1,1}) &= (q_{1, 0, a}, +1) \\
+%				\delta(b, q_{1,1}) &= (q_{1, 0, b}, +1) \\
+%				\delta(\{a, b\}, q_{1, 0, a}) &= (q_{1, 1, a}, +1) \\
+%				\delta(\lhd, q_{1, 0, a}) &= (q_{b_1}, -1) \\
+%				\delta(\{a, b\}, q_{1, 0, b}) &= (q_{1, 1, b}, +1) \\
+%				\delta(\lhd, q_{1, 0, b}) &= (q_{b_1}, -1) \\
+%				\delta(\{a, b\}, q_{1, 1, a}) &= (q_{1, 2, a}, +1) \\
+%				\delta(\lhd, q_{1, 1, a}) &= (q_{b_1}, -1) \\
+%				\delta(\{a, b\}, q_{1, 1, b}) &= (q_{1, 2, b}, +1) \\
+%				\delta(\lhd, q_{1, 1, b}) &= (q_{b_1}, -1) \\
+%				\delta(\{a, b\}, q_{1, 2, a}) &= (q_{1, 3, a}, +1) \\
+%				\delta(\lhd, q_{1, 2, a}) &= (q_{b_1}, -1) \\
+%				\delta(\{a, b\}, q_{1, 2, b}) &= (q_{1, 3, b}, +1) \\
+%				\delta(\lhd, q_{1, 2, b}) &= (q_{b_1}, -1)\\
+%				\delta(a, q_{1, 3, a}) &= (q_F, +1) \\
+%				\delta(b, q_{1, 3, a}) &= (q_{1, 0, b}, +1) \\
+%				\delta(\lhd, q_{1, 3, a}) &= (q_{b_1}, -1) \\
+%				\delta(\{a, b\}, q_{1, 3, b}) &= (q_{1, 0, b}, +1) \\
+%				\delta(\lhd, q_{1, 3, b}) &= (q_{b_1}, -1) \\
+%				\delta(\{a, b\}, q_{b_1}) &= (q_{b_1}, -1) \\
+%				\delta(\rhd, q_{b_1}) &= (q_{2,0}, +1) \\
+%				\delta(*, q_{2,0}) &= (q_{2,1}, +1) \\
+%				\delta(*, q_{2,1}) &= (q_{2,2}, +1) \\
+%				\delta(a, q_{2,2}) &= (q_{2,0,a}, +1) \\
+%				\delta(b, q_{2,2}) &= (q_{2,0,b}, +1) \\
+%				\delta(\{a, b\}, q_{2, 0, a}) &= (q_{2, 1, a}, +1) \\
+%				\delta(\lhd, q_{2, 0, a}) &= (q_{b_2}, +1) \\
+%				\delta(\{a, b\}, q_{2, 0, b}) &= (q_{2, 1, b}, +1) \\
+%				\delta(\lhd, q_{2, 0, b}) &= (q_{b_2}, +1) \\
+%				\delta(\{a, b\}, q_{2, 1, a}) &= (q_{2, 2, a}, +1) \\
+%				\delta(\lhd, q_{2, 1, a}) &= (q_{b_2}, +1) \\
+%				\delta(\{a, b\}, q_{2, 1, b}) &= (q_{2, 2, b}, +1) \\
+%				\delta(\lhd, q_{2, 1, b}) &= (q_{b_2}, +1) \\
+%				\delta(\{a, b\}, q_{2, 2, a}) &= (q_{2, 3, a}, +1) \\
+%				\delta(\lhd, q_{2, 2, a}) &= (q_{b_2}, +1) \\
+%				\delta(\{a, b\}, q_{2, 2, b}) &= (q_{2, 3, b}, +1) \\
+%				\delta(\lhd, q_{2, 2, b}) &= (q_{b_2}, +1)\\
+%				\delta(a, q_{2, 3, a}) &= (q_F, +1) \\
+%				\delta(b, q_{2, 3, a}) &= (q_{2, 0, b}, +1) \\
+%				\delta(\lhd, q_{2, 3, a}) &= (q_{b_2}, +1) \\
+%				\delta(\{a, b\}, q_{2, 3, b}) &= (q_{2, 0, b}, +1) \\
+%				\delta(\lhd, q_{2, 3, b}) &= (q_{b_2}, +1) \\
+%			\end{align*}
+		\end{solution}
+	\end{parts}
+	\question Modificate l'automa sweeping per $K_n$ ottenuto nell'esercizio 1 in modo da ridurre il numero degli stati a $O(n)$.
+
+	\textit{Suggerimento}. In ciascuna passata si utilizza un contantore modulo $n$ per individuare i simboli da ispezionare. Il contatore può essere inizializzato in funzione del valore finale del contatore nella passata precedente, evitando di contare le passate.
+	\begin{solution}
+		Si parte da uno stato $q_0$, e in base al simbolo iniziale si inizia il ciclo:
+		\begin{align*}
+			\delta(a, q_0) &= (q_{1, a}, +1) \\
+			\delta(a, q_0) &= (q_{1, b}, +1) \\
+		\end{align*}
+		Ora si continua ad avanzare ciclicamente il contatore:
+		\begin{align*}
+			\delta(*, q_{i, *}) &= (q_{i + 1, *}, +1) \\
+		\end{align*}
+		Finché non si arriva a $i = n - 1$, a questo punto come prima se il simbolo è una $a$, allora si ha finito, altrimenti si continua
+		\begin{align*}
+			\delta(b, q_{n - 1, b}) &= (q_{0, b}, +1) \\
+			\delta(a, q_{n - 1, b}) &= (q_{0, a}, +1) \\
+			\delta(b, q_{n - 1, a}) &= (q_{0, b}, +1) \\
+			\delta(a, q_{n - 1, a}) &= (q_F, +1) \\
+		\end{align*}
+		Ora quando si arriva all'end marker $\lhd$ nello stato $q_{i, *}$, si procede a ritroso con gli stati $q_{b, j}$, con $j = 0, \dots, n - 1$ partendo dallo stato $q_{b, i}$.
+
+		In base a con quale stato $q_{b, i}$ si arriva all'end marker di sinistra $\rhd$ si comincia con lo stato $q_{i + 1, b}$, infatti $i$ sarà l'indice con cui avremo iniziato la precedente iterazione.
+		Questo processo va in loop se la parola non appartiene al linguaggio.
+	\end{solution}
+	\question Svolgete l'esercizio 1 per il linguaggio formato da tutte le stringhe in cui esistono due simboli a distanza $n$ tra loro che sono uguali.
+	\begin{solution}
+		Per ogni simbolo l'automa può andare avanti $n$ sibmoli e vedere se è uguale altrimenti tornare indietro di $n - 1$ simboli.
+
+		Alternativamente per l'automa sweeping basta modificare il comportamento dello stato $q_{n - 1, b}$ per accettare il simbolo $b$ invece che fallire a tavolino.
+	\end{solution}
+	\question Svolgete l'esercizio 1 per il linguaggio formato da tutte le stringhe in cui tutti i simboli a distanza $n$ tra loro sono uguali.
+	\begin{solution}
+		Questo è più semplice da fare come un automa sweeping, infatti basta controllare che tutti gli elementi nella stessa posizione $\mod n$ siano uguali.
+	\end{solution}
+	\question Rivedere la simulazione di automi two-way deterministici mediante automi one-way deterministici presentata a lezione e studiate come possa essere modificata nel caso l'automa di partenza sia two-way nondeterministico.
+	\begin{solution}
+		Finisco
+	\end{solution}
+\end{questions}
+\end{document}
