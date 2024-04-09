@@ -50,4 +50,6 @@
 *.fls
 *.bcf
 *.pyg
+*.md5
+*.dpth
 

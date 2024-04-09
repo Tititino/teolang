@@ -6,7 +6,7 @@
 \usepackage[italian]{babel}
 \usepackage{bytefield}
 \usepackage{cancel}
-\usepackage{embedall}\embedfile{\jobname.tex}
+% \usepackage{embedall}\embedfile{\jobname.tex}
 \usepackage[bookmarks]{hyperref}
 \usepackage{listings}
 \usepackage[scr=rsfs]{mathalpha}
@@ -14,6 +14,7 @@
 \usepackage{tabularray}
 \usepackage{tcolorbox}
 \usepackage{tikz}\usetikzlibrary{automata, decorations.text, patterns, decorations.pathmorphing, positioning, decorations.pathreplacing, calligraphy}
+\usetikzlibrary{external}
 \usepackage{todonotes}
 \usepackage{xcolor}
 
@@ -42,6 +43,8 @@
 \lstset{style=mystyle}
 
 \overfullrule=0.2cm
+
+\tikzexternalize 
 \begin{document}
 \tableofcontents
 \newpage
@@ -266,7 +269,7 @@ Le grammatiche sono classificate in base alla forma delle produzioni, possiamo d
 \end{center}
 Ogni grammatica restringe il livello precedente
 
-\todo{Sistemo}
+% \todo{Sistemo}
 \begin{center}
 	\begin{tikzpicture}
 		\node[rectangle, fill=white!80] at (4.5cm, 3cm) {\tiny \ Tipo 0\ };
@@ -794,14 +797,14 @@ Se l'NFA ha $n$ stati, il DFA ottenuto ha $2^n$ stati.
 
 	% proprietà 1
 	\begin{proprietà}
-	\`E possibile dimostrare che $\forall S \subseteq \{0, \dots, n - 1\} \mid \delta(0, w_S) = S$. \todo{Proprietà 1}
+	\`E possibile dimostrare che $\forall S \subseteq \{0, \dots, n - 1\} \mid \delta(0, w_S) = S$. % \todo{Proprietà 1}
 	\end{proprietà}
 	% proprietà 2
 	\begin{proprietà}
-	Siano $S, T \subseteq \{0, \dots, n - 1\}$, se $S \neq T$ allora $w_S$ e $w_T$ sono distinguibili. \todo{Proprietà 2}
+	Siano $S, T \subseteq \{0, \dots, n - 1\}$, se $S \neq T$ allora $w_S$ e $w_T$ sono distinguibili. % \todo{Proprietà 2}
 	\end{proprietà}
 	\begin{proof}	% proprietà 2
-		Se $S \neq T$ esiste un numero che appartiene a $S$ ma non a $T$, chiamiamolo $x \in S \ T$ \todo{Complemento, non ricordo il simbolo}.
+		Se $S \neq T$ esiste un numero che appartiene a $S$ ma non a $T$, chiamiamolo $x \in S \ T$ % \todo{Complemento, non ricordo il simbolo}.
 		Abbiamo che
 		\begin{align*}
 			\delta(0, w_S) &= S \\
@@ -824,7 +827,7 @@ Possiamo, in certi casi, introdurre delle transizioni sulle parole vuote.
 \begin{tcolorbox}
 	Supponiamo di volere l'automa che riconosce i numeri con segno (opzionale)
 	\begin{center}
-		\begin{tikzpicture}[remember picture]
+		\begin{tikzpicture}
 			\node[state, initial] 	(q0) {$q_0$};
 			\node[state] 		(q1) [right=of q0] {$q_1$};
 			\node[state, accepting]	(q2) [right=of q1] {$q_2$};
@@ -836,7 +839,7 @@ Possiamo, in certi casi, introdurre delle transizioni sulle parole vuote.
 	\end{center}
 	Oppure supponiamo di volere l'automa per $a^lb^mc^n$
 	\begin{center}
-		\begin{tikzpicture}[remember picture]
+		\begin{tikzpicture}
 			\node[state, initial] 	(q0) {$q_0$};
 			\node[state] 		(q1) [right=of q0] {$q_1$};
 			\node[state, accepting]	(q2) [right=of q1] {$q_2$};
@@ -859,7 +862,7 @@ Questo necessariamente introduce non determinismo.
 \subsection{Stati iniziali multipli}
 Questa è un'altra estensione che genera non determinismo.
 \begin{center}
-	\begin{tikzpicture}[remember picture]
+	\begin{tikzpicture}
 		\node[state, accepting, initial] 	(q0) {$q_0$};
 		\node[state, accepting, initial] 	(q1) [below=of q0] {$q_1$};
 
@@ -874,6 +877,226 @@ Per renderli deterministici si crea lo stato iniziale che è l'insieme dei diver
 Se si prende un automa con stati iniziali multipli, ma transizioni deterministiche, si può comunque avere un gap esponenziale tra il numero di stati del'NFA e del DFA.
 
 \chapter{Espressioni regolari}
+\section{Operazioni sui linguaggi}
+Visto che un linguaggio $L \subseteq \Sigma^*$ è un sottoinsieme di un insieme, possiamo fare tutte le operazioni insiemistiche su un linguaggio:
+\begin{itemize}
+	\item intersezione $L \cap L^\prime$
+	\item unione $L \cup L^\prime$
+	\item complemento $L^C$.
+		Si può pensare di calcolare il complemento di un linguaggio $L \subseteq \Sigma^*$ rispetto ad un alfabeto più grande $\Sigma \subseteq \Gamma$.
+		Il complemento è esattamente $\Gamma^* \setminus L$.
+\end{itemize}
+
+Definiamo il prodotto di due linguaggi $L^\prime, L^{\prime\prime} \subseteq \Sigma^*$
+$$ L^\prime \cdot L^{\prime\prime} = \{ z \mid \exists x \in L^\prime \exists y \in L^{\prime\prime} . z = xy \} $$
+E se $L^\prime \subseteq \Sigma^{*\prime}, L^{\prime\prime} \subseteq \Sigma^{*\prime\prime}$, allora $L^\prime \cdot L^{\prime\prime} \subseteq \Sigma^\prime \cup \Sigma^{\prime\prime}$.
+Salvo casi particolari (e.g. alfabeto da una lettera sola) questa operazione non è commutativa.
+E vale $\{ \epsilon \}$ è l'indentità destra e sinistra, e $\varnothing$ è l'elemento nullo destro e sinistro.
+
+Definiamo la potenza di un linguaggio
+$$ L^k = \underbrace{L \cdot L \dots}_{k \text{ volte}} $$
+e vale che 
+$$ L^0 = \{ \epsilon \} $$
+ovvero il linguaggio ottenuto concatenando zero parole di $L$.
+Il prodotto e la potenza di un linguaggio finito sono ancora finiti.
+
+Definiamo la chiusura di Kleene di un linguaggio
+$$ L^* = \bigcup_{k \geq 0} L^k $$
+La chiusura di Kleene anche di un linguaggio finito è finito.
+\begin{tcolorbox}
+	\begin{align*}
+		L &= \{ a, bb\}^* \\
+		  & = \{ x \in \{a, b\}^* \mid \text{ Ogni fattore massimale di $b$ è di lunghezza pari }\}
+	\end{align*}
+	Dove massimale indica che non può essere allungato.
+\end{tcolorbox}
+Vale inoltre che
+$$ \{\epsilon \}^* = \{ \epsilon \}$$
+e che
+$$ \varnothing^* = \{ \epsilon \} $$
+
+Definiamo la chiusura di Kleene positiva di un linguaggio
+$$ L^+ = \bigcup_{k \geq 1} L^k $$
+Inoltre vale che $L$ non contiene la parola vuota, allora $L^+$ a sua volta non la contiene, e questo è uguale a $L^+ = L^* \setminus \{\epsilon\}$.
+Nota bene, non vale che generalmente $L^+ = L^* \setminus \{\epsilon\}$.
+\begin{fatto}
+	$$ L\cdot L^* = L \bigcup_{k \geq 0} L^k = \bigcup_{k \geq 0} L L^k = \bigcup_{k \geq 1} L^k = L^+ = L^* \cdot L $$
+\end{fatto}
+
+\section{Espressioni regolari}
+Le espressioni regolari sono in un certo senso una descrizione dichiarativa di un linguaggio.
+Dato un alfabeto $\Sigma$, definiamo ricorsivamente le espressioni regolari come
+\begin{itemize}
+	\item $\varnothing$, rappresenta il linguaggio vuoto
+	\item $\epsilon$, rappresenta il linguaggio della parola vuota
+	\item $a \in \Sigma$, rappresenta il linguaggio di solo $a$
+\end{itemize}
+ora definiamo
+\begin{itemize}
+	\item $E_1 + E_2$, rappresenta il linguaggio $L(E_1) \cup L(E_2)$
+	\item $E_1 \cdot E_2$, rappresenta il linguaggio $L(E_1) \cdot L(E_2)$
+	\item $E^*$, rappresenta il linguaggio $L(E)^*$
+\end{itemize}
+\begin{tcolorbox}
+	L'espressione regolare
+	$$ (a + bb)^*$$
+	rappresenta il linguaggio $\{a, bb\}^*$.
+\end{tcolorbox}
+\begin{tcolorbox}
+	Il linguaggio dove il terzultimo simbolo è una $a$ è rappresentato dall'espressione regolare
+	$$ (a + b)^* a (a + b) (a + b) $$
+	E volendo generalizzare al linguaggio il cui $n$-esimo simbolo da destra è una $a$
+	$$ (a + b)^* a (a + b)^n $$
+	Dove le potenze sulle espressioni regolari rappresentano una serie di prodotti.
+\end{tcolorbox}
+\begin{tcolorbox}
+	Il linguaggio dove due simboli a distanza $n$ sono uguali
+	$$ ((a + b)^* a (a + b)^{n - 1} a (a + b)^*) + ((a + b)^* b (a + b)^{n - 1} b (a + b)^*)$$
+	Questo può essere semplificato in
+	$$ (a + b)^* ((a (a + b)^{n - 1} a) + (b (a + b)^{n - 1} b)) (a + b)^* $$
+\end{tcolorbox}
+
+\begin{definizione}[State complexity]
+	Definiamo la complessità di stati o state complexity di un linguaggio $L \subseteq \Sigma^*$, indicata $\operatorname{sc}(L)$, come il minimo numero di stati del DFA che accetta $L$.
+	E definiamo la non-deterministic state complexity, indicata con $\operatorname{nsc}(L)$, come il minimo numero di stati del NFA che accetta $L$.
+\end{definizione}
+\begin{fatto}
+	$$\operatorname{sc}(L) \leq 2^{\operatorname{nsc}(L)}$$
+\end{fatto}
+\begin{tcolorbox}
+	Dato $L_n = (a + b)^* a (a + b)^{n - 1}$, vale che $\operatorname{nsc}(L_n) \leq n + 1$, mentre $\operatorname{sc}(L_n) \geq 2^n$, e visto che per questo linguaggio sappiamo costruire un automa da $2^n$ stati, allora
+	$\operatorname{sc}(L_n) = 2^n$.
+
+	La stringa più corta di questa linguaggio è la stringa che inizia con $a$ ed ha $n$ simboli.
+	Supponendo di avere meno di $n$ stati, allora ce ne deve essere almeno uno che si ripete; quindi c'è un loop.
+	Se io elimino il loop potrei riconoscere una stringa più breve di quella più breve.
+
+	Quindi abbiamo che per forza $\operatorname{nsc}(L_n) = n + 1$.
+
+	Alternativamente si può costruire il fooling set composto da tutte le possibili scomposizioni in due stringhe di $ab^{n - 1}$.
+\end{tcolorbox}
+\begin{proposizione}
+	Presa la stringa più corta del linguaggio, ogni NFA deve per forza avere $n + 1$ stati, dove $n$ sono i simboli della stringa.
+\end{proposizione}
+
+\begin{teorema}[Teorema di Kleene o Teorema fondamentale degli automi a stati finiti]
+	La classe dei linguaggi accettati da automi a stati finiti è la più piccola sottoinsieme di $\Sigma^*$ che contiene i linguaggi finiti ed è chiusa rispetto alle operazioni di unione, prodotto e chiusura di Kleene.
+\end{teorema}
+Quindi la classe degli automi a stati finiti coincide con la classe esprimibile dalle espressioni regolari.
+\begin{proof}
+	Dimostriamo il primo lato, passandro da un automa ad una regex.
+	Dato un automa
+	$$ \mathcal{A} = \langle Q, \Sigma, \delta, q_1, F \rangle$$
+	e supponiamo che gli stati siano numerati da uno ad $n$
+	$$ Q = \{ q_1, q_2, \dots, q_n \} $$
+	possiamo vedere come il linguaggio come tutti i cammini dallo stato iniziale agli stati finali, e che concantenando le etichette del cammino otteniamo un parola accettata dal percorso.le etichette del cammino otteniamo un parola accettata dal percorso.
+
+
+	Costruiamo un algoritmo simile a quello di Floyd-Wharshall che trova tutti i camminini minimi.
+	Chiamiamo $R_{ij}^{(k)}$ l'insieme di tutti i percorsi da $q_i$ a $q_j$ che passano solo per stati con indice minore di $k$.
+	Quando metteremo $k = n$ avrò trovato tutte le stringhe da $i$ a $j$.
+	Andando per induzione definiamo l'insieme come
+	\begin{itemize}
+		\item $R_{ij}^{(0)}$ è il caso in cui c'è una transizione tra lo stato $i$ e lo stato $j$.
+			$$ R_{ij}^{(0)} = 
+			\begin{cases}
+				\{ \alpha \in \Sigma \mid \delta(q_i, \alpha) = q_j \} & \text{se } i \neq j \\
+				\{\epsilon\} \cup \{ \alpha \in \Sigma \mid \delta(q_i, \alpha) = q_i \} & \text{se } i = j 
+			\end{cases}
+			$$
+		\item supponiamo di avere $R_{ij}^{(k - 1)}$, voglio trovare $R_{ij}^{(k)}$.
+			Cerco tutti i punti per cui il nuovo cammino passa per $q_k$, nelle sezioni tra i $q_k$ gli stati intermedi sono tutti minori di $k$.
+			% Fig 1
+			Quindi 
+			$$ R_{ij}^{(k)} = R_{ij}^{(k - 1)} \cup R_{ik}^{(k - 1)} \left (R_{kk}^{(k - 1)}\right )^* R_{kj}^{(k - 1)} $$
+	\end{itemize}
+	Con $k = n$ abbiamo tutti i percorsi e vale che
+	$$ L = \bigcup_{q_i \in F} R_{1i}^{(n)} $$
+
+	Dimostriamo il secondo lato, passandro da una regex ad un automa.
+	%% DA FINIRE
+\end{proof}
+
+\begin{tcolorbox}
+	Mostriamo una tecnica diversa per generare la regex da un automa.
+	\begin{center}
+		\begin{tikzpicture}
+			\node[state, initial] 	(q0) {$q_0$};
+			\node[state, accepting] (q1) [right=of q0] {$q_1$};
+
+			\path[->] (q0)	edge[loop above] node[above]	{\tiny a}	()
+					edge		 node[above]	{\tiny b}	(q1);
+		\end{tikzpicture}
+	\end{center}
+	Costruiamo un sistema di equazioni per ogni stato
+	$$
+	\begin{cases}
+		X &= a X_1 + b Y \\
+		Y &= \epsilon
+	\end{cases}
+	$$
+	e sostituendo 
+	$$
+	\begin{cases}
+		X &= a X + b  \\
+		Y &= \epsilon
+	\end{cases}
+	$$
+	se ci troviamo in uno stato $X = A X + B$, questo corrisponde alla regex $A^* B$.
+	Questo è banalmente $a^*b$.
+\end{tcolorbox}
+
+\begin{tcolorbox}
+	Un altro esempio più complesso
+	\begin{center}
+		\begin{tikzpicture}
+			\node[state, initial] 	(q0) {$q_0$};
+			\node[state] 		(q1) [right=of q0] {$q_1$};
+			\node[state, accepting]	(q2) [right=of q1] {$q_2$};
+
+			\path[->] (q0)	edge[loop below] node[below]	{\tiny b}	()
+					edge[bend left]	 node[above]	{\tiny a}	(q1)
+				  (q1)	edge[bend left]  node[below] 	{\tiny b}	(q0)
+				  	edge[bend left]  node[above]	{\tiny a}	(q2)
+				  (q2)	edge[loop below] node[below]	{\tiny a}	()
+					edge[bend left]	 node[below]	{\tiny b}	(q1);
+		\end{tikzpicture}
+	\end{center}
+	Costruiamo un sistema di equazioni per ogni stato
+	$$
+	\begin{cases}
+		X_0 &= a X_1 + b X_0 \\
+		X_1 &= a X_2 + b X_0 \\
+		X_2 &= a X_2 + b X_1 + \epsilon
+	\end{cases}
+	$$
+	$\epsilon$ perché $X_2$ è finale.
+	Sostitendo $X_1$ abbiamo
+	\begin{align*}
+		X_0 &= aa X_2 + ab X_0 + bX_0 \\
+		    &= aaX_2 + (ab + b)X_0 
+	\end{align*}
+	e 
+	\begin{align*}
+		X_2 &= aX_2 + baX_2 + bbX_0 + \epsilon \\
+		    &= (a + ba) X_2 + bbX_0 + \epsilon \\
+		    &= (a + ba)^* + bb X_0 + \epsilon
+	\end{align*}
+	che corrisponde alla regex $(a + ba)^* (bb X_0 + \epsilon)$, prendendo come $A = (a + ba)$ e $B = (bb X_0 + \epsilon)$.
+	E sostituendo ancora
+	\begin{align*}
+		X_0 &= aa X_2 + (ab + b) X_= \\
+		    &= aa (a + ba)^*(bb X_0 + \epsilon) + (ab + b) X_0 \\ 
+		    &= (aa (a + ba)^* bb + ab + b) X_0 + aa (a + ba)^*
+	\end{align*}
+	che quindi è $(aa (a + ba)^* bb + ab + b)^* + aa (a + ba)^*$.
+\end{tcolorbox}
+
+% ci torneremo
+Il complemento di linguaggio riconosciuto da un automa deterministico è banalmente il complemento dell'insieme dei finali.
+
+
+
 Date tre espressioni regolari
 $$ (a*b*)* \equiv (a + b)* \equiv b*(ab*)* $$
 Sono tre linguaggi equivalenti.
@@ -1070,7 +1293,7 @@ $$ h(L) = \{ h(w) \mid w \in L \} $$
 	$$ (01)^*1 $$
 	E agli automi corrisponde
 	\begin{center}
-		\begin{tikzpicture}[remember picture]
+		\begin{tikzpicture}
 			\node[state, initial] 	(q0) {$q_0$};
 			\node[state, accepting]	(q1) [right=of q0] {$q_1$};
 
@@ -1080,7 +1303,7 @@ $$ h(L) = \{ h(w) \mid w \in L \} $$
 	\end{center}
 	diventa
 	\begin{center}
-		\begin{tikzpicture}[remember picture]
+		\begin{tikzpicture}
 			\node[state, initial] 	(q0) {$q_0$};
 			\node[state]		(q1) [right=of q0] {$q_1$};
 			\node[state, accepting]	(q2) [below=of q0] {$q_2$};
@@ -1114,7 +1337,7 @@ Nel caso di automi, basta sostituire una transizione con l'intero automa corrisp
 \begin{tcolorbox}
 	Ad esempio dato l'automa
 	\begin{center}
-		\begin{tikzpicture}[remember picture]
+		\begin{tikzpicture}
 			\node[state] 	(qi) {$q$};
 			\node[state]	(qj) [right=of qi] {$p$};
 
@@ -1123,8 +1346,7 @@ Nel caso di automi, basta sostituire una transizione con l'intero automa corrisp
 	\end{center}
 	questo verrebbe trasformato in 
 	\begin{center}
-		\begin{tikzpicture}[ remember picture
-				   , SQUIGGLY/.style={->
+		\begin{tikzpicture}[ SQUIGGLY/.style={->
 				  		     , decorate
 				                     , decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}},
 				   ]
