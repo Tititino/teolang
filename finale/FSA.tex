@@ -13,7 +13,7 @@
 \usepackage{siunitx}
 \usepackage{tabularray}
 \usepackage{tcolorbox}
-\usepackage{tikz}\usetikzlibrary{automata, decorations.text, patterns}
+\usepackage{tikz}\usetikzlibrary{automata, decorations.text, patterns, decorations.pathmorphing, positioning, decorations.pathreplacing, calligraphy}
 \usepackage{todonotes}
 \usepackage{xcolor}
 
@@ -620,4 +620,566 @@ Ora il linguaggio accettato dall'automa $\mathscr{A}$ non deterministico è $L(\
 Ogni autma non deterministico (NFA) con $n$ stati può sempre essere trasformato in un automa deterministico con al più $2^n$ stati.
 Nel caso degli automi a pila invece il modello non deterministico è più potente.
 Qui invece tra DFA e NFA non cambia la potenza computazionale, ma la semplicità descrittiva.
+
+%% FINE LEZIONE 02 -- INIZIO LEZIONE 03
+\section{Numero di stati}
+Dato un linguaggio riconoscibile da un automa a stati finiti, quanti stati sono necessari per riconoscerlo?
+
+Nell'ambito degli automi deterministici definiamo il concetto di \textbf{distribuibilità} tra stringhe rispetto al linguaggio $L \subseteq \Sigma^*$.
+Due stringhe qualunque $x, y \in \Sigma^*$ sono distinguibili per $L$ se 
+$$ \exists z \in \Sigma^* (xz \in L \wedge yz \not \in L) \vee (xz \not \in L \wedge yz \in L) $$
+
+Molto semplicemente se $x$ e $y$ sono distinguibili queste ci porteranno in due stati diversi.
+Da questi due stati diversi si può costruire una $z$ che in un caso ci porta in uno stato finale e nell'altro no.
+Quindi in un automa deterministico se due stringhe sono distinguibili, non ci possono mandare nello stesso stato.
+
+\begin{teorema}
+	Sia $L \subseteq \Sigma^*$ e $X \subseteq \Sigma^*$ tale che ogni coppia di stringhe in $X$ è distinguibile in rispetto ad $L$.
+ 	Allora ogni DFA che accetta $L$ deve avere almeno $\# X$ stati (cardinalità di $X$).
+\end{teorema}
+\begin{proof}
+	Supponiamo che $X = \{x_1, x_2, \dots, x_k \}$.
+	Sia $\mathcal{A} = \langle Q, \Sigma, \delta, q_0, F \rangle$ un DFA per $L$.
+	Sia $\forall i \in 1, \dots, k \mid p_i = \delta(q_0, x_i)$.
+	Se $\# Q < k$ allora esistono due stati uguali
+	$$ \exists i, j \in 1, \dots, k \mid i \neq j \wedge p_1 = p_j $$
+	Ma $x_i, x_j$ sono distinguibili, quindi
+	$$ \exists z \mid (xz \in L \wedge yz \not \in L) \vee (xz \not \in L \wedge yz \in L) $$
+	Ma questo $z$ non può esistere, quindi la $\# Q$ deve per forza essere $\leq k$.
+\end{proof}
+Questo può essere anche utile per determinare se un linguaggio non può essere definito da un automa a stati finiti.
+Infatti se si trova un insieme $X$ infinito, allora il linguaggio non può essere regolare.
+
+\begin{tcolorbox}
+	Sia $\Sigma = \{ a, b \}$ e 
+	$$L = \{ x \in \Sigma^* \mid \#_a(x) \text{ è pari } \wedge \#_b(x) \text{ è pari } \} $$
+	\begin{center}
+		\begin{tikzpicture}
+			\node[state, initial, accepting] 	(00) {$00$};
+			\node[state] 				(10) [right=of 00] {$10$};
+			\node[state]				(01) [below =of 00] {$01$};
+			\node[state]				(11) [right=of 01] {$11$};
+
+			\path[->] (00)	edge[bend left]	node[above]	{\tiny a}	(10)
+					edge[bend left]	node[right]	{\tiny b}	(01)
+				  (10)	edge[bend left]	node[right]	{\tiny b}	(11)
+					edge[bend left]	node[below]	{\tiny a}	(00)
+				  (01)	edge[bend left]	node[left]	{\tiny b}	(00)
+					edge[bend left]	node[above]	{\tiny a}	(11)
+				  (11)	edge[bend left]	node[left]	{\tiny b}	(10)
+					edge[bend left]	node[below]	{\tiny a}	(01);
+		\end{tikzpicture}
+	\end{center}
+	Costruisco $X = \{ \epsilon, a, b, ab, \}$, per vedere che sono distinguibili costruiamo
+	\begin{center}
+		\begin{tblr}{ c | c c c c }
+			z          & $\epsilon$ & a 	     & b          & ab \\
+			\hline
+			$\epsilon$ &            & $\epsilon$ & $\epsilon$ & $\epsilon$ \\
+			a          &            &            & a          & a \\
+			b          &            &            &            & b \\
+			ab         &            &            &            &
+		\end{tblr}
+	\end{center}
+\end{tcolorbox}
+\begin{tcolorbox}
+	Dato il linguaggio 
+	$$ \mathcal{L}_n = \{ x \in \{ a, b \}^* \mid \text{l'$n$-esimo simbolo da destra di $x$ è una $a$} \} $$
+	L'automa si ricorda gli ultimi $n$ simboli, quindi ha $2^n$ stati.
+	Mentre l'NFA corrispondente è 
+	\begin{center}
+		\begin{tikzpicture}
+			\node[state, initial] 	(q_0) {$q_0$};
+			\node[state] 		(q_1) [right=of q_0] {$q_1$};
+			\node[state]		(q_2) [right =of q_1] {$q_2$};
+			\node			(dots) [right =of q_2] {$\dots$};
+			\node[state, accepting]	(q_k) [right=of dots] {$q_k$};
+
+			\path[->] (q_0)		edge[loop above]	node[above]	{a, b}	()
+						edge	node[above]	{a}	(q_1)
+				  (q_1)		edge	node[above]	{a}	(q_2)
+				  (q_2)		edge	node[above]	{a,b}	(dots)
+				  (dots)	edge	node[above]	{a,b}	(q_k);
+		\end{tikzpicture}
+	\end{center}
+	% aggiungo graffa con scritto $n$ volte
+	questo ha $n + 1$ stati.
+
+	Possiamo fare meglio per il deterministico?
+	Costruiamo $X = \{a, b\}^n = \{ x \in \{a, n\}^* \mid |x| = n \} $.
+	Siano $x, y \in X$, con 
+	\begin{align*}
+		x &= x_1 x_2 \dots x_i \dots x_n \\
+		y &= y_1 y_2 \dots y_i \dots y_n 
+	\end{align*}
+	Visto che $x \neq y$, $\exists i \mid x_i \neq y_i$.
+	Supponiamo che $x_i = a$, ed $y_i = b$, quindi
+	\begin{align*}
+		x &= x_1 x_2 \dots a \dots x_n \\
+		y &= y_1 y_2 \dots b \dots y_n 
+	\end{align*}
+	Ora per distinguere le tue parole basta scegliere $z = \{a, b\}^{i - 1}$, ad esempio $z = a^{i - 1}$, con questa $z$ $xz \in \mathcal{L}$ e $yz \not \in \mathcal{L}$.
+	Visto che la cardinalità di $X$ è di $2^n$ allora non possiamo costruire un automa di meno di $2^n$ stati.
+
+	Questo mostra come gli automi non deterministici possano essere molto più compatti.
+\end{tcolorbox}
+\begin{tcolorbox}
+	Se definiamo $\mathcal{L} = \{ w \in \{ a, b\}^* \mid \#_a(w) = \#_b(w) \}$ ha $X$ infinito % ???
+\end{tcolorbox}
+
+\subsection{Costruzione coi sottoinsiemi}
+\begin{center}
+	\begin{tikzpicture}
+		\node[state, initial] 	(q_0) {$q_0$};
+		\node[state, accepting]	(q_1) [right=of q_0] {$q_1$};
+
+		\path[->] (q_0)		edge[loop above]	node[above]	{a}	()
+					edge			node[above]	{a, b}	(q_1)
+			(q_1)		edge[loop above]	node[above]	{b}	()
+			edge	node[above]	{b}	(q_0);
+	\end{tikzpicture}
+\end{center}
+$\mathcal{A} = \langle Q, \Sigma, \delta, q_0, F \rangle$ NFA definisco $\mathcal{A}^\prime = \langle Q^\prime, \Sigma, \delta^\prime, q_0^\prime, F^\prime \rangle$, con $Q^\prime = 2^Q$ e $q_0^\prime = \{ q_0 \}$.
+% \begin{center}
+% 	\begin{tikzpicture}
+% 		\node[state, initial] 	(q0) {$\{q_0}$};
+% 		\node[state] 		(q0q1) {$\{q_0, q_1}$};
+% 		\node[state, accepting]	(q1) {$\{q_1}$};
+% 		\node[state] 		(empty) {$\varnothing}$};
+% 
+% 		\path[->] (q0)		edge	node[above]	{a}	(q0q1)
+% 					edge	node[above]	{b}	(q1)
+% 		(q1)			edge[loop above]	node[above]	{b}	()
+% 		edge	node[above]	{b}	(q_0);
+% 		% finisco costruzione
+% 	\end{tikzpicture}
+% \end{center}
+Quindi
+$$\forall a \in Q^\prime, a \in \Sigma \mid \delta^\prime(\alpha, a) = \bigcup_{q \in \alpha} \delta(q, a) $$
+ed
+$$ F^\prime = \{ \alpha \in Q^\prime \mid \alpha \cap F \neq \varnothing\} $$
+
+Se l'NFA ha $n$ stati, il DFA ottenuto ha $2^n$ stati.
+
+	Costruiamo ora l'automa $M_n$, o automa di Meyer\&Fisher (1971), non deterministico tale per cui l'automa deterministico corrispondente ha necessariamente $2^n$ stati.
+	% \begin{center}
+	% 	\begin{tikzpicture}
+	% 		\node[state, initial, final] 	(q0) {$q_0$};
+	% 		\node[state] 			(q1) [right=of q0]{$q_1$};
+	% 		\node[state]			(q2) [right=of q1]{$q_2$};
+	% 		\node[state] 			(q3) [right=of q2]{$q_3}$};
+	% 		\node[state]			(q_k) [right=of q3] {$q_4$};
+	% 
+	% 		\path[->] (q0)		edge	node[above]	{a}	(q0q1)
+	% 					edge	node[above]	{b}	(q1)
+	% 		(q1)			edge[loop above]	node[above]	{b}	()
+	% 		edge	node[above]	{b}	(q_0);
+	% 		% finisco costruzione
+	% 	\end{tikzpicture}
+	% 	% per ogni stato la b crea un loop e può riportare l'automa allo stato q_0
+	% \end{center}
+	Quindi è l'automa $\mathcal{A} = \langle Q = \{0, 1, \dots, n - 1\}, \{a, b \}, \delta, q_0 = 0, F = \{ 0 \} \rangle$ con $\delta$ definita come
+	\begin{align*}
+		\delta(i, a) &= (i + 1) \mod n \\
+		\delta(i, b) &= \begin{cases} 0 	& \text{se } i = 0 \\ \{i, 0\} & \text{altrimenti} \end{cases}
+	\end{align*}
+	Sia $S \subseteq \{0, \dots, n - 1 \}$, definisco $w_s$ come
+	$$ w_s = \begin{cases} b & \text{se } S = \varnothing \\ a^i & \text{se } S = \{ i \} \\ a^{e_k - e_{k - 1}}ba^{e_{k - 1} - e_{k - 2}}b\dots ba^{e_2 - e_1}ba^{e_1} & \text{se } S = \{e_1, e_2, \dots, e_k \} \text{ con } k \geq 2, e_1 < e_2 < \dots < e_k \end{cases} $$
+	Ad esempio prendiamo $S = \{1, 3, 4\}$, la $w_S$ corrispondente è
+	$$w_S = aba^2ba = abaaba $$
+	% disegno l'albero di computazione per questa parola
+	Mostriamo che l'insieme di stati raggiunto da questa stringa è esattamente $\{1, 3, 4\} = S$.
+	Mostriamo anche per $S = \{0, 2\}$, $w_S = a^2b$.
+	O ancora $S = \varnothing$, $w_S = b$.
+
+	% proprietà 1
+	\begin{proprietà}
+	\`E possibile dimostrare che $\forall S \subseteq \{0, \dots, n - 1\} \mid \delta(0, w_S) = S$. \todo{Proprietà 1}
+	\end{proprietà}
+	% proprietà 2
+	\begin{proprietà}
+	Siano $S, T \subseteq \{0, \dots, n - 1\}$, se $S \neq T$ allora $w_S$ e $w_T$ sono distinguibili. \todo{Proprietà 2}
+	\end{proprietà}
+	\begin{proof}	% proprietà 2
+		Se $S \neq T$ esiste un numero che appartiene a $S$ ma non a $T$, chiamiamolo $x \in S \ T$ \todo{Complemento, non ricordo il simbolo}.
+		Abbiamo che
+		\begin{align*}
+			\delta(0, w_S) &= S \\
+			\delta(0, w_T) &= T \\
+		\end{align*}
+		Dato uno stato $y$ ci si mettono $a^{n - y}$ per arrivare allo stato finale.
+		Quindi da $w^S$ ci si mettono $a^{n - x}$ per arrivare ad uno stato finale.
+		$$ 0 \overset{w_S}{\rightsquigarrow} x \overset{a^{n - x}}{\rightsquigarrow} 0 $$
+		Sia $y \in T$, se $y \neq x$, allora
+		$$ 0 \overset{w_T}{\rightsquigarrow} y \not \overset{a^{n - x}}{\rightsquigarrow} 0 $$
+		Allora $a^{n - x}$ distingue $S$ e $T$.
+
+		Ed abbiamo che $X = \{ w_S | S \subseteq \{0, \dots, n - 1 \} \}$ è foramto da stringhe a coppie di stringhe % ???
+		Quindi ogni DFA ha almeno $2^n$ stati.
+	\end{proof}
+	Questo è il linguaggio (più o meno) delle stringhe che hanno un suffisso della forma $bx$ dove $\#_a(x)$ è multiplo di $n$.
+
+\subsection{$\epsilon$-mosse}
+Possiamo, in certi casi, introdurre delle transizioni sulle parole vuote.
+\begin{tcolorbox}
+	Supponiamo di volere l'automa che riconosce i numeri con segno (opzionale)
+	\begin{center}
+		\begin{tikzpicture}[remember picture]
+			\node[state, initial] 	(q0) {$q_0$};
+			\node[state] 		(q1) [right=of q0] {$q_1$};
+			\node[state, accepting]	(q2) [right=of q1] {$q_2$};
+	
+			\path[->] (q0)		edge	node[above]	{\tiny $+,-,\epsilon$}	(q1)
+				  (q1)		edge	node[above]	{\tiny $0, \dots, 9$}		(q2)
+				  (q2)		edge[loop above] node[above]	{\tiny $0, \dots, 9$}	();
+		\end{tikzpicture}
+	\end{center}
+	Oppure supponiamo di volere l'automa per $a^lb^mc^n$
+	\begin{center}
+		\begin{tikzpicture}[remember picture]
+			\node[state, initial] 	(q0) {$q_0$};
+			\node[state] 		(q1) [right=of q0] {$q_1$};
+			\node[state, accepting]	(q2) [right=of q1] {$q_2$};
+	
+			\path[->] (q0)		edge[loop above]	node[above]	{a} ()
+						edge			node[above]	{$\epsilon$}	(q1)
+				  (q1)		edge[loop above]	node[above]	{b}		()
+				  		edge			node[above]	{$\epsilon$}	(q2)
+				  (q2)		edge[loop above]	node[above]	{$c$}		();
+		\end{tikzpicture}
+	\end{center}
+\end{tcolorbox}
+Generalmente se ho
+$$ q_0 \overset{\epsilon}{\rightarrow} q_1 \overset{a}{\rightarrow} q_2 \overset{\epsilon}{\rightarrow} q_3 $$
+questo diventa
+$$ q \overset{a}{\rightarrow} q_3 $$
+Inoltre se uno stato ha un cammino formato da $\epsilon$-mosse fino ad uno stato finale, esso stesso è finale.
+Questo necessariamente introduce non determinismo.
+
+\subsection{Stati iniziali multipli}
+Questa è un'altra estensione che genera non determinismo.
+\begin{center}
+	\begin{tikzpicture}[remember picture]
+		\node[state, accepting, initial] 	(q0) {$q_0$};
+		\node[state, accepting, initial] 	(q1) [below=of q0] {$q_1$};
+
+		\path[->] (q0)		edge[loop above]	node[above]	{b} ()
+			  		edge[bend left]		node[right]	{a} (q1)
+			  (q1)		edge[bend left]		node[left]	{b} (q0);
+	\end{tikzpicture}
+\end{center}
+% non mi ricordo di che linguaggio fosse
+Per renderli deterministici si crea lo stato iniziale che è l'insieme dei diversi stati iniziali.
+
+Se si prende un automa con stati iniziali multipli, ma transizioni deterministiche, si può comunque avere un gap esponenziale tra il numero di stati del'NFA e del DFA.
+
+\chapter{Espressioni regolari}
+Date tre espressioni regolari
+$$ (a*b*)* \equiv (a + b)* \equiv b*(ab*)* $$
+Sono tre linguaggi equivalenti.
+
+Ci si può chiedere qual è il numero massimo di star innestate necessarie per generare un linguaggio.
+Introduciamo l'\textit{altezza di star}, o star height $h$, come il numero massimo di star innestate.
+Definita nel seguente modo
+$$ h(E) = 
+\begin{cases}
+	0 & \text{se } E = \varnothing \vee E = \epsilon \vee E \in \Sigma^* \\
+	\max(h(E^\prime), h(E^{\prime\prime})) & \text{se } E = E^\prime \cdot E^{\prime\prime} \vee E = E^\prime + E^{\prime\prime} \\
+	1 + h(E^\prime) & \text{se } E = E^\prime*
+\end{cases}
+$$
+Definiamo poi la minima altezza per un linguaggio $L \subseteq \Sigma^*$ come
+$$ h(L) = \min \{ h(E) \mid \text{ $E$ denota $L$ } \} $$
+
+\begin{teorema}[Dejan, Schutzenberger]
+	$$\forall q > 0 \exists W_q \subseteq \{a, b\}^* \mid h(W_q) = q $$
+	Equesto è definito come
+	$$ W_q = \{ w \in \{a, b\}^* \mid \#_a(w) \equiv \#_b(w) \mod 2^q \} $$
+\end{teorema}
+
+La misura dei cicli è collegata al numero di cicli in un automa.
+\begin{tcolorbox}
+	% fig 07.1
+	Per $q = 1, 2, \dots$, definiamo $W_q$ ed abbiamo che
+	$$ W_2 = ((ab + ba) + (aa + bb)(ab + ba)^*(bb + aa))^* $$
+\end{tcolorbox}
+
+\begin{nota}
+	Se $|\Sigma| = 1$, allora $\forall L \subseteq \Sigma^* \mid h(L) \leq 1$.
+\end{nota}
+
+\section{Espressioni regolari estese}
+Supponiamo di avere il linguaggio
+$$ L = \{ w \in \{a, b\}^* \mid \#_a(w) \text{ è pari } \wedge \#_b(w) \text{ è pari } \} $$
+
+Costruiamo prima il linguaggio con solo le $a$ pari
+$$ (b + ab*a)* $$
+e con solo le $b$ pari
+$$ (a + ba*b)* $$
+intuitivamente il linguaggio $L$ sarebbe, se avessimo l'intersezione, 
+$$ (b + ab*a)* \cap (a + ba*b)* $$
+Intoduciamo quindi le \textbf{espressioni regolari estese}.
+
+Definiamo queste come le espressioni con, oltre alle operazioni di concatenazione, unione e star; l'intersezione ($\cap$) e il complemento ($E^-$).
+Introducendo il complemento possiamo ottenere l'intersezione attraverso l'unione.
+
+\begin{tcolorbox}
+	Dato il linguaggio su $\Sigma = \{a, b\}$ delle stringhe con 3 $a$ consecutive
+	% fig 07.2
+	vogliamo riconoscere il suo complemento (senza 3 $a$ consecutive).
+	Questo diventa semplicemente
+	$$ \overline{\overline{\varnothing} a a a \overline{\varnothing}} $$
+	Quindi ora senza usare la star possiamo esprimere anche linguaggi infiniti.
+\end{tcolorbox}
+Si può definire il problema di trovare il l'altezza di star minima ($eh$) nelle espressioni regolari estese.
+Questo è un problema aperto.
+Si sa che valgono
+\begin{align*}
+	\exists L \mid eh(L) = 0 \\
+	\exists L \mid eh(L) = 1 
+\end{align*}
+
+\chapter{Operazioni sugli automi a stati finiti}
+In questo capitolo vedremo una serie di operazioni sugli automi a stati finiti e soprattutto il loro impatto sulla dimensione dell'automa.
+Abbiamo già visto alcune operazioni tra automi nell'ambito delle espressioni regolari, specificamente 
+\begin{center}
+	\begin{tblr}{c c c}
+		op & DFA & NFA \\
+		\hline
+		unione & $n^\prime \cdot n^{\prime\prime}$ & $1 + n^\prime + n^{\prime\prime} $ \\
+		concatenazione & $n^\prime \cdot 2^{n^{\prime\prime}} $ & $n^\prime + n^{\prime\prime}$ \\
+		star           & $1 + 2^{n^\prime} $ & $n^\prime + 1$ \\
+		intersezione   & $n^\prime \cdot n^{\prime\prime}$ & $ n^\prime \cdot n^{\prime\prime} $ \\
+		complemento    & $n^\prime$ & $2^{n^\prime}$
+	\end{tblr}
+\end{center}
+L'intersezione di automi funziona anche con NFA con la stessa costruzione dei DFA.
+
+\section{Reversal}
+Definiamo l'operazione di inversione o reversal.
+Data una stringa 
+$$ w = a_1 a_2 \dots a_n $$
+definiamo
+$$ w^R = a_n \dots a_2 \dots a_1 $$
+Per DFA e NFA basta sostituire stati iniziali con i finali e viceversa, e invertire le transizioni.
+Però può accadere che un DFA invertito diventi non deterministico, infatti 
+\begin{itemize}
+	\item se l'automa ha diversi stati finali, questi diventeranno stati iniziali multipli
+	\item se uno stato ha più frecce entranti con lo stesso simbolo, queste diventeranno uscenti con lo stesso simbolo
+\end{itemize}
+\begin{tcolorbox}
+	Ad esempio il linguaggio il cui terzo simbolo è una $a$ è un semplice DFA, mentre il linguaggio il cui terzultimo simbolo è una $a$ abbiamo visto che ha $2^3$ stati. % TODO: link
+
+	In generale se chiediamo l'$n$-esimo simbolo da destra servono $n + 1$ stati, mentre se chiediamo l'$n$-esimo simbolo da sinistra ne servono $2^n$.
+\end{tcolorbox}
+
+Mentre per le espressioni regolari, per la costruzione del reversal, basta solo invertire l'espressione.
+O più precisamente
+\begin{itemize}
+	\item nei casi in cui $E = \varnothing$ o $E = \epsilon$ non cambia niente
+	\item nel caso in cui $E \in \Sigma^*$ questo diventa $E^R$
+	\item nel caso in cui $E = E^\prime + E^{\prime\prime}$, abbiamo $E^{\prime R} + E^{\prime\prime R}$
+	\item nel caso in cui $E = E^\prime \cdot E^{\prime\prime}$, abbiamo $E^{\prime\prime R} \cdot E^{\prime R}$
+	\item nel caso in cui $E = E^{\prime}*$, abbiamo $(E^{\prime R})*$
+\end{itemize}
+
+\section{Shuffle}
+Definiamo l'operazione di \textit{shuffle}
+$$ sh(x, y) $$
+che produce ogni possibile interpolazione dei suoi argomenti 
+$$ sh(ab, cd) = \{ abcd, acdb, acbd, cabd, \dots  \} $$
+Cioè vale che se
+$$ sh(w', w'') = w $$
+allora se definiamo che per due simboli $x_i, x_j \in \Sigma$ in posizioni $i$ e $j$ vale $x_i \prec_w x_j$ se $i < j$
+$$ \forall x, y \in w \mid x \prec_{w'} y \Rightarrow x \prec_w y \wedge x \prec_{w''} y \Rightarrow x \prec_w y $$
+Dati due linguaggi, abbiamo che
+$$ sh(L^\prime, L^{\prime\prime}) = \bigcup_{x \in L^\prime, y \in L^{\prime\prime}} sh(x, y) $$
+cioè lo shuffle di due linguaggi è definito come l'unione degli shuffle di tutte le loro stringhe.
+
+% Supponiamo che $L^\prime \subseteq \Sigma^{\prime *}$ e $L^{\prime\prime} \subseteq \Sigma^{\prime\prime *}$ e $\Sigma^\prime \cap \Sigma^{\prime\prime} = \varnothing$.
+% Esercizio, costruisco questo automa, e.g. due sottoinsiemi
+
+\section{Quoziente}
+Definiamo l'operazione di quoziente tra due linguaggi
+$$ L_1 \setminus L_2 = \{ x \in \Sigma^* \mid \exists y \in L_2 \; xy \in L_1 \} $$
+Quindi le stringhe di $L_1$ in cui ho tolto un suffisso di $L_2$.
+\begin{tcolorbox}
+	Ad esempio
+	\begin{align*}
+		L_1 &= a^+bc^+ \\
+		L_2 &= bc^+  \\
+		L_3 &= c^+
+	\end{align*}
+	Ho che
+	$$ L_1 \setminus L_2 = a+ $$
+	e che
+	$$ L_1 \setminus L_3 = a+bc* $$
+\end{tcolorbox}
+
+\begin{tcolorbox}
+	Ad esempio da un linguaggoi su $\Sigma = \{0, 1\}$, voglio togliere tutti gli zeri finali
+	$$(L \setminus 0*) \cap ((0 + 1)*1 + \epsilon)$$
+\end{tcolorbox}
+\begin{fatto}
+	Dato $R$ linguaggio regolare ed $L$ un linguaggio qualsiasi, allora
+	$$ R \setminus L $$
+	è ancora un linguaggio regolare.
+\end{fatto}
+\begin{proof}
+	Dato
+	$$ \mathcal{A} = \langle Q, \Sigma, \delta, q_0, F \rangle $$
+	l'automa per $R$.
+
+	Definisco 
+	$$ \mathcal{A}^\prime = \langle Q, \Sigma, \delta, q_0, F^\prime = \{ q \mid \exists y \in L . \delta(q, y) \in F \} \rangle $$
+	come l'automa per $R \setminus L$.
+
+	Non è detto che sappiamo trovare una $y \in L$.
+	Quindi questa dimostrazione non è costruttiva per tutti i linguaggi.
+\end{proof}
+
+\subsection{Morfismo}
+Il linguaggio delle parentesi bilanciate (Dick) non è regolare.
+Dato un linguaggio di programmazione, lo possiamo ricondurre al linguaggio di Dick, ad esempio
+\begin{align*}
+	\{ &\rightarrow ( \\
+	\} &\rightarrow ) \\
+	a  &\rightarrow \epsilon 
+\end{align*}
+Con questa operazione stiamo definendo un morfismo tra due alfabeti
+$$ h : \Sigma \rightarrow \Delta^* $$
+Questa funzione è facilmente estendibile alla stringa
+$$
+\begin{cases}
+	h(\epsilon) = \epsilon \\
+	h(xa) = h(x) h(a) 
+\end{cases}
+$$
+e al linguaggio 
+$$ h(L) = \{ h(w) \mid w \in L \} $$
+
+\begin{tcolorbox}
+	Dati $\Sigma = \{a, b \}$, e $\Delta = \{0, 1\}$, definiamo il morfismo $h$ come
+	\begin{align*}
+		h(a) &= 01 \\
+		h(b) &= 1 
+	\end{align*}
+	E vale che se abbiamo
+	$$ L = a^*b$$
+	questo corrisponde a
+	$$ (01)^*1 $$
+	E agli automi corrisponde
+	\begin{center}
+		\begin{tikzpicture}[remember picture]
+			\node[state, initial] 	(q0) {$q_0$};
+			\node[state, accepting]	(q1) [right=of q0] {$q_1$};
+
+			\path[->] (q0)	edge[loop above] node[above]	{a}	()
+					edge		 node[above]	{b}	(q1);
+		\end{tikzpicture}
+	\end{center}
+	diventa
+	\begin{center}
+		\begin{tikzpicture}[remember picture]
+			\node[state, initial] 	(q0) {$q_0$};
+			\node[state]		(q1) [right=of q0] {$q_1$};
+			\node[state, accepting]	(q2) [below=of q0] {$q_2$};
+
+			\path[->] (q0)	edge[bend left]	node[above]	{0}	(q1)
+					edge		node[left]	{1}	(q2)
+				  (q1)	edge[bend left]	node[below]	{1}	(q0);
+
+		\end{tikzpicture}
+	\end{center}
+	Quindi basta sostituire ogni stato che riconosce un simbolo $\sigma \in \Sigma$ con gli stati corrispondenti che riconoscerebbero $h(\sigma) \in \Delta$.
+\end{tcolorbox}
+
+\subsection{Sostituzione}
+In questa versione si sostituiscono le lettere di un linguaggio con un altro linguaggio, quindi
+$$ s : \Sigma \rightarrow 2^{\Delta^*} $$
+Nel caso di espressioni regolari questo è molto semplice, basta sostituire ogni occorrenza del simbolo $\sigma \in \Sigma$ nell'espressione con $s(\sigma)$.
+\begin{tcolorbox}
+	Ad esempio dato $ \Sigma = \{a, b\}$ e $\Delta = \{0, 1\}$, posso dire che
+	\begin{align*}
+		s(a) &= (01 + 0)^* \\
+		s(b) &= 1
+	\end{align*}
+	e
+	$$ L = (ab)^*(a + b) $$
+	ottengo
+	$$ ((01 + 0)^*1)^*((01 + 0)^* + 1) $$
+\end{tcolorbox}
+
+Nel caso di automi, basta sostituire una transizione con l'intero automa corrispondente a quel simbolo, quindi:
+\begin{tcolorbox}
+	Ad esempio dato l'automa
+	\begin{center}
+		\begin{tikzpicture}[remember picture]
+			\node[state] 	(qi) {$q$};
+			\node[state]	(qj) [right=of qi] {$p$};
+
+			\path[->] (qi)	edge	node[above]	{a}	(qj);
+		\end{tikzpicture}
+	\end{center}
+	questo verrebbe trasformato in 
+	\begin{center}
+		\begin{tikzpicture}[ remember picture
+				   , SQUIGGLY/.style={->
+				  		     , decorate
+				                     , decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}},
+				   ]
+
+			\node[state]	(q0)	at (0, 0)	{};
+			\node[state]	(qa)	at (2, 1)	{};
+			\node		(qb)	at (2, 0)	{$\vdots$};
+			\node[state]	(qc)	at (2, -1)	{};
+			\node[state]	(q)	[left=of q0, xshift=-1cm]	{$q$};
+			\node[state]	(p)	[right=of qb, xshift=1cm]	{$p$};
+
+			\draw (-1, -2)	rectangle ++(4, 4);
+
+			\node at (1, 2.5)	{$s(\text{a})$};
+
+			\draw[SQUIGGLY, bend left]  (q0) to (qa);
+			\draw[SQUIGGLY, bend right] (q0) to (qc);
+
+			\draw[->] 	      (q)	to node[above]	{$\epsilon$}	(q0);
+			\draw[->, bend left]  (qa)	to node[above]	{$\epsilon$}	(p);
+			\draw[->, bend right] (qc)	to node[below]	{$\epsilon$}	(p);
+
+		\end{tikzpicture}
+	\end{center}
+\end{tcolorbox}
+Se le sostituzioni sono ancora regolari, allora il linguaggio risultante è regolare.
+
+\begin{tcolorbox}
+	Dato un linguaggio $L \subseteq \{a, b\}^*$, voglio creare il linguaggio $L^\prime$ in cui ogni $a$ e $b$ è circondata da un numero arbitrario di $c$, questo è
+	\begin{align*}
+		s(a) &= c^* a c^* \\
+		s(b) &= c^* b c^*
+	\end{align*}
+	Manca però la stringa vuota, quindi abbiamo
+	$$ 
+	L^\prime = 
+	\begin{cases}
+		s(L) & \text{se } \epsilon \not \in L \\
+		s(L) \cup c^* &\text{altrimenti}
+	\end{cases}
+	$$
+	Questo povtevamo farlo anche con lo shuffle, quindi
+	$$ L^\prime = sh(L, c^*) $$
+\end{tcolorbox}
+
+\section{Cycle}
+Definiamo l'operazione di \textit{cycle}, come
+$$ cycle(L) = \{ yx \mid xy \in L \} $$
+ad esempio, se
+$$ L = a^*b^* $$
+$$ cycle(L) = a^*b^*a^* + b^*a^*b^* $$
+
+Dato un automa che riconosca $L$, possiamo costruire un automa che riconosca $cycle(L)$?.
+% fig 07.5
+
+
+
 \end{document}
