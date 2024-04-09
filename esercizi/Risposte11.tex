@@ -34,6 +34,8 @@
 \newcommand{\grammarP}[4]{\langle \{ #1 \}, \{ #2 \}, \{ #3 \}, #4 \rangle}
 \newcommand{\der}{\Rightarrow}
 \newcommand{\prd}{\rightarrow}
+
+\footer{}{\thepage}{}
 \begin{document}
 \begin{questions}
 	\question Fissato un intero $n > 0$, sia $K_n$ il linguaggio sull'alfabeto $\{a, b\}$ denotato dall'espressione $(a + b)^* a(a + b)^{n - 1} a(a + b)^*$.
@@ -215,7 +217,21 @@
 	\end{solution}
 	\question Rivedere la simulazione di automi two-way deterministici mediante automi one-way deterministici presentata a lezione e studiate come possa essere modificata nel caso l'automa di partenza sia two-way nondeterministico.
 	\begin{solution}
-		Finisco
+		Nel caso di automi non deterministici ad un certo stato $p$ nella tabella possono essere associate più colonne ad 1 -- più stati nuovi in cui può finire.
+		Allora va cambiata la costruzione della tabella $\tau$, iniziando da $\tau_\epsilon$ vale che
+		$$ \forall p \in Q \; \forall q \in \delta(p, \rhd) \mid \tau_\epsilon(p, q) = 1 $$
+		Inoltre dato un $\sigma \in \Sigma, w \in \Sigma^*$, dato $\tau_w$ calcoliamo $\tau_{w\sigma}$. Ci possono essere due casi:
+		\begin{itemize}
+			\item $ \forall p, q \in Q \mid (q, +1) \in \delta(p, \sigma) \Rightarrow \tau_{w\sigma}(p, q) = 1 $
+			\item $ \forall p, r_1 \in Q \mid (r_1, -1) \in \delta(p, \sigma) $, allora, dopo un numero arbitrario di passaggi nella stringa $w$, torneremo al simbolo $\sigma$ in degli stati $P = \{p_1', p_1'', \dots\}$, e 
+				$$ \forall p_1 \in P \mid \tau_w(r_1, p_1) = 1 $$
+				Ora per ogni elemento $p_1 \in P$ ripetiamo il passo di sopra con $\delta(p_1, \sigma)$, quindi:
+				\begin{itemize}
+					\item $(q, +1) \in \delta(p_1, \sigma)$, $\tau_{w\sigma}(p, q) = 1$
+					\item $(r_2, -1) \in \delta(p_1, \sigma)$, ripeto il processo di sopra 
+				\end{itemize}
+		\end{itemize}
+		FINISCO !!! 
 	\end{solution}
 \end{questions}
 \end{document}
