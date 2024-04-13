@@ -136,23 +136,24 @@ Un'altra variazione è quella senza end marker in cui il nastro contiene solo l'
 In questo caso però l'automa cambia, ed esempio, $K_n$ possiamo ancora riconoscerlo con il primo metodo, ma non con il secondo.
 
 \begin{teorema}
-	Gli automi two way riconoscono i linguaggio regolari, o alternativamente può essere trasformato ad un automa a stati finiti 
+	Gli automi two way riconoscono i linguaggi regolari, o alternativamente possono essere trasformati in un automa a stati finiti 
 \end{teorema}
 \begin{proof}
 	Vediamo nel caso determinstico, ma nel caso non deterministico si fa nello stesso modo.
 
 	Il concetto generale è che se l'automa two way fa una serie di giri per passare dallo stato $q$ allo stato $p$, nell'automa one way abbiamo un modo per passare direttamente da $q$ a $p$.
 	Ovviamente questo non possiamo farlo ricordandoci l'intero input, perché la memoria è finita.
-	Introduciamo le \textit{tabelle di transizione}: da una stringa $w \in \Sigma^*$, a questa è associata una tabella
+
+	Introduciamo le \textit{tabelle di transizione}: data una stringa $w \in \Sigma^*$, a questa è associata una tabella
 	$$ \tau_w : Q \times Q \rightarrow \{0, 1\} $$
 	Questa rappresenta lo stato da qui si esce se si suppone di essere nello stato $q$ all'ultimo simbolo di $\rhd w$.
-	Quindi $\tau(p, q) = 1$ sse essite una sequenza di mosse che inizia sul simbolo più a destra di una porzione del nastro che contiene $\rhd w$ nello stato $p$ e raggiunge la prima cella a destra di tale porzione nello stato $q$
+	Quindi $\tau(p, q) = 1$ sse essite una sequenza di mosse che inizia sul simbolo più a destra di una porzione del nastro che contiene $\rhd w$ nello stato $p$ e raggiunge la prima cella a destra di tale porzione nello stato $q$.
 	% fig 10.1
 	Da notare è che il numero di tabelle è finito, perché il numero di stati è finito.
 
 	Iniziamo a calcolare $\tau_\epsilon$, questa contiene un uno per tutte le regole per cui $\delta(p, \rhd) = q$.
 
-	Ora per un $\sigma \in \Sigma, w \in \Sigma?^*$ dato $\tau_w$ calcoliamo $\tau_{w\sigma}$.
+	Ora per un $\sigma \in \Sigma, w \in \Sigma^*$ dato $\tau_w$ calcoliamo $\tau_{w\sigma}$.
 	Ci possono essere due casi:
 	\begin{itemize}
 		\item se $\delta(p, \sigma) = (q, +1)$, allora $\tau(p, q) = 1$
@@ -169,7 +170,7 @@ In questo caso però l'automa cambia, ed esempio, $K_n$ possiamo ancora riconosc
 			Se ci mettiamo $k = 0$, abbiamo il caso di sopra.
 	\end{itemize}
 
-	La proprietà importante di questa tabella è che se $\tau_w = \tau_{w'}$, alora 
+	La proprietà importante di questa tabella è che se $\tau_w = \tau_{w'}$, allora
 	$$\forall \sigma \in \Sigma \mid \tau_{w\sigma} = \tau_{w'\sigma} $$
 	quindi se due stringhe hanno la stessa tabella, aggiungere un altro simbolo restituisce di nuovo la stessa tabella, questo perché la costruzione della tabella non dipende dalla composizione di $w$. % sigma
 
@@ -198,5 +199,8 @@ In questo caso però l'automa cambia, ed esempio, $K_n$ possiamo ancora riconosc
 
 	Lo stato finale $q$ che raggiungeremo dopo superato l'end marker nell'automa two way, 
 \end{proof}
+\`E facile vedere che il numero di stati è al massimo $n \cdot 2^{n^2}$, visto che le tabelle di transizioni sono funzioni da $Q \times Q \rightarrow \{0, 1\}$, quindi sono in tutto $2^{n^2}$.
+
+Nel caso di 2NFA abbiamo upper bound $2^{O(n^2)}$.
 
 \end{document}
