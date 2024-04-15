@@ -126,7 +126,7 @@ Definiamo
 \end{itemize}
 
 Ad esempio definiamo il linguaggio delle parole che finiscono con due $a$ come
-$$ L = { w \in \Sigma^* \mid \exists y \in \Sigma^* w = yaa } $$
+$$ L = \{ w \in \Sigma^* \mid \exists y \in \Sigma^* w = yaa \} $$
 quindi con un insieme finito di simboli siamo risuciti a rappresentare un insieme infinito.
 Questo tipo di descrizione è detta \textit{dichiarativa}.
 
@@ -250,7 +250,7 @@ Due grammatiche $G_1$ e $G_2$ sono equivalenti se e solo se $L(G_1) = L(G_2)$.
 		  &\Rightarrow a a a B b b c c c \\
 		  &\Rightarrow a a a b b b c c c
 	\end{align*}
-	Si può dimostrare che il linguaggio generato da questa grammatica è $L = {a^nb^nc^n \mid n > 0 }$.
+	Si può dimostrare che il linguaggio generato da questa grammatica è $L = \{a^nb^nc^n \mid n > 0 \}$.
 \end{tcolorbox}
 
 Le grammatiche sono classificate in base alla forma delle produzioni, possiamo definire quattro tipi di grammatiche:
@@ -331,12 +331,12 @@ E per ognuna di queste classi esiste un modello di macchina riconoscitrice:
 Sia $G$ una grammatica di tipo 1 e $w$ una stringa di terminali di lunghezza $n = |w|$, voglio sapere se $w$ appartiene a $G$.
 Siccome la grammatica di tipo 1 è monotonica (le regole forme sentenziali non possono decrescere), queste non possono mai superare $n$ durante la derivazione di $w$.
 Chiamiamo 
-$$T_i = { \gamma \in (V \cup \Sigma)^{\leq n} \mid S \overset{\leq i}{\Rightarrow} \gamma }$$
+$$T_i = \{ \gamma \in (V \cup \Sigma)^{\leq n} \mid S \overset{\leq i}{\Rightarrow} \gamma \}$$
 Costruiamo gli insiemi $T_i$ per $i = 0, 1, \dots$
 \begin{align*}
-	T_0 &= { S } \\
+	T_0 &= \{ S \} \\
 	    &\vdots \\
-	T_i &= T_{i - 1} \cup { \gamma \in (V \cup \Sigma)^{\leq n} \mid \exists \beta \in T_{i - 1} . \beta \Rightarrow \gamma } 
+	T_i &= T_{i - 1} \cup \{ \gamma \in (V \cup \Sigma)^{\leq n} \mid \exists \beta \in T_{i - 1} . \beta \Rightarrow \gamma \} 
 \end{align*}
 Allora 
 $$T_0 \subseteq T_1 \subseteq \dots \subseteq T_{i - 1} \subseteq T_{i} \subseteq \dots \subseteq (V \cup \Sigma)^{\leq n}$$
@@ -345,12 +345,12 @@ A questo punto ho trovato tutte le forme sentenziali di lunghezza $n$, e per ved
 
 
 Quello che posso fare è considerare l'insieme 
-$$U_i = { \gamma \in (V \cup \Sigma)^* \mid S \overset{\leq i}{\Rightarrow} \gamma }$$
+$$U_i = \{ \gamma \in (V \cup \Sigma)^* \mid S \overset{\leq i}{\Rightarrow} \gamma \}$$
 Quindi ancora
 \begin{align*}
-	U_0 &= { S } \\
+	U_0 &= \{ S \} \\
 	    &\vdots \\
-	U_i &= U_{i - 1} \cup { \gamma \in (V \cup \Sigma)^* \mid \exists \beta \in U_{i - 1} . \beta \Rightarrow \gamma } 
+	U_i &= U_{i - 1} \cup \{ \gamma \in (V \cup \Sigma)^* \mid \exists \beta \in U_{i - 1} . \beta \Rightarrow \gamma \} 
 \end{align*}
 $$U_0 \subseteq U_1 \subseteq \dots \subseteq U_{i - 1} \subseteq U_{i} \subseteq \dots \subseteq (V \cup \Sigma)^*$$
 Quindi che nei linguaggi di tipo 0 perdo la monotonicità delle derivazioni, non posso più trovare una $i$ tale che $U_i = U_{i - 1}$.
