@@ -1,0 +1,196 @@
+\documentclass[12pt, answers]{exam}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[italian]{babel}
+\usepackage{caption}
+\usepackage[utf8]{inputenc}
+\usepackage{embedall}
+\usepackage{etoolbox}
+\usepackage{float}
+\AtBeginEnvironment{align}{\setcounter{equation}{0}}
+\embedfile{\jobname.tex}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{mathtools}
+\usepackage{subcaption}
+\usepackage{tabularray}
+\usepackage{tikz}
+\usetikzlibrary{positioning, automata, decorations.pathreplacing, calligraphy}
+\usepackage{xcolor}
+\usepackage[bookmarks]{hyperref}
+
+\definecolor{codegray}{gray}{0.95}
+\lstdefinestyle{mystyle}{
+	numberstyle=\scriptsize\color{black},
+	basicstyle=\footnotesize,
+	numbers=left,
+	numbersep=5pt,
+}
+\lstset{style=mystyle}
+\overfullrule=10pt
+
+\newcommand{\grammar}[4]{\langle #1, #2, #3, #4 \rangle}
+\newcommand{\grammarP}[4]{\langle \{ #1 \}, \{ #2 \}, \{ #3 \}, #4 \rangle}
+\newcommand{\der}{\Rightarrow}
+\newcommand{\prd}{\rightarrow}
+
+\footer{}{\thepage}{}
+\begin{document}
+\begin{questions}
+	\question Descrivete e costruite un automa a pila che accetti delle stringhe sull'alfabeto $\{a, b\}$ cha contengono lo stesso numero di $a$ e di $b$, come ad esempio $aabb$, $abba$, $baba$.
+	\begin{solution}
+		Costruiremo un automa a pila vuota per questo linguaggio:
+		$$ M = \langle \{q_0, q_a, q_b, q_F\}, \{a, b\}, \{X, Z_0\}, \delta, q_0, Z_0 \rangle $$
+		con $\delta$ così definita
+		\begin{itemize}
+			\item all'inizio se si incontra una $a$ si finisce in uno stato $q_a$ e si contano le $a$, mentre se si incontra una $b$ si finisce in uno stato $q_b$ dove si contano le $b$
+				\begin{align*}
+					\delta(q_0, a, Z_0) &= \{ (q_a, XZ_0) \} \\
+					\delta(q_0, b, Z_0) &= \{ (q_b, XZ_0) \} \\
+				\end{align*}
+				ogni nuova lettera incontrata aumenta il numero di $X$, queste tengono conto delle numero di $a$ -- o $b$ -- incontrate:
+				\begin{align*}
+					\delta(q_a, a, X) &= \{ (q_a, XX) \} \\
+					\delta(q_b, b, X) &= \{ (q_b, XX) \} 
+				\end{align*}
+			\item supponiamo di essere nello stato $q_a$, per ogni $b$ incontrata decrementiamo il numero di $X$ sulla pila
+					$$ \delta(q_a, b, X) = \{ (q_a, \epsilon) \} $$
+				e viceversa per $q_b$
+					$$ \delta(q_b, a, X) = \{ (q_b, \epsilon) \} $$
+			\item nel caso in cui si finiscano le $X$ sulla pila si cambia stato, quindi
+				\begin{align*}
+					\delta(q_a, b, Z_0) &= \{ (q_b, X Z_0)\} \\
+					\delta(q_b, a, Z_0) &= \{ (q_a, X Z_0)\} 
+				\end{align*}
+			\item quando la pila è vuota si può finire, quindi
+				\begin{align*}
+					\delta(q_a, \epsilon, Z_0) &= \{ (q_F, \epsilon) \} \\
+					\delta(q_b, \epsilon, Z_0) &= \{ (q_F, \epsilon) \}
+				\end{align*}
+		\end{itemize}
+		Per come l'automa di sopra è costruito è per forza non deterministico.
+
+		Mostriamo le derivazioni per 
+		\begin{itemize}
+			\item $aabb$
+				\begin{align*}
+					(q_0, aabb, Z_0) &\vdash (q_a, abb, XZ_0) \\
+					&\vdash (q_a, bb, XXZ_0) \\
+					&\vdash (q_a, b, XZ_0) \\
+					&\vdash (q_a, \epsilon, Z_0) \\
+					&\vdash (q_F, \epsilon, \epsilon)
+				\end{align*}
+			\item $abba$
+				\begin{align*}
+					(q_0, abba, Z_0) &\vdash (q_a, bba, XZ_0) \\
+					&\vdash (q_a, ba, Z_0) \\
+					&\vdash (q_b, a, XZ_0) \\
+					&\vdash (q_b, \epsilon, Z_0) \\
+					&\vdash (q_F, \epsilon, \epsilon)
+				\end{align*}
+			\item $baba$
+				\begin{align*}
+					(q_0, baba, Z_0) &\vdash (q_b, aba, XZ_0) \\
+					&\vdash (q_b, ba, Z_0) \\
+					&\vdash (q_b, a, XZ_0) \\
+					&\vdash (q_b, \epsilon, Z_0) \\
+					&\vdash (q_F, \epsilon, \epsilon)
+				\end{align*}
+		\end{itemize}
+	\end{solution}
+	\question Descrivete e costruite un automa a pila che accetti il linguaggio
+	$$ \{ a^n b^m \mid n \neq m \} $$
+	\begin{solution}
+		Utilizzando un automa che accetta per pila vuota
+		$$ M = \langle \{q_0, q_1, q_T, q_F\}, \{a, b\}, \{X, Y, Z_0\}, \delta, q_0, Z_0\rangle $$
+		definiamo $\delta$ in questo modo:
+		\begin{itemize}
+			\item inseriamo sopra il simbolo iniziale della pila un altro simbolo
+				$$ \delta(q_0, a, Z_0) = \{ (q_0, XYZ_0) \} $$
+			\item per ogni $a$ incontrata aggiungiamo una $X$ alla pila
+				$$ \delta(q_0, a, X) = \{ (q_0, XX) \} $$
+			\item alla prima $b$ incontrata cambiamo stato e incominciamo a decrementare la pila
+				$$ \delta(q_0, b, X) = \{(q_1, \epsilon)\} $$
+			\item nel caso le $b$ fossero in minor numero delle $a$, ci sposiamo in uno stato finale in cui si svuota la pila
+				\begin{align*}
+					\delta(q_1, \epsilon, X) &= \{ (q_F, \epsilon) \} \\
+					\delta(q_F, \epsilon, X) &= \{ (q_F, \epsilon) \} \\
+					\delta(q_F, \epsilon, Y) &= \{ (q_F, \epsilon) \} \\
+					\delta(q_F, \epsilon, Z_0) &= \{ (q_F, \epsilon) \}
+				\end{align*}
+			\item nel caso le $b$ siano in egual numero alle $a$ -- quindi abbiamo raggiunto $Y$ -- entriamo in uno stato trappola
+				$$ \delta(q_1, \epsilon, Y) = \{ (q_T, Y) \} $$
+			\item nel caso le $b$ siano più delle $a$ consumiamo $Y$
+				$$ \delta(q_1, b, Y) = \{(q_1, \epsilon)\} $$
+				e continuamo a consumare $b$ dall'input
+				$$ \delta(q_1, b, Z_0) = \{(q_1, Z_0)\} $$
+				infine consumiamo $Z_0$
+				$$ \delta(q_1, \epsilon, Z_0) = \{(q_1, \epsilon)\} $$
+		\end{itemize}
+	\end{solution}
+	\question Sia $\Sigma = \{(, )\}$ un alfabeto i cui simboli sono la parentesi aperta e la parentesi chiusa.
+	\begin{parts}
+		\part Descrivete e costruite un automa a pila che riconosca il linguaggi formato da tutte le sequenze di parentesi correttamente bilanciate, come ad esempio $(()(()))()$.
+		\begin{solution}
+			Questo è molto simile all'automa dell'esercizio uno, con il vincolo che il numero di $)$ non superi mai quello delle $($.
+			Costruiamo l'automa che riconosce per pila vuota
+			$$ M = \langle \{q_0\}, \{(, )\}, \{X, Z_0\}, \delta, q_0, Z_0 \rangle $$
+			e definiamo $\delta$ in modo tale che quando si incontra una parentesi aperta si aggiunge un simbolo sulla pila, e quando la si incontra vuota lo si toglie:
+			\begin{align*}
+				\delta(q_0, \epsilon, Z_0) &= (q_0, \epsilon) \\
+				\delta(q_0, (, Z_0) &= \{(q_0, XZ_0)\} \\
+				\delta(q_0, (, X) &= \{(q_0, XX)\} \\
+				\delta(q_0, ), X) &= \{(q_0, \epsilon)\} 
+			\end{align*}
+			Proviamo a riconoscere la stringa di sopra:
+			\begin{align*}
+				(q_0, (()(()))(), Z_0) &\vdash (q_0, ()(()))(), XZ_0) \\
+				                       &\vdash (q_0, )(()))(), XXZ_0) \\
+				                       &\vdash (q_0, (()))(), XZ_0) \\
+				                       &\vdash (q_0, ()))(), XXZ_0) \\
+				                       &\vdash (q_0, )))(), XXXZ_0) \\
+				                       &\vdash (q_0, ))(), XXZ_0) \\
+				                       &\vdash (q_0, ))(), XXZ_0) \\
+				                       &\vdash (q_0, )(), XZ_0) \\
+				                       &\vdash (q_0, (), Z_0) \\
+				                       &\vdash (q_0, ), XZ_0) \\
+				                       &\vdash (q_0, \epsilon, Z_0) \\
+				                       &\vdash (q_0, \epsilon, \epsilon) \\
+			\end{align*}
+		\end{solution}
+		\part Risolvete il punto precedente per un alfabeto con due tipi di parentesi, come $\Sigma = \{(, ), [, ]\}$, nel caso in cui non vi siano vincoli tra i tipi di parentesti (le tonde possono essere contenute tra quadre e viceversa). Esempio $[()([])[]]$, ma non $[[][(])()]$.
+		\begin{solution}
+			Questo è simile all'automa di sopra, ma utilizza un simbolo in più per le quadre
+			$$ M = \langle \{q_0\}, \{(, )\}, \{Y, X, Z_0\}, \delta, q_0, Z_0 \rangle $$
+			con $\delta$
+			\begin{align*}
+				\delta(q_0, \epsilon, Z_0) &= (q_0, \epsilon) \\
+				\delta(q_0, (, Z_0) &= \{(q_0, XZ_0)\} \\
+				\delta(q_0, [, Z_0) &= \{(q_0, YZ_0)\} \\
+				\delta(q_0, (, X) &= \{(q_0, XX)\} \\
+				\delta(q_0, (, Y) &= \{(q_0, XY)\} \\
+				\delta(q_0, [, X) &= \{(q_0, YX)\} \\
+				\delta(q_0, [, Y) &= \{(q_0, YY)\} \\
+				\delta(q_0, ), X) &= \{(q_0, \epsilon)\} \\
+				\delta(q_0, ], Y) &= \{(q_0, \epsilon)\} 
+			\end{align*}
+			Ad esmepio mostriamo per $[()([])[]]$
+			\begin{align*}
+				(q_0, [()([])[]], Z_0) &\vdash (q_0, ()([])[]], YZ_0) \\
+				                       &\vdash (q_0, )([])[]], XYZ_0) \\
+						       &\vdash (q_0, ([])[]], YZ_0) \\
+						       &\vdash (q_0, [])[]], XYZ_0) \\
+						       &\vdash (q_0, ])[]], YXYZ_0) \\
+						       &\vdash (q_0, )[]], XYZ_0) \\
+						       &\vdash (q_0, []], YZ_0) \\
+						       &\vdash (q_0, ]], YYZ_0) \\
+						       &\vdash (q_0, ], YZ_0) \\
+						       &\vdash (q_0, \epsilon, Z_0) \\
+						       &\vdash (q_0, \epsilon, \epsilon) 
+			\end{align*}
+		\end{solution}
+	\end{parts}
+
+\end{questions}
+\end{document}
