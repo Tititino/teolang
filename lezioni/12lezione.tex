@@ -63,7 +63,7 @@ $$ M = ( Q, \Sigma, \Gamma, \delta, q_0, Z_0, F ) $$
 	\item $Z_0 \in \Gamma$, lo stato iniziale della pila
 	\item $F$ un insieme di stati finali
 \end{itemize}
-La funzione di transizione dipenderà quindi da tre cose: dallo stato corrente, dal simbolo dell'input corrente e dallo stato corrente dello stato
+La funzione di transizione dipenderà quindi da tre cose: dallo stato corrente, dal simbolo dell'input corrente e dallo stato corrente della pila
 $$ \delta : Q \times (\Sigma \cup \{\epsilon\}) \times \Gamma \rightarrow \text{PF}(Q \times \Gamma^*) $$
 Quindi la funzione di transizione cambia lo stato dell'automa e rimpiazza il simbolo in cima alla pila con una stringa di stati della pila.
 $\text{PF}(-)$ sta per le parti finite, infatti se utilizzassimo $2^{Q \times \Gamma^*}$ potremmo avere programmi infiniti, visto che $\Gamma^*$ è un insieme infinito.
