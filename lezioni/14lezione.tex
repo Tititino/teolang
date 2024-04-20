@@ -1,0 +1,258 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{cancel}
+\usepackage{caption}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage{float}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{subcaption}
+\usepackage{tabularray}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata, chains, scopes, decorations.text, patterns, decorations.pathmorphing, positioning, decorations.pathreplacing, calligraphy}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\newtheorem{teorema}{Teorema}
+\newtheorem{corollario}{Corollario}
+\newtheorem{proposizione}{Proposizione}
+\newtheorem{proprietà}{Proprietà}
+\newtheorem{lemma}{Lemma}
+\newtheorem{fatto}{Fatto}
+\newtheorem{definizione}{Definizione}
+\newtheorem{nota}{Nota}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage{teolang}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+
+\section{Dall'automa a pila alla grammatica di tipo 2}
+Ripetiamo la versione di automa a pila semplificato vista a lezione scorsa, in questo per riuscire ad accettare dobbiamo arrivare in uno stato finale con solo $Z_0$ lo stato finale sulla pila.
+
+Dobbiamo trovare un modo di trasformare un automa a pila come definito nella lezione scorsa, in una grammatica.
+Questa grammatica ha nonterminali della forma $[qAp]$ con $q, p \in Q$ e $A \in V$, e rappresenta:
+\begin{itemize}
+	\item $q$ è lo stato in cui si inizia
+	\item $p$ è lo stato in cui si finisce 
+	\item e $A$ è il simbolo in cima alla pila all'inizio e alla fine della computazione.
+\end{itemize}
+% fig 14.1
+Infatti negli automi come li abbiamo definiti, vale la proprietà per cui ??? % Z_0
+
+Definiamo ora le regole di produzione della grammatica induttivamente come le stringhe riconosciute dalla computazione $[qAp]$:
+\begin{itemize}
+	\item base:
+		\begin{itemize}
+			\item caso $0$: il caso più semplice è $[qAq]$, qui l'unica parola riconosciuta è $\epsilon$, quindi è necessaria la regola
+				$$ [qAq] \rightarrow \epsilon $$
+				o, più formalmente
+				$$ \forall q \in Q, A \in \Gamma \mid [qAq] \rightarrow \epsilon $$	% domanda pighi su computazione che inizia e finisce nello stato q
+			\item caso $0'$: il secondo caso più semplice è quello in qui si è nello stato $q$, si consuma un carattere o nessuno, e questo ci porta nello stato $p$. 
+				Questo corrisponde al caso
+				$$ [qAp] \rightarrow a \hspace{1cm} a \in \Sigma \cup \{\epsilon\} $$
+				nnel caso $[qAp] \rightarrow a$ con $a \in \Sigma \cup \{\epsilon\}$ se $(p, -) \in \delta(q, a, A)$, cioè se posso andare nello stato $p$ senza muovere la pila consumando un simbolo in input o niente ($\epsilon$)
+				$$ \forall q, p \in Q, A \in \Gamma, a \in \Sigma \cup \{\epsilon\} \mid [qAp] \rightarrow a $$
+		\end{itemize}
+	\item passo: si distinguono due casi
+		% fig 14.2
+		\begin{itemize}
+			\item caso 1: nei passi intermedi (tranne l'ultimo) la pila è sempre strettamente più alta di quando si è iniziato, quindi
+				$$ [qAp] \rightarrow [q'Bp'] $$
+				con $(q', \text{push}(B)) \in \delta(q, \epsilon, A)$ e $(p', \text{pop}) \in \delta(p', \epsilon, B)$.
+				Questo vale per ogni $q, q' p, p' \in Q, A, B \in \Gamma$.
+				$$ \forall q, q', p, p' \in Q, A, B \in \Gamma \mid (q', \text{push}(B)) \in \delta(q, \epsilon, A) \wedge (p', \text{pop}) \in \delta(p', \epsilon, B) \Rightarrow [qAp] \rightarrow [q'Bp'] $$
+			\item caso 2: allora possiamo scomporre la computazione in due parti, quindi
+				$$ \forall q, p, r \in Q, A \in \Gamma \mid [qAp] \rightarrow [qAr][rAp] $$
+		\end{itemize}
+\end{itemize}
+Si può dimostrare che
+\begin{lemma}
+	$\forall q, p \in Q, A \in \Gamma, w \in \Sigma^* \mid [qAp] \overset{*}{\Rightarrow} w$ sse 
+	% fig 14.3
+	l'automa $M$ in una configurazione con $A$ in cima alla pila, stato $q$, dopo aver letto $w$ raggiunge una configurazione in cui il contentuto della pila è lo stesso dell'inizio, lo stato è $p$ e nei passi intermedi la pila non scende mai sotto il livello iniziale.
+\end{lemma}
+Per cui quello che c'è sotto alla pila all'inizio della computazione non è rilevante.
+
+A noi interessano tutte le triple $[q_0Z_0q_F] \overset{*}{\Rightarrow} w$ con $q_0$ iniziale e $q_F$ finale.
+Quindi definiamo l'insieem variabili della grammatica $V$ come l'insieme delle triple sopra definite unito alla variabile $S$ tale che
+$$ \forall q_F \in F \mid S \rightarrow [q_0 Z_0 q_F] \in P $$
+Questo $S$ così definito è il simbolo iniziale.
+
+Si può vedere che qui tutte le produzioni sono di pochi tipi: variabile a terminale, variabile a variabile e variabile a coppia di variabili.
+
+\section{Forme normali per le grammatiche di tipo 2}
+Come abbiamo visto nelle grammatiche di tipo 2 le produzioni sono della forma
+$$ A \rightarrow \alpha \hspace{1cm} A \in V, \alpha \in (V \cup \Sigma)^* $$
+
+Vediamo ora due forme normali, ogni grammatica può essere trasformata in una di queste forme normali a patto di sacrificare la parola vuota.
+
+\subsection{Forma normale di Greibach}
+In una grammatica in FNG tutte le produzioi sono della forma
+$$ A \rightarrow a B_1 \dots B_k \hspace{1cm} a \in \Sigma, A, B_1, \dots, B_k \in V, k \geq 0 $$
+
+Supponiamo di avere la gramamtica
+\begin{align*}
+	A &\rightarrow a B B \\
+	A &\rightarrow b \\
+	B &\rightarrow b B \\
+	B &\rightarrow b
+\end{align*}
+e di aver fatto la trasformazione in automa a pila.
+In questa forma normale la pila avrà in cima sempre un terminale e quindi si può avere un simbolo di lookahead e scegliere più precisamente la prossima produzione da utilizzare, anche se non si toglie il nondeterminismo (v. $B \rightarrow b B$ e $B \rightarrow b$).
+Con questo tipo di automa si possono eliminare le $\epsilon$-mosse.
+
+\subsection{Forma normale di Chomsky}
+Nella FNC ci sono solo due tipi di regole
+\begin{align*}
+	A & \rightarrow B C & A, B, C \in V \\
+	A & \rightarrow a & A \in V, a \in \Sigma \\
+\end{align*}
+Questa genera alberi di derivazione binari, salvo sulle foglie.
+Questa è comoda per studiare alcune proprietà combinatorie.
+
+Data una grammatica genererica $G$ eseguiamo i seguenti passi (l'ordine è importante) per trasformarla in FNC:
+\begin{enumerate}
+	\item eliminazione delle $\epsilon$-produzioni: diciamo che una variabile $A$ è cancellabile sse $A \overset{*}{\Rightarrow} \epsilon$.
+		$A$ è cancellabile banalmente se $A \rightarrow \epsilon$, o alternativamente se $A \rightarrow X_1 X_2 \dots X_k$ con $X_1, X_2, \dots, X_k$ cancellabili.
+		Questo può essere definito come una chiusura dove
+		$$ C_0 = \{ A \mid A \rightarrow \epsilon \} $$
+		e 
+		$$ C_i = C_{i - 1} \cup \{ A \mid \exists A \rightarrow X_1 X_2 \dots X_k \; \text{con} \; \forall i \in 1, \dots, k \mid X_i \in C_{i - 1} \} $$
+		Visto che
+		$$ C_0 \subseteq C_1 \subseteq \dots \subseteq V $$
+		e $V$ è finito, allora esiste un $i$ tale che $C_i = C_{i - 1}$.
+
+		Ora sia $C$ l'insisme delle variabili cancellabili, costruiamo una grammatica $G' = \langle V, \Sigma, P', S \rangle$ con $P'$ costituito da tutte le produzioni di $P$ eccetto le $\epsilon$ produzioni a per ogni produzione $A \rightarrow X_1 X_2 \dots X_k$ con $X_1, X_2, \dots, X_k \in V \cup \Sigma$ aggiungo a $P'$ le produzioni $A \rightarrow X_{i_1} X_{i_2} \dots X_{i_j}$ tali che $1 \leq i_1 < i_2 < \dots < i_j \leq k$ e per $\forall X_l \not \in X_{i_1}, \dots, X_{i_j} \mid X_l \in C$ e $j \geq 1$.
+
+		\begin{tcolorbox}
+			Supponiamo di avere nella gramamtica $G$ che vogliamo trasformare la produzone
+			$$ A \rightarrow B C a D $$
+			e che l'insieme delle variabili cancellabili è $C = \{C, D\}$.
+
+			Nella mia gramamtica $G'$ simulo la cancellazione di $C$ e $D$, quindi aggiungo le produzioni
+			\begin{align*}
+				A &\rightarrow B a D \\
+				A &\rightarrow B C a \\
+				A &\rightarrow B a \\
+			\end{align*}
+		\end{tcolorbox}
+
+		\begin{tcolorbox}
+			Supponiamo di avere nella gramamtica $G$ che vogliamo trasformare la produzone
+			$$ A \rightarrow C D E $$
+			e che l'insieme delle variabili cancellabili è $C = \{C, D, E\}$.
+
+			Nella mia gramamtica $G'$ simulo la cancellazione di $C$ e $D$, quindi aggiungo le produzioni
+			\begin{align*}
+				A &\rightarrow C D \\
+				A &\rightarrow C E \\
+				A &\rightarrow D E \\
+				A &\rightarrow C \\
+				A &\rightarrow D \\
+				A &\rightarrow E \\
+			\end{align*}
+		\end{tcolorbox}
+
+		Visto che le produzioni da aggiungere sotto tutti i sottoinsiemi delle variabili cancellabili di un lato destro meno l'insieme vuoto, vengono aggiunte innumerevoli variabili.
+	\item eliminazione delle produzioni unitarie: una produzione unitaria è una produzione della forma
+		$$ A \rightarrow B \hspace{1cm} A, B \in V $$
+		Si costruisce l'insieme di tutte le coppie di variabili $X, Y$ tali per cui $X \overset{+}{\Rightarrow} Y$ in almeno un passo.
+		Abbiamo quindi
+		$$ A_0 \rightarrow A_1 \rightarrow \dots \rightarrow A_k $$
+		e possiamo considerare catene di lunghezza al massimo $|V|$.
+
+		Nella nuova grammatica tolgo tutte le produzioni unitarie e se $X \rightarrow \dots \rightarrow Y \rightarrow \alpha$ e $\alpha \in \Sigma$ oppure $|\alpha| > 1$, allora aggiungo la produzione $X \rightarrow \alpha$.
+	\item eliminazione simboli inutili: $X \in \Sigma \cup \Sigma$ è utile sse $\exists S \overset{*}{\Rightarrow} \alpha X \beta \overset{*}{\Rightarrow} w \in \Sigma^*$.
+	\item eliminazione dei terminali: in tutte le produzioni $A \rightarrow \alpha$ con $|\alpha| > 1$ si introducono nonterminali per ogni terminale.
+		\begin{tcolorbox}
+			Supponiamo di avere le produzioni
+			\begin{align*}
+				A &\rightarrow A aab C \\
+				A &\rightarrow b C \\
+				A &\rightarrow b b \\
+			\end{align*}
+			introduciamo i nonterminali $X_a$ e $X_b$ e le regole
+			\begin{align*}
+				A &\rightarrow A X_a X_a X_b C \\
+				A &\rightarrow X_b C \\
+				A &\rightarrow X_b X_b \\
+				X_a & \rightarrow a \\
+				X_b & \rightarrow b
+			\end{align*}
+		\end{tcolorbox}
+	\item binarizzazione delle produzioni: per ogni produzione $A \rightarrow B_1 B_2 \dots B_k$ con $k > 2$, si introducono delle produzioni intermedie
+		\begin{align*}
+			A &\rightarrow B_1 Z_1 \\
+			Z_1 &\rightarrow B_2 Z_2 \\
+			    &\vdots \\
+			Z_{k - 2} &\rightarrow B_{k - 1} B_k
+		\end{align*}
+\end{enumerate}
+\begin{tcolorbox}
+	Date le produzioni
+	\begin{align*}
+		S &\rightarrow a B \\
+		S &\rightarrow b A \\
+		A &\rightarrow a \\
+		A &\rightarrow a S \\
+		A &\rightarrow b A A \\
+		B &\rightarrow b \\
+		B &\rightarrow b S \\
+		B &\rightarrow a B B \\
+	\end{align*}
+	questa è già priva di $\epsilon$-produzioni, produzioni unitarie e tutti i simboli sono utili.
+
+	Ora eliminiamo i terminali e otteniamo
+	\begin{align*}
+		S &\rightarrow X_a B \\
+		S &\rightarrow X_b A \\
+		A &\rightarrow a \\
+		A &\rightarrow X_a S \\
+		A &\rightarrow X_b A A \\
+		B &\rightarrow b \\
+		B &\rightarrow X_b S \\
+		B &\rightarrow X_a B B \\
+		X_a &\rightarrow a \\
+		X_b &\rightarrow b \\
+	\end{align*}
+	ed ora binarizziamo le produzioni
+	\begin{align*}
+		S &\rightarrow X_a B \\
+		S &\rightarrow X_b A \\
+		A &\rightarrow a \\
+		A &\rightarrow X_a S \\
+		A &\rightarrow X_b E_1 \\
+		E &\rightarrow A A \\
+		B &\rightarrow b \\
+		B &\rightarrow X_b S \\
+		B &\rightarrow X_a E_2 \\
+		E_2 &\rightarrow B B \\
+		X_a &\rightarrow a \\
+		X_b &\rightarrow b \\
+	\end{align*}
+\end{tcolorbox}
+
+\end{document}
