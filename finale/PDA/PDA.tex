@@ -6,14 +6,17 @@
 \usepackage[italian]{babel}
 \usepackage{bytefield}
 \usepackage{cancel}
+\usepackage{caption}
 % \usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage{float}
 \usepackage[bookmarks]{hyperref}
 \usepackage{listings}
 \usepackage[scr=rsfs]{mathalpha}
 \usepackage{siunitx}
+\usepackage{subcaption}
 \usepackage{tabularray}
-\usepackage{tcolorbox}
-\usepackage{tikz}\usetikzlibrary{automata, decorations.text, patterns, decorations.pathmorphing, positioning, decorations.pathreplacing, calligraphy}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata, chains, scopes, decorations.text, patterns, decorations.pathmorphing, positioning, decorations.pathreplacing, calligraphy}
 \usetikzlibrary{external}
 \usepackage{todonotes}
 \usepackage{xcolor}
@@ -29,7 +32,7 @@
 
 \renewcommand\qedsymbol{$\blacksquare$}
 
-\usepackage{teolang}
+% \usepackage{teolang}
 
 \definecolor{codegray}{gray}{0.95}
 
@@ -45,1363 +48,764 @@
 \overfullrule=0.2cm
 
 \tikzexternalize 
+\tcbset{shield externalize}
 \begin{document}
 \tableofcontents
 \newpage
 
 \chapter{Intro}
-Studieremo dei sistemi particolari (macchine/grammatiche) e il loro comportamento (il linguaggio descritto) e le risorse utilizzate (risorse utilizzate, risorse per trasformazioni da una macchina e l'altra, \dots). 
+% lezione 12
+\section{Automi a pila}
+Gli automi a pila sono automi che oltre ad avere un controllo a stati finiti hanno una memoria arbitrariamente grande, organizzata come una pila, quindi non si può accedere liberamente alle informazioni in questa.
+Questo modello è one-way sul nastro di input (la versione two-way è più potente).
 
-\section{Terminologia}
-Quando si parla di un linguagio ci sono due aspetti fondamentali:
+Inizieremo subito con vedere il modello non deterministico.
+
+Un automa a pila è una tupla
+$$ M = ( Q, \Sigma, \Gamma, \delta, q_0, Z_0, F ) $$
 \begin{itemize}
-	\item sintassi, formata da
-	\begin{itemize}
-		\item i segni o simboli utilizzati
-		\item le regole che ci permettono di combinarli
-	\end{itemize}
-	\item semantica, il processo che associa alle frasi del linguaggio un significato
+	\item $\Gamma$ l'alfabeto della pila o alfabeto di lavoro
+	\item $\delta$ funzione di transizione
+	\item $q_0 \in Q$, lo stato iniziale dell'automa
+	\item $Z_0 \in \Gamma$, lo stato iniziale della pila
+	\item $F$ un insieme di stati finali
 \end{itemize}
-
-Noi ci occuperemo principalmente di sintassi.
-
-In ambito linguistico nel 1956 Chomsky introduce le grammatiche formali.
-Questi sono degli oggetti matematici, il cui scopo originale era descrivere in modo rigoroso la grammatica dell'inglese.
-Nello stesso periodo si stava sviluppando l'idea di compilatore, specificamente il compilatore Fortran.
-Si vide che il modello proposto da Chomksy era adatto per formalizzare i linguaggi di programmazione.
-
-Definiamo
-\begin{itemize}
-	\item l'alfabeto ($\Sigma$) è un insieme finito non vuoto di simboli, e.g. 
-		$$ \Sigma = \{ a , b , c \} $$
-	\item una stringa o parola è una sequenza di simboli sull'alfabeto.
-		La sua lunghezza è definita come il numero di simboli che la compongono
-		$$ | abc | = 3 $$
-		Tra tutte le parole abbiamo una parola speciale, che è la parola vuota costituita da zero simboli.
-		Questa è indicata con $\epsilon$ (alcuni la indicano con $\lambda$ o $\Lambda$).
-		La lunghezza di questa è 0.
-
-		Sia $a \in \Sigma$ e $x \in \Sigma^*$, definiamo 
-		$$ \#_a(x) : \Sigma \times \Sigma^* \mapsto \mathbb{N} $$
-		come il numero di $a$ in $x$.
-	\item indichiamo l'insieme di tutte le possibili stringhe sull'alfabeto $\Sigma$ con $\Sigma^*$.
-		Queste sono enumerabili.
-
-		Chiamiamo $\Sigma^n$ l'insieme di tutte le stringhe di $n$ lettere sull'alfabeto $\Sigma$.
-		% non esattamente
-	\item definiamo un'operazione 
-		$$ - \cdot - : \Sigma^* \times \Sigma^* \mapsto \Sigma^*$$
-		come la concatenazione o prodotto di due stringhe.
-		Ad esempio
-		\begin{align*}
-			x &= abbac \\
-			y &= ca \\
-			xy &= abbacca \\
-			yx &= caabbac
-		\end{align*}
-		La parola vuota $\epsilon$ è l'identità sia destra che sinistra di questa operazione.
-		L'operazione è associativa ma non commutativa.
-		La struttura $\langle \Sigma^*, \cdot, \epsilon \rangle$ è detto monoide libero generato dall'alfabeto $\Sigma$.
-	\item data una stringa $x \in \Sigma^*$ diciamo che $y$ è prefisso di $x$ se
-		$$ \exists z \in \Sigma^* \mid x = yz $$
-		Una stringa ha un numero di prefissi pari alla sua lunghezza + 1.
-		$y$ è prefisso proprio di $x$ se è prefisso e non è $\epsilon$.
-		Similmente definiamo il suffisso di una parola $x$, quindi $y$ è suffisso di $x$ se 
-		$$ \exists x \in \Sigma^* \mid x = zy $$
-		Infine diciamo che $y$ è fattore di $x$ se
-		$$ \exists z, w \in \Sigma^* \mid x = zyw $$
-		I prefissi e i suffissi sono particolari tipi di fattori.
-		Ogni parola ha all'incirca $\frac{n^2}{2}$ fattori, infatti è facile notare che $x = aaaa$ ha diversi fattori uguali.
-
-		Una sottosequenza di solito è una serie di elementi scelti da una parola, quindi un fattore può essere definito come una sottosequenza contigua. 
-		Ad esmepio una sottosequenza di $x = abbac$ può essere $abc$.
-		Sottostringa e sottoparola di solito sono sinonimi di fattore, ma a volte possono essere utilizzate come sinonimo di sottosequenza.
-	\item un linguaggio $L$ è definito come un qualunque sottoinsieme di $\Sigma^*$.
-		Abbiamo alcuni linguaggi particolari:
-		\begin{itemize}
-			\item il linguaggio vuoto $L = \varnothing$
-			\item il linguaggio della parola vuota $L = \{ \epsilon \}$
-			\item il linguaggio pieno $L = \Sigma^*$
-		\end{itemize}
-\end{itemize}
-
-Ad esempio definiamo il linguaggio delle parole che finiscono con due $a$ come
-$$ L = \{ w \in \Sigma^* \mid \exists y \in \Sigma^* w = yaa \} $$
-quindi con un insieme finito di simboli siamo risuciti a rappresentare un insieme infinito.
-Questo tipo di descrizione è detta \textit{dichiarativa}.
-
-% Definiamo l'alfabeto $\Sigma = { 0, 1, \dots, 9 }$, e definiamo $L$ come tutte le sequenze formate da 3 cifre decimali che appaiono consecutivamente nella rappresentazione del $\pi$ greco.
-% embé?
-In altri casi utilizzeremo delle descrizioni:
-\begin{itemize}
-	\item \textit{generative}: si fornisce un insieme di regole che permette di costruire tutte le possibili stringhe del linguaggio, ad esempio le grammatiche
-	\item \textit{riconoscitive}: si fornisce un riconoscitore che riceve una stringa $x$ e risponde alla domanda $x \overset{?}{\in} L$, in alcuni casi queste macchine si limitano a dire sì se la stringa appartiene o non terminare in altro caso
-\end{itemize}
-
-\begin{fatto}
-	Non tutti i linguaggi si possono descrivere in maniera finita, infatti le descrizioni finite sono numerabili, mentre i linguaggi no.
-\end{fatto}
-
-\begin{tcolorbox}
- 	Prendiamo come alfabeto $\Sigma = \{ (, ) \}$, vogliamo descrivere $L$ l'insieme delle sequenze di parentesi bilanciate correttamente.
- 	Definiamo la rappresentazione generativa che genera $L_G$:
- 	\begin{enumerate}
- 		\item $\epsilon \in L_G$
- 		\item se $x \in L_G$ allora $(x) \in L_G$
- 		\item se $x, y \in L_G$ allora $xy \in L_G$
- 	\end{enumerate}
- 
- 	E definiamo un riconoscitore, che riconosca $L_R$:
- 	\begin{itemize}
- 		\item il numero di aperte deve essere uguale al numero di chiuse, quindi $\#_((x) = \#_)(x)$
- 		\item per ogni prefisso il numero di parentesi aperte è maggiore o uguale del numero di chiuse, quindi per $y$ prefisso $\#_((y) \geq \#_)(y)$.
-	\end{itemize}
- 	Questo può essere generato come un automa con contatore.
- 
- 	Si può dimostrare che questi due definiscono lo stesso linguaggio. % da fare
-\end{tcolorbox}
-
-\begin{tcolorbox}
-	Ora prendiamo l'alfabeo $\Sigma = \{(, ), [, ]\}$, e definiamo $L$ come il linguaggio delle sequenze di parentesi bilanciate correttamente.
-	Definiamo la rappresentazione generativa che genera $L_G$:
-	\begin{enumerate}
-		\item $\epsilon \in L_G$
-		\item se $x \in L_G$ allora $(x) \in L_G$ e $[x] \in L_G$
-		\item se $x, y \in L_G$ allora $xy \in L_G$
-	\end{enumerate}
-
-	E definiamo un riconoscitore, che riconosca $L_R$:
-	\begin{itemize}
-		\item il numero di aperte deve essere uguale al numero di chiuse, quindi $\#_((x) = \#_)(x)$ e $\#_[(x) = \#_](x)$
-		\item si utilizza una pila in cui si mette ogni parentesi aperta e si toglie quando si trova una parentesi chiusa nel caso corrisponda
-	\end{itemize}
-	Quindi un automa a pila.
-
-	In alcuni casi è più facile definire come si genera, e in altri come riconoscere.
-\end{tcolorbox}
-
-\chapter{Grammatiche}
-Una grammatica è una quadrupla $\langle V, \Sigma, P, S \rangle$, dove
-\begin{itemize}
-	\item $V$ è l'insieme finito e non vuoto delle variabili, questi vengono anche chiamate non terminali.
-		Questo lo possiamo chiamare anche l'alfabeto delle variabili.
-	\item $\Sigma$ è l'insieme finito e non vuoto dei termianli, o anche alfabeto dei terminali.
-	\item $P$ è l'insieme finito delle regole di produzione.
-		Queste sono della forma
-		$$ \alpha \rightarrow \beta $$
-		con $\alpha \in (V \cup \Sigma)^+$ e $\beta \in (V \cup \Sigma)^*$.
-	\item $S$ è un elemento di $V$ che chiamiamo simbolo iniziale o assioma.
-\end{itemize}
-Per $x, y \in (V \cup \Sigma)^*$, diciamo che $x$ deriva $y$, indicato con $x \Rightarrow y$ (opzionalmente indicando la grammatica $x \underset{G}{\Rightarrow} y$), se e solo se 
-$$ \exists (\alpha \rightarrow \beta) \in P, \exists \eta, \delta \in (V \cup \Sigma)^* \mid x = \eta \alpha \delta \wedge y = \eta \beta \delta $$
-Inoltre diciamo che $x$ deriva $y$ in $k$ passi, con $k \in \mathbb{N}$, indicato $x \overset{k}{\Rightarrow} y$, se e solo se
-$$ \exists x_0, x_1, \dots, x_k \mid x_0 = x \wedge x_k = y \wedge \forall i \in 1, \dots, k x_{i-1} \Rightarrow x_i $$
-Infine diciamo che $x$ deriva $y$ in un certo numero di passi, indicato con $x \overset{*}{\Rightarrow} y$, se e solo se
-$$ \exists k \geq 0 \mid x \overset{k}{\Rightarrow} y $$
-e che $x$ deriva $y$ in almeno un passo, indicato con $x \overset{+}{\Rightarrow} y$, se e solo se
-$$ \exists k > 0 \mid x \overset{k}{\Rightarrow} y $$
-
-Definiamo il linguaggio generato dalla grammatica $G$ 
-$$L(G) = \{ w \in \Sigma^* \mid S \overset{*}{\Rightarrow} w \} $$
-
-Una stringa di terminali e non terminali è detta \textit{forma sentenziale}.
-
-Due grammatiche $G_1$ e $G_2$ sono equivalenti se e solo se $L(G_1) = L(G_2)$.
-
-\begin{tcolorbox}% [breakable]
-	Sia $\Sigma = \{ (, ) \}$.
-	Costruiamo $V$, inizialmente contentente solo $S$.
-	Ora la sequenza vuota è bilanciata, quindi $S \rightarrow \epsilon$.
-	Una sequenza di parentesi bilanciata rimane bilanciata se inserita tra due parentesi, quindi $S \rightarrow (S)$.
-	Infine la concatenazione di due sequenze bilanciate è ancora bilanciata, quindi $S \rightarrow S S $.
-
-	Ad esempio 
-	\begin{align*}
-		S &\Rightarrow ( S ) \\
-		  &\Rightarrow ( ( S ) ) \\
-		  &\Rightarrow ( ( S S ) ) \\
-		  &\Rightarrow ( ( ( S ) S ) ) \\
-		  &\Rightarrow ( ( ( S ) ( S ) ) ) \\
-		  &\Rightarrow ( ( ( ) ( S ) ) ) \\
-		  & \Rightarrow ( ( ( ) ( ) ) ) 
-	\end{align*}
-\end{tcolorbox}
-
-\begin{tcolorbox}
-	Data la grammatica $\langle \{S, B\}, \{a, b, c\}, P, S \rangle$, con $P$
-	\begin{align*}
-		S &\rightarrow a B S c \\
-		S &\rightarrow a b c \\
-		B a &\rightarrow a B \\
-		B b &\rightarrow b b 
-	\end{align*}
-	Eseguiamo una derivazione
-	\begin{align*}
-		S &\Rightarrow a B S c \\
-		  &\Rightarrow a B a b c c \\
-		  &\Rightarrow a a B b c c \\
-		  &\Rightarrow a a b b c c \\
-		S &\Rightarrow a B S c \\
-		  &\Rightarrow a B a B S c c \\
-		  &\Rightarrow a a B B S c c \\
-		  &\Rightarrow a a B B a b c c c \\
-		  &\Rightarrow a a B a B b c c c \\
-		  &\Rightarrow a a a B B b c c c \\
-		  &\Rightarrow a a a B b b c c c \\
-		  &\Rightarrow a a a b b b c c c
-	\end{align*}
-	Si può dimostrare che il linguaggio generato da questa grammatica è $L = \{a^nb^nc^n \mid n > 0 \}$.
-\end{tcolorbox}
-
-Le grammatiche sono classificate in base alla forma delle produzioni, possiamo definire quattro tipi di grammatiche:
+La funzione di transizione dipenderà quindi da tre cose: dallo stato corrente, dal simbolo dell'input corrente e dallo stato corrente della pila
+$$ \delta : Q \times (\Sigma \cup \{\epsilon\}) \times \Gamma \rightarrow \text{PF}(Q \times \Gamma^*) $$
+Quindi la funzione di transizione cambia lo stato dell'automa e rimpiazza il simbolo in cima alla pila con una stringa di stati della pila.
+$\text{PF}(-)$ sta per le parti finite, infatti se utilizzassimo $2^{Q \times \Gamma^*}$ potremmo avere programmi infiniti, visto che $\Gamma^*$ è un insieme infinito.
+$\Sigma \cup \epsilon$ perché sono contemplate mosse in base allo stato dell'automa che modificano la pila senza leggere un simbolo in input.
+% fig 12.1
 \begin{center}
-\begin{tblr}{|c|c|c|}
-	\hline
-	tipo 0 & \parbox{0.6\textwidth}{nessuna restrizione} &  \\
-	\hline
-	tipo 1 & \parbox{0.6\textwidth}{Se $\alpha \rightarrow \beta$ è una produzione, allora $|\beta| \geq |\alpha|$. Equivalentemente una grammatica in cui tutte le produzioni sono della forma $\alpha_1 A \alpha_2 \rightarrow \alpha_1 \beta \alpha_2$ dove $\alpha_1, \alpha_2 \in (V \cup \Sigma)^*, A \in V, \beta \in (V \cup \Sigma)^+$} & \parbox{0.2\textwidth}{anche dette context sensitive o dipendenti da contensto} \\
-	\hline
-	tipo 2 & \parbox{0.6\textwidth}{Se $\alpha \rightarrow \beta \in P$, allora $\alpha \in V$ e $\beta \in (V \cup \Sigma)^+$} & \parbox{0.2\textwidth}{contenxt free o libere da contesto} \\
-	\hline
-	tipo 3 & \parbox{0.6\textwidth}{Possiamo avere produzioni solo della forma $A \rightarrow \alpha B$ o $A \rightarrow \alpha$, con $A, B \in V, \alpha \in \Sigma$} & \parbox{0.2\textwidth}{grammatiche regolari}  \\
-	\hline
-\end{tblr}
-\end{center}
-Ogni grammatica restringe il livello precedente
+	\begin{tikzpicture}[ SQUIGGLY/.style={->
+			  		     , decorate
+			                     , decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}},
+			   ]
+ 		\begin{scope}[local bounding box=wordScope, start chain=word, node distance=0pt]
+    			\node [draw, minimum width=40pt, minimum height=20pt, on chain=word] {$\dots$};
+    			\node [draw, minimum height=20pt, on chain=word] {a};
+    			\node [draw, minimum width=40pt, minimum height=20pt, on chain=word] {$\dots$};
+ 		\end{scope}
 
-% \todo{Sistemo}
-\begin{center}
-	\begin{tikzpicture}
-		\node[rectangle, fill=white!80] at (4.5cm, 3cm) {\tiny \ Tipo 0\ };
-		\draw[pattern={north east lines}, pattern color=gray] (-5cm, -3.5cm) rectangle (5cm, 3.5cm);
- 		\draw[ postaction={ decoration={ text effects along path
- 		                               , text={\tiny \ Tipo 1\ }
- 				               , text align=right
- 				               , reverse path
- 				               , text effects/.cd
- 				               , text along path, every character/.style={fill=white, yshift=-0.5ex} 
- 					       }
- 				  , decorate 
-				  }, fill=white] (0, 0) ellipse (4cm and 3cm);
- 		\draw[ postaction={ decoration={ text effects along path
- 		                               , text={\tiny \ Tipo 2\ }
- 				               , text align=right
- 				               , reverse path
- 				               , text effects/.cd
- 				               , text along path, every character/.style={fill=white, yshift=-0.5ex} 
- 					       }
- 				  , decorate 
-				  }, fill=white] (0, 0) ellipse (3cm and 2cm);
- 		\draw[ postaction={ decoration={ text effects along path
- 		                               , text={\tiny \ Tipo 3\ }
- 				               , text align=right
- 				               , reverse path
- 				               , text effects/.cd
- 				               , text along path, every character/.style={fill=white, yshift=-0.5ex} 
- 					       }
- 				  , decorate 
- 				  }, fill=white] (0, 0) ellipse (2cm and 1cm);
+		\node[draw, minimum width=20pt, minimum height=20pt] (state) [below=of word-2]	{$q$};
+
+		\begin{scope}[local bounding box=stackScope, start chain=stack going below, node distance=0pt]
+			\node [draw, minimum width=20pt, on chain=stack] [right=of state, xshift=1cm] {A};
+    			\node [draw, minimum width=20pt, minimum height=40pt, on chain=stack] {$\vdots$};
+ 		\end{scope}
+
+		\draw[SQUIGGLY] (state.north) to (word-2.south);
+		\draw[SQUIGGLY] (state.east) to (stack-1.west);
 	\end{tikzpicture}
 \end{center}
-
-\section{Classificazione dei linguaggi}
-Sia $\mathscr{L} \subseteq \Sigma^*$, diciamo che $\mathscr{L}$ è di tipo $0 \leq i \leq 3$, se e solo se $\exists G$ di tipo $i$ tale che $\mathscr{L} = L(G)$.
-Questa classificazione genera una gerachia dei linguaggi, detta gerarchia di Chomksy, e chiamiamo
-\begin{itemize}
-	\item i linguaggi di tipo 3 come linguaggi regolari
-	\item i linguaggi di tipo 2 come linguaggi conxtext free o CF
-	\item i linguaggi di tipo 1 come linguaggi context sensitive o CS
-	\item i linguaggi di tipo 0 come linguaggi ricorsivamente enumerabili (RE) o semidecibili
-\end{itemize}
-
-E per ognuna di queste classi esiste un modello di macchina riconoscitrice:
-\begin{itemize}
-	\item per i linguaggi di tipo 3 sono gli automi a stati finiti
-	\item per i linguaggi di tipo 2 sono gli automi a pila
-	\item per i linguaggi di tipo 1 sono gli automi limitati linearmente, questi hanno un nastro finito che possono modificare
-	\item per i linguaggi di tipo 0 sono le macchine di Turing, nella variante più semplice queste sono macchine con un nastro infinito su cui inizialmente c'è scritto l'input.
-		Per questi linguaggi se la stringa appartiene al linguaggio il riconoscitore termina sempre con sì, mentre se la stringa non appartiene al linguaggio il riconoscitore può anche non terminale ($\bot$)
-\end{itemize}
-
-\begin{teorema}
-	I linguaggi di tipo 1, 2 e 3 sono anche detti decidibili o ricorsivi.
-	(Un insieme ricorsivo è un insieme per cui posso avere una macchina che può rispondere sì o no alla domanda se un insieme appartenga)
-\end{teorema}
-\begin{proof}
-Sia $G$ una grammatica di tipo 1 e $w$ una stringa di terminali di lunghezza $n = |w|$, voglio sapere se $w$ appartiene a $G$.
-Siccome la grammatica di tipo 1 è monotonica (le regole forme sentenziali non possono decrescere), queste non possono mai superare $n$ durante la derivazione di $w$.
-Chiamiamo 
-$$T_i = \{ \gamma \in (V \cup \Sigma)^{\leq n} \mid S \overset{\leq i}{\Rightarrow} \gamma \}$$
-Costruiamo gli insiemi $T_i$ per $i = 0, 1, \dots$
-\begin{align*}
-	T_0 &= \{ S \} \\
-	    &\vdots \\
-	T_i &= T_{i - 1} \cup \{ \gamma \in (V \cup \Sigma)^{\leq n} \mid \exists \beta \in T_{i - 1} . \beta \Rightarrow \gamma \} 
-\end{align*}
-Allora 
-$$T_0 \subseteq T_1 \subseteq \dots \subseteq T_{i - 1} \subseteq T_{i} \subseteq \dots \subseteq (V \cup \Sigma)^{\leq n}$$
-Dato che $(V \cup \Sigma)^{\leq n}$ è un insieme finito, quindi esiste un certo $i$ tale che $T_i = T_{i - 1}$.
-A questo punto ho trovato tutte le forme sentenziali di lunghezza $n$, e per vedere se $w$ appartiene al linguaggio basta controllare che $w \in T_i$.
-
-
-Quello che posso fare è considerare l'insieme 
-$$U_i = \{ \gamma \in (V \cup \Sigma)^* \mid S \overset{\leq i}{\Rightarrow} \gamma \}$$
-Quindi ancora
-\begin{align*}
-	U_0 &= \{ S \} \\
-	    &\vdots \\
-	U_i &= U_{i - 1} \cup \{ \gamma \in (V \cup \Sigma)^* \mid \exists \beta \in U_{i - 1} . \beta \Rightarrow \gamma \} 
-\end{align*}
-$$U_0 \subseteq U_1 \subseteq \dots \subseteq U_{i - 1} \subseteq U_{i} \subseteq \dots \subseteq (V \cup \Sigma)^*$$
-Quindi che nei linguaggi di tipo 0 perdo la monotonicità delle derivazioni, non posso più trovare una $i$ tale che $U_i = U_{i - 1}$.
-Però per ogni $U_i$ posso controllare se $w \in U_i$, infatti se la grammatica genera $w$, prima o poi questa la troverò, se non la genera non la troverò mai.
-\end{proof}
-
-Il motivo per cui si dicono ricorsivamente enumerabili è perché si può costruire un programma che elenchi tutti gli elementi del linguaggio.
-
-%% fine lezione 2, inizio lezione 3
-La gerarchia di Chomksy vale per alfabeti di almeno due lettere.
-
-\section{Parola vuota ed $\epsilon$-produzioni}
-Supponendo di avere una grammatica $G$ di tipo 1, supponiamo di voler aggiungere la parola vuota al linguaggio generato.
-Se si aggiunge banalmente la regola per la parola vuota
-$$ S \prd \epsilon $$
-non ci sono garanzie che noi non abbiamo aggiunto anche altre stringhe al linguaggio, ad esempio nel caso
-$$ \alpha \der \dots S \dots $$
-inoltre perdiamo la proprietà della monotonicità delle forme sentenziali.
-
-Quindi bisogna essere leggermente più delicati, dato $L = L(G)$, voglio costruire $G^\prime$ tale che $L^\prime = L(G^\prime) = L(G) \cup \{ \epsilon \}$.
-Per gare ciò definisco $G^\prime = \grammar{V \cup \{S^\prime\}}{\Sigma}{P \cup \{ S^\prime \prd \epsilon \mid S\}}{S^\prime}$.
-
-Dal simbolo iniziale posso utilizzare $S \prd \epsilon$ purché $S$ non appaia su lato destro di nessuna produzione.
-Questo ovviamente vale anche per grammatiche di tipo 2 e 3.
-
-Data una grammatica di tipo 2 che utilizza $\epsilon$-produzioni 
-$$ A \prd \epsilon $$
-è possibile trovare una grammatica di tipo 2 equivalente che genera lo stesso linguaggio, meno la parola vuota, che non utilizza $\epsilon$-produzioni.
-
-Anche nelle gramamtiche di tipo 3 possiamo ammettere $\epsilon$-produzioni
-$$ A \prd \epsilon $$
-
-\section{Automa a stati finiti}
-Un automa è un dispositivo che ha
-\begin{itemize}
-	\item un nastro diviso in celle che contiene l'input, ogni cella contiene un simbolo dell'alfabeto
-		Questo non può essere modificato.
-	\item una testina che passa il nastro da sinistra a destra, per questo vengono chiamati anche automi $one-way$.
-		Quando questa finisce il nastro deve poter rispondere se la parola appartiene o no al linguaggio.
-		La testina contiene una macchina che ha un insieme finito di stati.
-\end{itemize}
-Un automa è quindi una quintupla $\mathscr{A} = \langle Q, \Sigma, \delta, q_0, F \rangle$, dove
-\begin{itemize}
-	\item $Q$ è l'insieme degli stati
-	\item $\Sigma$ è l'alfabeto finito di input
-	\item $\delta$ è il programma dell'automa, o funzione di transizione
-	\item $q_0 \in Q$ è lo stato iniziale
-	\item $F \subseteq Q$ è l'insieme degli stati finali
-\end{itemize}
-Ad ogni passo l'automa legge un simbolo, ed in base allo stato attuale e il simbolo in input sceglie il prossimo stato con $\delta$
-$$ \delta : Q \times \Sigma \rightarrow Q $$
-Definiamo 
-$$ \delta^* : Q \times \Sigma^* \rightarrow Q $$
-per induzione sulla lunghezza delle stringhe in input:
-\begin{itemize}
-	\item $\forall q \in Q \mid \delta^*(q, \epsilon) = q $
-	\item $\forall q \in Q, x \in \Sigma^*, a \in \Sigma \mid \delta^*(q, x a) = \delta(\delta^*(q, x), a)$
-\end{itemize}
-Visto che $\delta^*$ è effettivamente una estensione di $\delta$, chiameremo $\delta^*$ $\delta$.
-
-Ora possiamo definire il linguaggio riconosciuto dall'automa $\mathscr{A}$ come
-$$ L(\mathscr{A}) = \{ w \in \Sigma^* \mid \delta(q_0, w) \in F \} $$
-
-\begin{tcolorbox}
-	Ad esempio $\mathscr{A} = \langle Q = \{ q_0, q_1 \}, \Sigma = \{ a, b \}, \delta, q_0, F = \{ q_1 \} \rangle$, con $\delta$ definita come
-	\begin{center}
-	%	\begin{tblr}{c| c c }
-	%		\delta & a & b \\
-	%		\hline
-	%		q_0    & q_0 & q_1 \\
-	%		q_1    & q_1 & q_0 \\
-	%	\end{tblr}
-	\end{center}
-	Per $aabb$ abbiamo
-	$$ q_0 \overset{a}{\rightarrow} q_0 \overset{a}{\rightarrow} q_0 \overset{b}{\rightarrow} q_1 \overset{b}{\rightarrow} q_0 $$
-	quindi la stringa non è accettata perché $q_0 \not \in F$.
-	Questo è linguaggoi di tutte le stringhe con un numero dispari di $b$.
-\end{tcolorbox}
-Invece che rappresentare $\delta$ come una tabella, di solito è comodo rappresentarla come un diagramma di transizione:
-\begin{itemize}
-	\item Lo stato iniziale è rappresentato da una freccia entrante
-	\item gli stati finali da un doppio cerchio.
-\end{itemize}
-Quindi una derivazione non è altro che un cammino in questo grafo, e la parola è accettata se si finisce in uno stato finale.
-
-\begin{tcolorbox}
-	Dato $\Sigma = \{ a, b \}$, e il linguaggio 
-	$$ \mathscr{L} = \{ x \in \Sigma^* \mid P(x) \}$$
-	con $P$ definita come la proprietà per cui tra ogni coppia di $b$ successive in $x$ c'è un numero di $a$ pari.
-	\begin{center}
-		\begin{tikzpicture}
-			\node[state, initial, accepting] 	(q_0) {$q_0$};
-			\node[state, accepting] 		(q_1) [right=of q_0] {$q_1$};
-			\node[state, accepting]			(q_2) [right=of q_1] {$q_2$};
-			\node[state]				(q_3) [right=of q_2] {$q_3$};
-
-			\path[->] (q_0)	edge[loop above]	node[above]	{a}	()
-					edge			node[above]	{b}	(q_1)
-				  (q_1)	edge[loop above]	node[above]	{b}	()
-					edge			node[above]	{a}	(q_2)
-				  (q_2)	edge			node[above]	{}	(q_1)
-				  	edge			node[above]	{b}	(q_3)
-				  (q_3)	edge[loop above]	node[above]	{a, b}	();
-		\end{tikzpicture}
-	\end{center}
-	% 
-	%  init(final(q_0)) --b--> final(q_1) <--a--> final(q_2) --b--> trap(q_3)
-	%         \_a_/             \_b_/                                \_a,b_/
-	Visto che 
-	$$ \delta : Q \times \Sigma \rightarrow Q $$
-	nello stato $q_2$ bisogna aggiungere una freccia ad uno stato da cui non si può uscire, infatti se siamo in quello stato vuol dire che abbiamo trovato un numero dispari di $a$ e una $b$, quindi la parola non è valida.
-	Questo tipo di stati è detto stato trappola, e di solito vengono lasciati impliciti.
-\end{tcolorbox}
-
-\begin{tcolorbox}
-	Dato $\Sigma = \{ a, b \}$, e il linguaggio 
-	$$ \mathscr{L} = \{ x \in \Sigma^* \mid \text{Il terzo simbolo di $x$ è una $a$}\}$$
-	% init(q_0) --a,b--> q_1 --a,b--> q_2 --a--> final(q_3)
-	%                                             \_a,b_/
-	\begin{center}
-		\begin{tikzpicture}
-			\node[state, initial] 	(q_0) {$q_0$};
-			\node[state]		(q_1) [right=of q_0] {$q_1$};
-			\node[state]		(q_2) [right=of q_1] {$q_2$};
-			\node[state, accepting]	(q_3) [right=of q_2] {$q_3$};
-
-			\path[->] (q_0)	edge			node[above]	{a, b}	(q_1)
-				  (q_1)	edge			node[above]	{a,b}	(q_2)
-				  (q_2)	edge			node[above]	{a}	(q_3)
-				  (q_3)	edge[loop above]	node[above]	{a, b}	();
-		\end{tikzpicture}
-	\end{center}
-\end{tcolorbox}
-\begin{tcolorbox}
-	Dato $\Sigma = \{ a, b \}$, e il linguaggio 
-	$$ \mathscr{L} = \{ x \in \Sigma^* \mid \text{ Il terzultimo simbolo di $x$ è una $a$} \} $$
-	Teniamo uno stato per ogni tripla di $a, b$, quindi $2^3 = 8$ stati
-	% graph automa {
-	% aaa -b-> aab
-	% aaa -a-> aaa
-	% aab -a-> aba
-	% aab -b-> abb
-	% aba -a-> baa
-	% aba -b-> bab
-	% bab -a-> aba
-	% bab -b-> abb
-	% abb -a-> bba
-	% abb -b-> bbb
-	% baa -a-> aaa
-	% baa -b-> aab
-	% bbb -b-> bbb
-	% bbb -a-> bba
-	% bba -a-> baa
-	% bba -b-> bab
-	% fin(aaa)
-	% fin(aab)
-	% fin(aba)
-	% fin(abb)
-	% init(bbb)
-	% }
-\end{tcolorbox}
-
-Una operazione che può interessare per le stringhe è costruire il linguaggio che riconosce le stringhe roversciate di uno.
-Dato un linguaggio $\mathscr{L}$, il linguaggio che riconosce le sue stringhe inverse è detto il reversal di $\mathscr{L}$.
-Nel caso dei due linguaggi precedenti se prendiamo l'automa del primo e lo invertiamo ottieniamo un automa valido (non deterministico) per il secondo.
-
-\subsection{Automi non deterministici}
-Definiamo un automa non deterministico come la quintupla $\mathscr{A} = \langle Q, \Sigma, \delta, q_0, F \rangle$, ma ora $\delta$ è definita come
-$$ \delta : Q \times \Sigma \rightarrow 2^Q $$
-quindi $\delta$ non ritorna più un singolo insieme ma un insieme di possibili stati.
-
-Una stringa viene accettata se esiste almeno un cammino che mi porta in uno stato finale.
-Estensiamo ancora $\delta$ alle stringhe 
-$$ \delta^* : Q \times \Sigma \rightarrow 2^Q $$
-è definita come
-\begin{itemize}
-	\item $\forall q \in Q \mid \delta^*(q, \epsilon) = \{ q \} $
-	\item $\forall q \in Q, x \in \Sigma^*, a \in \Sigma \mid \delta^*(q, xa) = \bigcup_{p \in \delta^*(q, x)} \delta(p, a) $
-\end{itemize}
-
-Come prima chiameremo $\delta^*$ semplicemente $\delta$.
-
-Ora il linguaggio accettato dall'automa $\mathscr{A}$ non deterministico è $L(\mathscr{A}) = \{ w \in \Sigma^* \mid \delta(q_0, w) \cap F \neq \varnothing \}$.
-
-\begin{tcolorbox}
-	Dato l'automa non deterministico
-	\begin{center}
-		\begin{tikzpicture}
-			\node[state, initial] 	(r_0) {$r_0$};
-			\node[state] 	      	(r_1) [right=of r_0] {$r_1$};
-			\node[state] 	      	(r_2) [right=of r_1] {$r_2$};
-			\node[state, accepting]	(r_3) [right=of r_2] {$r_3$};
-
-			\path[->] (r_0)	edge	[loop above]	node[above]	{a, b}	()
-					edge			node[above]	{a}	(r_1)
-				  (r_1)	edge			node[above]	{a, b}	(r_2)
-				  (r_2)	edge			node[above]	{a, b}	(r_3);
-		\end{tikzpicture}
-	\end{center}
-	con la stringha $ababb$ mostriamo tutte le possibili strade che si possono prendere
-	\begin{center}
-		\begin{tikzpicture}
-			\node {$r_0$}
-				child { node {$r_0$}
-					child {	node {$r_0$}
-						child {	
-							node {$r_0$} 
-							child {
-								node {$r_0$}
-								child {
-									node {$\cancel{r_0}$}
-									edge from parent node[left] {b}
-								}
-								edge from parent node[left] {b}
-							}
-							edge from parent node[left] {a}
-						}
-						child { 
-							node {$r_1$} 
-							child {
-								node {$r_2$}
-								child {
-									node {$r_3$}
-									edge from parent node[right] {b}
-								}
-								edge from parent node[right] {b}
-							}
-							edge from parent node[right] {a}
-						}
-						edge from parent node[left] {b}
-					}
-					edge from parent node[left] {a}
-				}
-				child {	
-					node {$r_1$}
-					child {
-						node {$r_2$}
-						child {
-							node {$\cancel{r_3}$}
-							edge from parent node[right] {a}
-						}
-						edge from parent node[right] {b}
-					}
-					edge from parent node[right] {a}
-				};
-		\end{tikzpicture}
-	\end{center}
-	è necessario che esista almeno una strada dell'albero che risponda sì per accettare.
-	Questa struttura è chiamato albero di computazione, e un cammino descrive una computazione.
-
-	Bisogna supporre che l'automa riesca a sceglie la strada esatta.
-	Alternativamente si può pensare che l'automa possa visitare tutte le strade in parallelo, quindi possiamo trasformare l'albero in
-	\begin{center}
-		\begin{tikzpicture}
-			\node[state, initial] 	(r0) {$\{ r_0 \}$};
-			\node[state] 	      	(r0r1)	[right=of r0] {$\{ r_0, r_1 \}$};
-			\node[state] 	      	(r0r2)	[right=of r0r1] {$\{ r_0, r_2 \}$};
-			\node[state] 	      	(r0r1r3)[below right=of r0r2] {$\{ r_0, r_1, r_3 \}$};
-			\node[state, accepting]	(r0r3) 	[right=of r0r2] {$\{ r_0, r_3 \}$};
-
-			\path[->] (r0)		edge	node[above]	{a}	(r0r1)
-				  (r0r1) 	edge	node[above]	{b}	(r0r2)
-				  (r0r2)	edge	node[above]	{a}	(r0r1r3)
-				  		edge 	node[above]	{b}	(r0r3)
-				  (r0r1r3)	edge	node[above]	{a}	(r0r2);
-		\end{tikzpicture}
-	\end{center}
-	Questo 
-\end{tcolorbox}
-Ogni autma non deterministico (NFA) con $n$ stati può sempre essere trasformato in un automa deterministico con al più $2^n$ stati.
-Nel caso degli automi a pila invece il modello non deterministico è più potente.
-Qui invece tra DFA e NFA non cambia la potenza computazionale, ma la semplicità descrittiva.
-
-%% FINE LEZIONE 02 -- INIZIO LEZIONE 03
-\section{Numero di stati}
-Dato un linguaggio riconoscibile da un automa a stati finiti, quanti stati sono necessari per riconoscerlo?
-
-Nell'ambito degli automi deterministici definiamo il concetto di \textbf{distribuibilità} tra stringhe rispetto al linguaggio $L \subseteq \Sigma^*$.
-Due stringhe qualunque $x, y \in \Sigma^*$ sono distinguibili per $L$ se 
-$$ \exists z \in \Sigma^* (xz \in L \wedge yz \not \in L) \vee (xz \not \in L \wedge yz \in L) $$
-
-Molto semplicemente se $x$ e $y$ sono distinguibili queste ci porteranno in due stati diversi.
-Da questi due stati diversi si può costruire una $z$ che in un caso ci porta in uno stato finale e nell'altro no.
-Quindi in un automa deterministico se due stringhe sono distinguibili, non ci possono mandare nello stesso stato.
-
-\begin{teorema}
-	Sia $L \subseteq \Sigma^*$ e $X \subseteq \Sigma^*$ tale che ogni coppia di stringhe in $X$ è distinguibile in rispetto ad $L$.
- 	Allora ogni DFA che accetta $L$ deve avere almeno $\# X$ stati (cardinalità di $X$).
-\end{teorema}
-\begin{proof}
-	Supponiamo che $X = \{x_1, x_2, \dots, x_k \}$.
-	Sia $\mathcal{A} = \langle Q, \Sigma, \delta, q_0, F \rangle$ un DFA per $L$.
-	Sia $\forall i \in 1, \dots, k \mid p_i = \delta(q_0, x_i)$.
-	Se $\# Q < k$ allora esistono due stati uguali
-	$$ \exists i, j \in 1, \dots, k \mid i \neq j \wedge p_1 = p_j $$
-	Ma $x_i, x_j$ sono distinguibili, quindi
-	$$ \exists z \mid (xz \in L \wedge yz \not \in L) \vee (xz \not \in L \wedge yz \in L) $$
-	Ma questo $z$ non può esistere, quindi la $\# Q$ deve per forza essere $\leq k$.
-\end{proof}
-Questo può essere anche utile per determinare se un linguaggio non può essere definito da un automa a stati finiti.
-Infatti se si trova un insieme $X$ infinito, allora il linguaggio non può essere regolare.
-
-\begin{tcolorbox}
-	Sia $\Sigma = \{ a, b \}$ e 
-	$$L = \{ x \in \Sigma^* \mid \#_a(x) \text{ è pari } \wedge \#_b(x) \text{ è pari } \} $$
-	\begin{center}
-		\begin{tikzpicture}
-			\node[state, initial, accepting] 	(00) {$00$};
-			\node[state] 				(10) [right=of 00] {$10$};
-			\node[state]				(01) [below =of 00] {$01$};
-			\node[state]				(11) [right=of 01] {$11$};
-
-			\path[->] (00)	edge[bend left]	node[above]	{\tiny a}	(10)
-					edge[bend left]	node[right]	{\tiny b}	(01)
-				  (10)	edge[bend left]	node[right]	{\tiny b}	(11)
-					edge[bend left]	node[below]	{\tiny a}	(00)
-				  (01)	edge[bend left]	node[left]	{\tiny b}	(00)
-					edge[bend left]	node[above]	{\tiny a}	(11)
-				  (11)	edge[bend left]	node[left]	{\tiny b}	(10)
-					edge[bend left]	node[below]	{\tiny a}	(01);
-		\end{tikzpicture}
-	\end{center}
-	Costruisco $X = \{ \epsilon, a, b, ab, \}$, per vedere che sono distinguibili costruiamo
-	\begin{center}
-		\begin{tblr}{ c | c c c c }
-			z          & $\epsilon$ & a 	     & b          & ab \\
-			\hline
-			$\epsilon$ &            & $\epsilon$ & $\epsilon$ & $\epsilon$ \\
-			a          &            &            & a          & a \\
-			b          &            &            &            & b \\
-			ab         &            &            &            &
-		\end{tblr}
-	\end{center}
-\end{tcolorbox}
-\begin{tcolorbox}
-	Dato il linguaggio 
-	$$ \mathcal{L}_n = \{ x \in \{ a, b \}^* \mid \text{l'$n$-esimo simbolo da destra di $x$ è una $a$} \} $$
-	L'automa si ricorda gli ultimi $n$ simboli, quindi ha $2^n$ stati.
-	Mentre l'NFA corrispondente è 
-	\begin{center}
-		\begin{tikzpicture}
-			\node[state, initial] 	(q_0) {$q_0$};
-			\node[state] 		(q_1) [right=of q_0] {$q_1$};
-			\node[state]		(q_2) [right =of q_1] {$q_2$};
-			\node			(dots) [right =of q_2] {$\dots$};
-			\node[state, accepting]	(q_k) [right=of dots] {$q_k$};
-
-			\path[->] (q_0)		edge[loop above]	node[above]	{a, b}	()
-						edge	node[above]	{a}	(q_1)
-				  (q_1)		edge	node[above]	{a}	(q_2)
-				  (q_2)		edge	node[above]	{a,b}	(dots)
-				  (dots)	edge	node[above]	{a,b}	(q_k);
-		\end{tikzpicture}
-	\end{center}
-	% aggiungo graffa con scritto $n$ volte
-	questo ha $n + 1$ stati.
-
-	Possiamo fare meglio per il deterministico?
-	Costruiamo $X = \{a, b\}^n = \{ x \in \{a, n\}^* \mid |x| = n \} $.
-	Siano $x, y \in X$, con 
-	\begin{align*}
-		x &= x_1 x_2 \dots x_i \dots x_n \\
-		y &= y_1 y_2 \dots y_i \dots y_n 
-	\end{align*}
-	Visto che $x \neq y$, $\exists i \mid x_i \neq y_i$.
-	Supponiamo che $x_i = a$, ed $y_i = b$, quindi
-	\begin{align*}
-		x &= x_1 x_2 \dots a \dots x_n \\
-		y &= y_1 y_2 \dots b \dots y_n 
-	\end{align*}
-	Ora per distinguere le tue parole basta scegliere $z = \{a, b\}^{i - 1}$, ad esempio $z = a^{i - 1}$, con questa $z$ $xz \in \mathcal{L}$ e $yz \not \in \mathcal{L}$.
-	Visto che la cardinalità di $X$ è di $2^n$ allora non possiamo costruire un automa di meno di $2^n$ stati.
-
-	Questo mostra come gli automi non deterministici possano essere molto più compatti.
-\end{tcolorbox}
-\begin{tcolorbox}
-	Se definiamo $\mathcal{L} = \{ w \in \{ a, b\}^* \mid \#_a(w) = \#_b(w) \}$ ha $X$ infinito % ???
-\end{tcolorbox}
-
-\subsection{Costruzione coi sottoinsiemi}
-\begin{center}
-	\begin{tikzpicture}
-		\node[state, initial] 	(q_0) {$q_0$};
-		\node[state, accepting]	(q_1) [right=of q_0] {$q_1$};
-
-		\path[->] (q_0)		edge[loop above]	node[above]	{a}	()
-					edge			node[above]	{a, b}	(q_1)
-			(q_1)		edge[loop above]	node[above]	{b}	()
-			edge	node[above]	{b}	(q_0);
-	\end{tikzpicture}
-\end{center}
-$\mathcal{A} = \langle Q, \Sigma, \delta, q_0, F \rangle$ NFA definisco $\mathcal{A}^\prime = \langle Q^\prime, \Sigma, \delta^\prime, q_0^\prime, F^\prime \rangle$, con $Q^\prime = 2^Q$ e $q_0^\prime = \{ q_0 \}$.
-% \begin{center}
-% 	\begin{tikzpicture}
-% 		\node[state, initial] 	(q0) {$\{q_0}$};
-% 		\node[state] 		(q0q1) {$\{q_0, q_1}$};
-% 		\node[state, accepting]	(q1) {$\{q_1}$};
-% 		\node[state] 		(empty) {$\varnothing}$};
-% 
-% 		\path[->] (q0)		edge	node[above]	{a}	(q0q1)
-% 					edge	node[above]	{b}	(q1)
-% 		(q1)			edge[loop above]	node[above]	{b}	()
-% 		edge	node[above]	{b}	(q_0);
-% 		% finisco costruzione
-% 	\end{tikzpicture}
-% \end{center}
-Quindi
-$$\forall a \in Q^\prime, a \in \Sigma \mid \delta^\prime(\alpha, a) = \bigcup_{q \in \alpha} \delta(q, a) $$
-ed
-$$ F^\prime = \{ \alpha \in Q^\prime \mid \alpha \cap F \neq \varnothing\} $$
-
-Se l'NFA ha $n$ stati, il DFA ottenuto ha $2^n$ stati.
-
-	Costruiamo ora l'automa $M_n$, o automa di Meyer\&Fisher (1971), non deterministico tale per cui l'automa deterministico corrispondente ha necessariamente $2^n$ stati.
-	% \begin{center}
-	% 	\begin{tikzpicture}
-	% 		\node[state, initial, final] 	(q0) {$q_0$};
-	% 		\node[state] 			(q1) [right=of q0]{$q_1$};
-	% 		\node[state]			(q2) [right=of q1]{$q_2$};
-	% 		\node[state] 			(q3) [right=of q2]{$q_3}$};
-	% 		\node[state]			(q_k) [right=of q3] {$q_4$};
-	% 
-	% 		\path[->] (q0)		edge	node[above]	{a}	(q0q1)
-	% 					edge	node[above]	{b}	(q1)
-	% 		(q1)			edge[loop above]	node[above]	{b}	()
-	% 		edge	node[above]	{b}	(q_0);
-	% 		% finisco costruzione
-	% 	\end{tikzpicture}
-	% 	% per ogni stato la b crea un loop e può riportare l'automa allo stato q_0
-	% \end{center}
-	Quindi è l'automa $\mathcal{A} = \langle Q = \{0, 1, \dots, n - 1\}, \{a, b \}, \delta, q_0 = 0, F = \{ 0 \} \rangle$ con $\delta$ definita come
-	\begin{align*}
-		\delta(i, a) &= (i + 1) \mod n \\
-		\delta(i, b) &= \begin{cases} 0 	& \text{se } i = 0 \\ \{i, 0\} & \text{altrimenti} \end{cases}
-	\end{align*}
-	Sia $S \subseteq \{0, \dots, n - 1 \}$, definisco $w_s$ come
-	$$ w_s = \begin{cases} b & \text{se } S = \varnothing \\ a^i & \text{se } S = \{ i \} \\ a^{e_k - e_{k - 1}}ba^{e_{k - 1} - e_{k - 2}}b\dots ba^{e_2 - e_1}ba^{e_1} & \text{se } S = \{e_1, e_2, \dots, e_k \} \text{ con } k \geq 2, e_1 < e_2 < \dots < e_k \end{cases} $$
-	Ad esempio prendiamo $S = \{1, 3, 4\}$, la $w_S$ corrispondente è
-	$$w_S = aba^2ba = abaaba $$
-	% disegno l'albero di computazione per questa parola
-	Mostriamo che l'insieme di stati raggiunto da questa stringa è esattamente $\{1, 3, 4\} = S$.
-	Mostriamo anche per $S = \{0, 2\}$, $w_S = a^2b$.
-	O ancora $S = \varnothing$, $w_S = b$.
-
-	% proprietà 1
-	\begin{proprietà}
-	\`E possibile dimostrare che $\forall S \subseteq \{0, \dots, n - 1\} \mid \delta(0, w_S) = S$. % \todo{Proprietà 1}
-	\end{proprietà}
-	% proprietà 2
-	\begin{proprietà}
-	Siano $S, T \subseteq \{0, \dots, n - 1\}$, se $S \neq T$ allora $w_S$ e $w_T$ sono distinguibili. % \todo{Proprietà 2}
-	\end{proprietà}
-	\begin{proof}	% proprietà 2
-		Se $S \neq T$ esiste un numero che appartiene a $S$ ma non a $T$, chiamiamolo $x \in S \ T$ % \todo{Complemento, non ricordo il simbolo}.
-		Abbiamo che
-		\begin{align*}
-			\delta(0, w_S) &= S \\
-			\delta(0, w_T) &= T \\
-		\end{align*}
-		Dato uno stato $y$ ci si mettono $a^{n - y}$ per arrivare allo stato finale.
-		Quindi da $w^S$ ci si mettono $a^{n - x}$ per arrivare ad uno stato finale.
-		$$ 0 \overset{w_S}{\rightsquigarrow} x \overset{a^{n - x}}{\rightsquigarrow} 0 $$
-		Sia $y \in T$, se $y \neq x$, allora
-		$$ 0 \overset{w_T}{\rightsquigarrow} y \not \overset{a^{n - x}}{\rightsquigarrow} 0 $$
-		Allora $a^{n - x}$ distingue $S$ e $T$.
-
-		Ed abbiamo che $X = \{ w_S | S \subseteq \{0, \dots, n - 1 \} \}$ è foramto da stringhe a coppie di stringhe % ???
-		Quindi ogni DFA ha almeno $2^n$ stati.
-	\end{proof}
-	Questo è il linguaggio (più o meno) delle stringhe che hanno un suffisso della forma $bx$ dove $\#_a(x)$ è multiplo di $n$.
-
-\subsection{$\epsilon$-mosse}
-Possiamo, in certi casi, introdurre delle transizioni sulle parole vuote.
-\begin{tcolorbox}
-	Supponiamo di volere l'automa che riconosce i numeri con segno (opzionale)
-	\begin{center}
-		\begin{tikzpicture}
-			\node[state, initial] 	(q0) {$q_0$};
-			\node[state] 		(q1) [right=of q0] {$q_1$};
-			\node[state, accepting]	(q2) [right=of q1] {$q_2$};
-	
-			\path[->] (q0)		edge	node[above]	{\tiny $+,-,\epsilon$}	(q1)
-				  (q1)		edge	node[above]	{\tiny $0, \dots, 9$}		(q2)
-				  (q2)		edge[loop above] node[above]	{\tiny $0, \dots, 9$}	();
-		\end{tikzpicture}
-	\end{center}
-	Oppure supponiamo di volere l'automa per $a^lb^mc^n$
-	\begin{center}
-		\begin{tikzpicture}
-			\node[state, initial] 	(q0) {$q_0$};
-			\node[state] 		(q1) [right=of q0] {$q_1$};
-			\node[state, accepting]	(q2) [right=of q1] {$q_2$};
-	
-			\path[->] (q0)		edge[loop above]	node[above]	{a} ()
-						edge			node[above]	{$\epsilon$}	(q1)
-				  (q1)		edge[loop above]	node[above]	{b}		()
-				  		edge			node[above]	{$\epsilon$}	(q2)
-				  (q2)		edge[loop above]	node[above]	{$c$}		();
-		\end{tikzpicture}
-	\end{center}
-\end{tcolorbox}
-Generalmente se ho
-$$ q_0 \overset{\epsilon}{\rightarrow} q_1 \overset{a}{\rightarrow} q_2 \overset{\epsilon}{\rightarrow} q_3 $$
-questo diventa
-$$ q \overset{a}{\rightarrow} q_3 $$
-Inoltre se uno stato ha un cammino formato da $\epsilon$-mosse fino ad uno stato finale, esso stesso è finale.
-Questo necessariamente introduce non determinismo.
-
-\subsection{Stati iniziali multipli}
-Questa è un'altra estensione che genera non determinismo.
-\begin{center}
-	\begin{tikzpicture}
-		\node[state, accepting, initial] 	(q0) {$q_0$};
-		\node[state, accepting, initial] 	(q1) [below=of q0] {$q_1$};
-
-		\path[->] (q0)		edge[loop above]	node[above]	{b} ()
-			  		edge[bend left]		node[right]	{a} (q1)
-			  (q1)		edge[bend left]		node[left]	{b} (q0);
-	\end{tikzpicture}
-\end{center}
-% non mi ricordo di che linguaggio fosse
-Per renderli deterministici si crea lo stato iniziale che è l'insieme dei diversi stati iniziali.
-
-Se si prende un automa con stati iniziali multipli, ma transizioni deterministiche, si può comunque avere un gap esponenziale tra il numero di stati del'NFA e del DFA.
-
-\chapter{Espressioni regolari}
-\section{Operazioni sui linguaggi}
-Visto che un linguaggio $L \subseteq \Sigma^*$ è un sottoinsieme di un insieme, possiamo fare tutte le operazioni insiemistiche su un linguaggio:
-\begin{itemize}
-	\item intersezione $L \cap L^\prime$
-	\item unione $L \cup L^\prime$
-	\item complemento $L^C$.
-		Si può pensare di calcolare il complemento di un linguaggio $L \subseteq \Sigma^*$ rispetto ad un alfabeto più grande $\Sigma \subseteq \Gamma$.
-		Il complemento è esattamente $\Gamma^* \setminus L$.
-\end{itemize}
-
-Definiamo il prodotto di due linguaggi $L^\prime, L^{\prime\prime} \subseteq \Sigma^*$
-$$ L^\prime \cdot L^{\prime\prime} = \{ z \mid \exists x \in L^\prime \exists y \in L^{\prime\prime} . z = xy \} $$
-E se $L^\prime \subseteq \Sigma^{*\prime}, L^{\prime\prime} \subseteq \Sigma^{*\prime\prime}$, allora $L^\prime \cdot L^{\prime\prime} \subseteq \Sigma^\prime \cup \Sigma^{\prime\prime}$.
-Salvo casi particolari (e.g. alfabeto da una lettera sola) questa operazione non è commutativa.
-E vale $\{ \epsilon \}$ è l'indentità destra e sinistra, e $\varnothing$ è l'elemento nullo destro e sinistro.
-
-Definiamo la potenza di un linguaggio
-$$ L^k = \underbrace{L \cdot L \dots}_{k \text{ volte}} $$
-e vale che 
-$$ L^0 = \{ \epsilon \} $$
-ovvero il linguaggio ottenuto concatenando zero parole di $L$.
-Il prodotto e la potenza di un linguaggio finito sono ancora finiti.
-
-Definiamo la chiusura di Kleene di un linguaggio
-$$ L^* = \bigcup_{k \geq 0} L^k $$
-La chiusura di Kleene anche di un linguaggio finito è finito.
-\begin{tcolorbox}
-	\begin{align*}
-		L &= \{ a, bb\}^* \\
-		  & = \{ x \in \{a, b\}^* \mid \text{ Ogni fattore massimale di $b$ è di lunghezza pari }\}
-	\end{align*}
-	Dove massimale indica che non può essere allungato.
-\end{tcolorbox}
-Vale inoltre che
-$$ \{\epsilon \}^* = \{ \epsilon \}$$
-e che
-$$ \varnothing^* = \{ \epsilon \} $$
-
-Definiamo la chiusura di Kleene positiva di un linguaggio
-$$ L^+ = \bigcup_{k \geq 1} L^k $$
-Inoltre vale che $L$ non contiene la parola vuota, allora $L^+$ a sua volta non la contiene, e questo è uguale a $L^+ = L^* \setminus \{\epsilon\}$.
-Nota bene, non vale che generalmente $L^+ = L^* \setminus \{\epsilon\}$.
-\begin{fatto}
-	$$ L\cdot L^* = L \bigcup_{k \geq 0} L^k = \bigcup_{k \geq 0} L L^k = \bigcup_{k \geq 1} L^k = L^+ = L^* \cdot L $$
-\end{fatto}
-
-\section{Espressioni regolari}
-Le espressioni regolari sono in un certo senso una descrizione dichiarativa di un linguaggio.
-Dato un alfabeto $\Sigma$, definiamo ricorsivamente le espressioni regolari come
-\begin{itemize}
-	\item $\varnothing$, rappresenta il linguaggio vuoto
-	\item $\epsilon$, rappresenta il linguaggio della parola vuota
-	\item $a \in \Sigma$, rappresenta il linguaggio di solo $a$
-\end{itemize}
-ora definiamo
-\begin{itemize}
-	\item $E_1 + E_2$, rappresenta il linguaggio $L(E_1) \cup L(E_2)$
-	\item $E_1 \cdot E_2$, rappresenta il linguaggio $L(E_1) \cdot L(E_2)$
-	\item $E^*$, rappresenta il linguaggio $L(E)^*$
-\end{itemize}
-\begin{tcolorbox}
-	L'espressione regolare
-	$$ (a + bb)^*$$
-	rappresenta il linguaggio $\{a, bb\}^*$.
-\end{tcolorbox}
-\begin{tcolorbox}
-	Il linguaggio dove il terzultimo simbolo è una $a$ è rappresentato dall'espressione regolare
-	$$ (a + b)^* a (a + b) (a + b) $$
-	E volendo generalizzare al linguaggio il cui $n$-esimo simbolo da destra è una $a$
-	$$ (a + b)^* a (a + b)^n $$
-	Dove le potenze sulle espressioni regolari rappresentano una serie di prodotti.
-\end{tcolorbox}
-\begin{tcolorbox}
-	Il linguaggio dove due simboli a distanza $n$ sono uguali
-	$$ ((a + b)^* a (a + b)^{n - 1} a (a + b)^*) + ((a + b)^* b (a + b)^{n - 1} b (a + b)^*)$$
-	Questo può essere semplificato in
-	$$ (a + b)^* ((a (a + b)^{n - 1} a) + (b (a + b)^{n - 1} b)) (a + b)^* $$
-\end{tcolorbox}
-
-\begin{definizione}[State complexity]
-	Definiamo la complessità di stati o state complexity di un linguaggio $L \subseteq \Sigma^*$, indicata $\operatorname{sc}(L)$, come il minimo numero di stati del DFA che accetta $L$.
-	E definiamo la non-deterministic state complexity, indicata con $\operatorname{nsc}(L)$, come il minimo numero di stati del NFA che accetta $L$.
-\end{definizione}
-\begin{fatto}
-	$$\operatorname{sc}(L) \leq 2^{\operatorname{nsc}(L)}$$
-\end{fatto}
-\begin{tcolorbox}
-	Dato $L_n = (a + b)^* a (a + b)^{n - 1}$, vale che $\operatorname{nsc}(L_n) \leq n + 1$, mentre $\operatorname{sc}(L_n) \geq 2^n$, e visto che per questo linguaggio sappiamo costruire un automa da $2^n$ stati, allora
-	$\operatorname{sc}(L_n) = 2^n$.
-
-	La stringa più corta di questa linguaggio è la stringa che inizia con $a$ ed ha $n$ simboli.
-	Supponendo di avere meno di $n$ stati, allora ce ne deve essere almeno uno che si ripete; quindi c'è un loop.
-	Se io elimino il loop potrei riconoscere una stringa più breve di quella più breve.
-
-	Quindi abbiamo che per forza $\operatorname{nsc}(L_n) = n + 1$.
-
-	Alternativamente si può costruire il fooling set composto da tutte le possibili scomposizioni in due stringhe di $ab^{n - 1}$.
-\end{tcolorbox}
-\begin{proposizione}
-	Presa la stringa più corta del linguaggio, ogni NFA deve per forza avere $n + 1$ stati, dove $n$ sono i simboli della stringa.
-\end{proposizione}
-
-\begin{teorema}[Teorema di Kleene o Teorema fondamentale degli automi a stati finiti]
-	La classe dei linguaggi accettati da automi a stati finiti è la più piccola sottoinsieme di $\Sigma^*$ che contiene i linguaggi finiti ed è chiusa rispetto alle operazioni di unione, prodotto e chiusura di Kleene.
-\end{teorema}
-Quindi la classe degli automi a stati finiti coincide con la classe esprimibile dalle espressioni regolari.
-\begin{proof}
-	Dimostriamo il primo lato, passandro da un automa ad una regex.
-	Dato un automa
-	$$ \mathcal{A} = \langle Q, \Sigma, \delta, q_1, F \rangle$$
-	e supponiamo che gli stati siano numerati da uno ad $n$
-	$$ Q = \{ q_1, q_2, \dots, q_n \} $$
-	possiamo vedere come il linguaggio come tutti i cammini dallo stato iniziale agli stati finali, e che concantenando le etichette del cammino otteniamo un parola accettata dal percorso.le etichette del cammino otteniamo un parola accettata dal percorso.
-
-
-	Costruiamo un algoritmo simile a quello di Floyd-Wharshall che trova tutti i camminini minimi.
-	Chiamiamo $R_{ij}^{(k)}$ l'insieme di tutti i percorsi da $q_i$ a $q_j$ che passano solo per stati con indice minore di $k$.
-	Quando metteremo $k = n$ avrò trovato tutte le stringhe da $i$ a $j$.
-	Andando per induzione definiamo l'insieme come
-	\begin{itemize}
-		\item $R_{ij}^{(0)}$ è il caso in cui c'è una transizione tra lo stato $i$ e lo stato $j$.
-			$$ R_{ij}^{(0)} = 
-			\begin{cases}
-				\{ \alpha \in \Sigma \mid \delta(q_i, \alpha) = q_j \} & \text{se } i \neq j \\
-				\{\epsilon\} \cup \{ \alpha \in \Sigma \mid \delta(q_i, \alpha) = q_i \} & \text{se } i = j 
-			\end{cases}
-			$$
-		\item supponiamo di avere $R_{ij}^{(k - 1)}$, voglio trovare $R_{ij}^{(k)}$.
-			Cerco tutti i punti per cui il nuovo cammino passa per $q_k$, nelle sezioni tra i $q_k$ gli stati intermedi sono tutti minori di $k$.
-			% Fig 1
-			Quindi 
-			$$ R_{ij}^{(k)} = R_{ij}^{(k - 1)} \cup R_{ik}^{(k - 1)} \left (R_{kk}^{(k - 1)}\right )^* R_{kj}^{(k - 1)} $$
-	\end{itemize}
-	Con $k = n$ abbiamo tutti i percorsi e vale che
-	$$ L = \bigcup_{q_i \in F} R_{1i}^{(n)} $$
-
-	Dimostriamo il secondo lato, passandro da una regex ad un automa.
-	%% DA FINIRE
-\end{proof}
-
-\begin{tcolorbox}
-	Mostriamo una tecnica diversa per generare la regex da un automa.
-	\begin{center}
-		\begin{tikzpicture}
-			\node[state, initial] 	(q0) {$q_0$};
-			\node[state, accepting] (q1) [right=of q0] {$q_1$};
-
-			\path[->] (q0)	edge[loop above] node[above]	{\tiny a}	()
-					edge		 node[above]	{\tiny b}	(q1);
-		\end{tikzpicture}
-	\end{center}
-	Costruiamo un sistema di equazioni per ogni stato
-	$$
-	\begin{cases}
-		X &= a X_1 + b Y \\
-		Y &= \epsilon
-	\end{cases}
-	$$
-	e sostituendo 
-	$$
-	\begin{cases}
-		X &= a X + b  \\
-		Y &= \epsilon
-	\end{cases}
-	$$
-	se ci troviamo in uno stato $X = A X + B$, questo corrisponde alla regex $A^* B$.
-	Questo è banalmente $a^*b$.
-\end{tcolorbox}
-
-\begin{tcolorbox}
-	Un altro esempio più complesso
-	\begin{center}
-		\begin{tikzpicture}
-			\node[state, initial] 	(q0) {$q_0$};
-			\node[state] 		(q1) [right=of q0] {$q_1$};
-			\node[state, accepting]	(q2) [right=of q1] {$q_2$};
-
-			\path[->] (q0)	edge[loop below] node[below]	{\tiny b}	()
-					edge[bend left]	 node[above]	{\tiny a}	(q1)
-				  (q1)	edge[bend left]  node[below] 	{\tiny b}	(q0)
-				  	edge[bend left]  node[above]	{\tiny a}	(q2)
-				  (q2)	edge[loop below] node[below]	{\tiny a}	()
-					edge[bend left]	 node[below]	{\tiny b}	(q1);
-		\end{tikzpicture}
-	\end{center}
-	Costruiamo un sistema di equazioni per ogni stato
-	$$
-	\begin{cases}
-		X_0 &= a X_1 + b X_0 \\
-		X_1 &= a X_2 + b X_0 \\
-		X_2 &= a X_2 + b X_1 + \epsilon
-	\end{cases}
-	$$
-	$\epsilon$ perché $X_2$ è finale.
-	Sostitendo $X_1$ abbiamo
-	\begin{align*}
-		X_0 &= aa X_2 + ab X_0 + bX_0 \\
-		    &= aaX_2 + (ab + b)X_0 
-	\end{align*}
-	e 
-	\begin{align*}
-		X_2 &= aX_2 + baX_2 + bbX_0 + \epsilon \\
-		    &= (a + ba) X_2 + bbX_0 + \epsilon \\
-		    &= (a + ba)^* + bb X_0 + \epsilon
-	\end{align*}
-	che corrisponde alla regex $(a + ba)^* (bb X_0 + \epsilon)$, prendendo come $A = (a + ba)$ e $B = (bb X_0 + \epsilon)$.
-	E sostituendo ancora
-	\begin{align*}
-		X_0 &= aa X_2 + (ab + b) X_= \\
-		    &= aa (a + ba)^*(bb X_0 + \epsilon) + (ab + b) X_0 \\ 
-		    &= (aa (a + ba)^* bb + ab + b) X_0 + aa (a + ba)^*
-	\end{align*}
-	che quindi è $(aa (a + ba)^* bb + ab + b)^* + aa (a + ba)^*$.
-\end{tcolorbox}
-
-% ci torneremo
-Il complemento di linguaggio riconosciuto da un automa deterministico è banalmente il complemento dell'insieme dei finali.
-
-
-
-Date tre espressioni regolari
-$$ (a*b*)* \equiv (a + b)* \equiv b*(ab*)* $$
-Sono tre linguaggi equivalenti.
-
-Ci si può chiedere qual è il numero massimo di star innestate necessarie per generare un linguaggio.
-Introduciamo l'\textit{altezza di star}, o star height $h$, come il numero massimo di star innestate.
-Definita nel seguente modo
-$$ h(E) = 
-\begin{cases}
-	0 & \text{se } E = \varnothing \vee E = \epsilon \vee E \in \Sigma^* \\
-	\max(h(E^\prime), h(E^{\prime\prime})) & \text{se } E = E^\prime \cdot E^{\prime\prime} \vee E = E^\prime + E^{\prime\prime} \\
-	1 + h(E^\prime) & \text{se } E = E^\prime*
-\end{cases}
-$$
-Definiamo poi la minima altezza per un linguaggio $L \subseteq \Sigma^*$ come
-$$ h(L) = \min \{ h(E) \mid \text{ $E$ denota $L$ } \} $$
-
-\begin{teorema}[Dejan, Schutzenberger]
-	$$\forall q > 0 \exists W_q \subseteq \{a, b\}^* \mid h(W_q) = q $$
-	Equesto è definito come
-	$$ W_q = \{ w \in \{a, b\}^* \mid \#_a(w) \equiv \#_b(w) \mod 2^q \} $$
-\end{teorema}
-
-La misura dei cicli è collegata al numero di cicli in un automa.
-\begin{tcolorbox}
-	% fig 07.1
-	Per $q = 1, 2, \dots$, definiamo $W_q$ ed abbiamo che
-	$$ W_2 = ((ab + ba) + (aa + bb)(ab + ba)^*(bb + aa))^* $$
-\end{tcolorbox}
-
 \begin{nota}
-	Se $|\Sigma| = 1$, allora $\forall L \subseteq \Sigma^* \mid h(L) \leq 1$.
+	Per convenzione la stringa di stati viene messa sulla pila di destra a sinistra, quindi il simbolo più a sinistra sarà in cima alla pila.
+\end{nota}
+Visto che ammettiamo $\epsilon$-mosse il modello di sopra potrebbe non esaurire tutte le possibilità.
+Supponiamo che la funzione $\delta$ sia definita
+$$\delta(q, a, A) = \{(q_1, \epsilon), (q_2, BCC)\} $$
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.4\textwidth}
+		\centering
+		\begin{tikzpicture}[ SQUIGGLY/.style={->
+			, decorate
+			, decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}},
+			]
+			\begin{scope}[local bounding box=wordScope, start chain=word, node distance=0pt]
+				\node [draw, minimum width=40pt, minimum height=20pt, on chain=word] {$\dots$};
+				\node [draw, minimum height=20pt, on chain=word] {a};
+				\node [draw, minimum height=20pt, on chain=word] {?};
+				\node [draw, minimum width=40pt, minimum height=20pt, on chain=word] {$\dots$};
+			\end{scope}
+
+			\node[draw, minimum width=20pt, minimum height=20pt] (state) [below=of word-3]	{$q_1$};
+
+			\begin{scope}[local bounding box=stackScope, start chain=stack going below, node distance=0pt]
+				\node [draw, minimum width=20pt, minimum height=40pt, on chain=stack] [right=of state, xshift=1cm] {$\vdots$};
+			\end{scope}
+
+			\draw[SQUIGGLY] (state.north) to (word-3.south);
+			\draw[SQUIGGLY] (state.east) to (stack-1.west);
+		\end{tikzpicture}
+		\caption{Lo stato per $(q_1, \epsilon)$}
+	\end{subfigure}
+	\begin{subfigure}{0.4\textwidth}
+		\centering
+		\begin{tikzpicture}[ SQUIGGLY/.style={->
+			, decorate
+			, decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}},
+			]
+			\begin{scope}[local bounding box=wordScope, start chain=word, node distance=0pt]
+				\node [draw, minimum width=40pt, minimum height=20pt, on chain=word] {$\dots$};
+				\node [draw, minimum height=20pt, on chain=word] {a};
+				\node [draw, minimum height=20pt, on chain=word] {?};
+				\node [draw, minimum width=40pt, minimum height=20pt, on chain=word] {$\dots$};
+			\end{scope}
+
+			\node[draw, minimum width=20pt, minimum height=20pt] (state) [below=of word-3]	{$q_2$};
+
+			\begin{scope}[local bounding box=stackScope, start chain=stack going below, node distance=0pt]
+				\node [draw, minimum width=20pt, on chain=stack] [right=of state, xshift=1cm] {B};
+				\node [draw, minimum width=20pt, on chain=stack] {C};
+				\node [draw, minimum width=20pt, on chain=stack] {C};
+				\node [draw, minimum width=20pt, minimum height=40pt, on chain=stack] {$\vdots$};
+			\end{scope}
+
+			\draw[SQUIGGLY] (state.north) to (word-3.south);
+			\draw[SQUIGGLY] (state.east) to (stack-1.west);
+		\end{tikzpicture}
+		\caption{Lo stato per $(q_2, BCC)$}
+	\end{subfigure}
+\end{figure}
+Inoltre potremmo anche avere $\epsilon$-mosse, ad esempio
+$$ \delta(q, \epsilon, A) = \{(r, B)\} $$
+\begin{center}
+	\begin{tikzpicture}[ SQUIGGLY/.style={->
+			  		     , decorate
+			                     , decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}},
+			   ]
+ 		\begin{scope}[local bounding box=wordScope, start chain=word, node distance=0pt]
+    			\node [draw, minimum width=40pt, minimum height=20pt, on chain=word] {$\dots$};
+    			\node [draw, minimum height=20pt, on chain=word] {a};
+    			\node [draw, minimum width=40pt, minimum height=20pt, on chain=word] {$\dots$};
+ 		\end{scope}
+
+		\node[draw, minimum width=20pt, minimum height=20pt] (state) [below=of word-2]	{$r$};
+
+		\begin{scope}[local bounding box=stackScope, start chain=stack going below, node distance=0pt]
+			\node [draw, minimum width=20pt, on chain=stack] [right=of state, xshift=1cm] {B};
+    			\node [draw, minimum width=20pt, minimum height=40pt, on chain=stack] {$\vdots$};
+ 		\end{scope}
+
+		\draw[SQUIGGLY] (state.north) to (word-2.south);
+		\draw[SQUIGGLY] (state.east) to (stack-1.west);
+	\end{tikzpicture}
+\end{center}
+
+
+\subsection{Definizioni}
+Ci riferiremo agli automi a pila come PDA (Push Down Automaton) e assumeremo che siano sempre nondeterministici, a meno che diversamente specificato.
+
+Chiameremo lo stato complessivo dell'automa a pila la sua \textbf{configurazione}, questa verrà rappresentata compattamente come una tupla dello stato, la porzione di input ancora da leggere da quello corrente, e il contenuto della pila.
+Quindi 
+% fig 12.3
+è rappresentato dalla configurazione
+$$ (q, ay, A\alpha) $$
+con $q \in Q, a \in \Sigma \cup \{\epsilon\}, y \in \Sigma^*, A \in \Gamma, \alpha \in \Gamma^*$.
+
+Una mossa, indica che da una configurazione $q$ posso passare ad un'altra $p$, scritto
+$$ q \vdash p$$
+Ad esempio sopra abbiamo che
+\begin{align*}
+	(q, ay, A\alpha) &\vdash (q_1, y, \alpha) \\
+	(q, ay, A\alpha) &\vdash (q_2, y, BCC\alpha) \\
+	(q, ay, A\alpha) &\vdash (r, ay, B\alpha)
+\end{align*}
+Più rigorosamente, sia $(q, ay, Z\alpha)$ la configurazione corrente, con $Z \in \Gamma$ e $M$ l'automa a pila, diciamo che
+$$ (q, ay, Z\alpha) \underset{M}{\vdash} (p, y, \beta\alpha) $$
+sse $(p, \beta) \in \delta(q, a, Z)$ dove $q, p \in Q$, $y \in \Sigma^*$, $a \in \Sigma \cup \{\epsilon\}$, $Z \in \Gamma$ e $\alpha, \beta \in \Gamma^*$.
+Se l'automa è ovvio dal contensto possiamo ometterlo da $\underset{M}{\vdash}$ e scrivere solo $\vdash$.
+
+Da una configurazione $C'$ arrivo ad una configurazione $C''$ in un certo numero di mosse -- scritto 
+$$ C' \underset{M}{\overset{*}{\vdash}} C'' $$
+sse esistono $C_0, \dots, C_k$ con $C_0 = C'$ e $C_k = C''$ e $\forall i \in 1, \dots, k \; C_{i - 1} \underset{M}{\vdash} C_i$.
+
+La configurazione iniziale di un automa su input $w \in \Sigma^*$ è 
+$$ (q_0, w, Z_0) $$
+
+Per accettare possiamo dare alcune diverse definizioni di configurazione accettante:
+\begin{itemize}
+	\item una volta finito l'input mi trovo in uno stato $q \in F$ e la pila può essere una stringa qualunque, questa è detta \textit{accettazione per stati finali}, ed indichiamo il linguaggio accettato per stati finali dall'automa a pila $M$ come
+		$$ L(M) = \{ w \in \Sigma^* \mid (q_0, w, Z_0) \overset{*}{\vdash} (q, \epsilon, \gamma), q \in F, \gamma \in \Gamma^* \} $$
+		\begin{nota}
+			Siccome sono accettate le $\epsilon$ mosse può esserci il caso in arriviamo alla fine dell'input con uno stato non finale, e si può fare una $\epsilon$-mossa ed arrivare ad uno stato finale.
+		\end{nota}
+	\item è ragionevole pensare che tutto quello che viene messo sulla pila debba anche essere tolto, questa è detta \textit{accettazione per pila vuota} per cui si deve arrivare alla fine dell'input ed aver svuotato l'intera pila, ingorando lo stato.
+		Il linguaggio accettato per pila vuota dall'automa $M$ lo indichiamo come
+		$$ N(M) = \{ w \in \Sigma^* \mid (q_0, w, Z_0) \overset{*}{\vdash} (q, \epsilon, \epsilon), q \in Q \} $$
+		In questo caso ovviamente si può omettere $F$ dalla definizione dell'automa.
+	\item si può pensare di richiedere entrambe le precedenti, come vedremo più avanti queste tre nozioni sono equivalenti (nel caso nondeterministico)
+\end{itemize}
+\begin{nota}
+	Questa cosa la vedremo meglio, ma visto che la pila è la struttura fondamentale per la ricorsione, i linguaggi CF sono i linguaggi regolari a cui è stata aggiunta la ricorsione.
 \end{nota}
 
-\section{Espressioni regolari estese}
-Supponiamo di avere il linguaggio
-$$ L = \{ w \in \{a, b\}^* \mid \#_a(w) \text{ è pari } \wedge \#_b(w) \text{ è pari } \} $$
-
-Costruiamo prima il linguaggio con solo le $a$ pari
-$$ (b + ab*a)* $$
-e con solo le $b$ pari
-$$ (a + ba*b)* $$
-intuitivamente il linguaggio $L$ sarebbe, se avessimo l'intersezione, 
-$$ (b + ab*a)* \cap (a + ba*b)* $$
-Intoduciamo quindi le \textbf{espressioni regolari estese}.
-
-Definiamo queste come le espressioni con, oltre alle operazioni di concatenazione, unione e star; l'intersezione ($\cap$) e il complemento ($E^-$).
-Introducendo il complemento possiamo ottenere l'intersezione attraverso l'unione.
-
 \begin{tcolorbox}
-	Dato il linguaggio su $\Sigma = \{a, b\}$ delle stringhe con 3 $a$ consecutive
-	% fig 07.2
-	vogliamo riconoscere il suo complemento (senza 3 $a$ consecutive).
-	Questo diventa semplicemente
-	$$ \overline{\overline{\varnothing} a a a \overline{\varnothing}} $$
-	Quindi ora senza usare la star possiamo esprimere anche linguaggi infiniti.
-\end{tcolorbox}
-Si può definire il problema di trovare il l'altezza di star minima ($eh$) nelle espressioni regolari estese.
-Questo è un problema aperto.
-Si sa che valgono
-\begin{align*}
-	\exists L \mid eh(L) = 0 \\
-	\exists L \mid eh(L) = 1 
-\end{align*}
+	Definiamo il linguaggio
+	$$ \mathcal{L} = \{ a^n b^n \mid n \geq 1 \} $$
+	possiamo usare la pila per contare il numero di $a$.
+	\begin{align*}
+		\delta(q_0, a, Z_0) &= \{(q_0, A)\} \\
+		\delta(q_0, a, A)   &= \{(q_0, AA) \} \\
+		\delta(q_0, b, A)   &= \{ (q_1, \epsilon) \} \\
+		\delta(q_1, b, A)   &= \{ (q_1, \epsilon) \} 
+	\end{align*}
+	E vale che data questa $\delta$
+	$$ \mathcal{L} = N(M) $$
+	Questo è un caso particolare di automa a pila in cui utilizziamo in simbolo solo (cioè $A$, oltre a $Z_0$) è detto \textit{automa a contatore}.
 
-\chapter{Operazioni sugli automi a stati finiti}
-In questo capitolo vedremo una serie di operazioni sugli automi a stati finiti e soprattutto il loro impatto sulla dimensione dell'automa.
-Abbiamo già visto alcune operazioni tra automi nell'ambito delle espressioni regolari, specificamente 
+	Definiamo alternativamente
+	\begin{align*}
+		\delta(q_0, a, Z_0) &= \{(q_0, AZ_0)\} \\
+		\delta(q_0, a, A)   &= \{(q_0, AA)\} \\
+		\delta(q_0, b, A)   &= \{(q_1, \epsilon)\} \\
+		\delta(q_1, b, A)   &= \{(q_1, \epsilon)\} \\
+		\delta(q_1, \epsilon, Z_0) &= \{(q_F, \epsilon)\}
+	\end{align*}
+	con $F = \{q_F\}$, e vale che con questa $\delta$
+	$$ \mathcal{L} = L(M) $$
+\end{tcolorbox}
+
+\begin{tcolorbox}[breakable]
+	Vediamo ora il caso di sopra, ma in cui
+	$$ \mathcal{L} = \{ a^n b^n \mid n \geq 0 \} $$
+	possiamo usare la pila per contare il numero di $a$.
+	\begin{align*}
+		\delta(q_0, \epsilon, Z_0) &= \{(q_0, \epsilon)\} \\
+		\delta(q_0, a, Z_0) &= \{(q_0, A)\} \\
+		\delta(q_0, a, A)   &= \{(q_0, AA) \} \\
+		\delta(q_0, b, A)   &= \{ (q_1, \epsilon) \} \\
+		\delta(q_1, b, A)   &= \{ (q_1, \epsilon) \} 
+	\end{align*}
+	E vale che data questa $\delta$ in cui si può direttamente accettare dallo stato $q_0$
+	$$ \mathcal{L} = N(M) $$
+	L'introduzione della prima regola è problematica, perché con input non vuoto permette di svuotare la pila da $Z_0$, bloccando la continuazione dell'automa, quindi abbiamo introdotto il nondeterminismo tra le due regole $\delta(q_0, \epsilon, Z_0)$ e $\delta(q_0, a, Z_0)$.
+
+	Definiamo similmente a sopra
+	\begin{align*}
+		\delta(q_0, \epsilon, Z_0) &= \{(q_F, \epsilon)\} \\
+		\delta(q_0, a, Z_0) &= \{(q_0, AZ_0)\} \\
+		\delta(q_0, a, A)   &= \{(q_0, AA)\} \\
+		\delta(q_0, b, A)   &= \{(q_1, \epsilon)\} \\
+		\delta(q_1, b, A)   &= \{(q_1, \epsilon)\} \\
+		\delta(q_1, \epsilon, Z_0) &= \{(q_F, \epsilon)\}
+	\end{align*}
+	con $F = \{q_F\}$, e vale che con questa $\delta$
+	$$ \mathcal{L} = L(M) $$
+	sempre introducendo non determinismo.
+	
+	Questa versione, a differenza di quello di sopra per pila vuota, può anche essere fatta senza non determinismo infatti definiamo $q_I$ come nuovo stato iniziale che è anche finale, se la stringa è vuota possono direttamente accettare, mentre 
+	$$ \delta(q_I, a, Z_0) = \{(q_0, AZ_0)\} $$
+	ci riconduce all'automa di sopra.
+\end{tcolorbox}
+\begin{tcolorbox}
+	Supponiamo invece di voler riconoscere
+	$$ L = \{ w \in \{a, b\}^* \mid \#_a(w) = \#_b(w) \} $$
+	bisogna contare sia le $a$ che le $b$: finché si incontrano $a$ si aggiungono alla pila, e appena si incontrano $b$ le si tolgono. 
+	Se durante questa operazione si svuota la pila iniziamo a contare le $b$ e facciamo la operazione inversa.
+	Queste due operazioni continuano ad alternarsi finché la stringa non è svuotato.
+\end{tcolorbox}
+
+Definiamo ora l'automa a pila deterministico.
+Questo in ogni configurazione permette una singola scelta:
+\begin{itemize}
+	\item sono vietate configurazioni che ammettono una mossa e una $\epsilon$-mossa, quindi $\forall q \in Q, z \in \Gamma$ se $\delta(q, \epsilon, z) \neq \varnothing$ allora $\forall a \in \Sigma \delta(q, a, Z) = \varnothing$
+	\item $\forall q \in Q, z \in \Gamma, a \in \Sigma \cup \{\epsilon\} \mid |\delta(q, a, Z)|\leq 1$, quindi per ogni tripletta $q, a, Z$ è ammessa al massimo una mossa.
+\end{itemize}
+A questo punto abbiamo definito quattro modelli: deterministico e nondeterministico che possono accettare per pila vuota o per stato finale.
+Vedremo che il caso nondeterminismo in questo caso è più potente del caso deterministico, e che nel modello nondeterministico automi che possono accettare per pila vuota o per stato finale sono equivalenti.
+
+\subsection{Equivalenza tra le due nozioni di accettazione nel modello nondeterministico}
+\subsubsection{Da stati finali a pila vuota}
+Dato un automa $M = (Q, \Sigma, \Gamma, \delta, q_0, Z_0, F)$ e supponiamo che $L = L(M)$ sia il linguaggio accettato per stati finali.
+Definiamo l'automa 
+$$M' = (Q \cup \{q_0', q_e\}, \Sigma, \Gamma \cup \{X\}, \delta', q_0', X, \varnothing)$$
+con $q_0', q_e \not \in Q$ e $X \not \in \Gamma$, vogliamo che $L= N(M')$.
+
+Ad alto livello quando $M$ arriva in uno stato finale, $M'$ si sposta nello stato $q_e$ in cui inizia a svuotare la pila.
+Infatti la $e$ di $q_e$ sta per ``empty''.
+
+Definiamo ora $\delta'$:
+\begin{enumerate}
+	\item prima di tutto 
+		$$ \delta'(q_0', \epsilon, X) = \{(q_0, Z_0X)\} $$
+		questo serve solo ad infilare $X$ in fondo alla pila.
+		La $X$ è necessaria per evitare che se l'automa iniziale $M$ svuota la pila si accetti la stringa.
+	\item per ogni altra cosa $M'$ si può comportare come $M$:
+		$$ \forall q \in Q, a \in \Sigma \cup \{\epsilon\}, z \in \Gamma \mid \delta(q, a, Z) \subseteq \delta'(q, a, Z) $$
+	\item ogni qualvolta $M$ entra in uno stato finale $M'$ può -- enfasi su può -- iniziare a svuotare l'intera pila:
+		$$ \forall q \in F, z \in \Gamma \cup \{X\} \mid (q_e, \epsilon) \in \delta'(q, \epsilon, Z) $$
+	\item una volta entrato nello stato di svuotamento, continua a svuotare:
+		$$ \forall z \in \Gamma \cup \{X\} \mid \delta'(q_e, \epsilon, Z) = \{(q_e, \epsilon)\}$$ 
+\end{enumerate}
+
+Questo necessariamente introduce nondeterminismo, infatti l'automa $M$ potrebbe entrare in uno stato finale prima di essere arrivato alla fine della stringa.
+Ed anche se l'automa di partenza è deterministico il punto $3$ potrebbe in ogni caso introdurre nondeterminismo.
+
+Supponiamo di avere un automa deterministico che accetta la stringa $w$ a pila vuota, allora ogni stringa che ha $w$ come prefisso non può essere accettata, perché il prefisso $w$ svuoterebbe la pila e un automa con pila vuota non può andare a avanti.
+Quindi il nondeterminismo è in un certo senso necessario per automi a pila che accettano con pila vuota.
+
+\subsubsection{Da pila vuota a stati finali}
+Dato un automa $M = (Q, \Sigma, \Gamma,\delta, q_0, Z_0, \varnothing)$ che accetta per pila vuota il linguaggio $L = N(M)$, vogliamo creare un automa che accetti per stati finali.
+Sia questo 
+$$M' = (Q \cup \{q_0', q_F\}, \Sigma, \Gamma \cup \{X\}, \delta', q_0', X, F = \{q_F\})$$
+con $q_0', q_F \not \in Q, X \not \in \Gamma$.
+
+Definiamo ora $\delta'$:
+\begin{itemize}
+	\item come prima inizialmente infiliamo $X$ in fondo alla pila:
+		$$ \delta'(q_0', \epsilon, X) = \{(q_0, Z_0X)\} $$
+		$X$ serve a riconoscere quando la pila è vuota.
+	\item a questo punto copiamo tutte le mosse di $M$, per cui
+		$$ \forall q \in Q, a \in \Sigma \cup \{\epsilon\}, Z \in \Gamma \mid \delta'(q, a, Z) = \delta(q, a, Z) $$
+	\item nel momento in cui $M$ svuota la prima, $M'$ si trova $X$ sulla pila, a questo punto può entrare in uno stato finale
+		$$ \forall q \in Q \mid \delta'(q, \epsilon, X) = \{(q_F, \epsilon)\}$$
+\end{itemize}
+Supponendo che $M$ sia deterministico, $M'$ rimane deterministico -- la trasformazione preserva il determinismo.
+
+% lezione 13
+\section{Grammatiche di tipo 2}
+Una grammatica è formata da quattro elementi:
+$$ G = \langle V, \Sigma, P, S \rangle $$
+e nello specifico, in quelle di tipo 2 le produzioni hanno la forma
+$$ A \rightarrow \alpha \hspace{1cm} A \in V, \alpha \in (V \cup \Sigma)^* $$
+
+Una rappresentazione utile per le derivazioni di linguaggi CF sono gli alberi, ad esempio data $w \in L(G)$, allora $S \overset{*}{\Rightarrow} w$.
+Questa derivazione io la possono rappresentare come un albero di derivazione, o albero di parsing, o ancora parse tree.
+Questo è un albero 
+\begin{itemize}
+	\item con radice etichettata con il simbolo iniziale della grammatica
+	\item le foglie da sinistra a destra sono $w$
+	\item i nodi possono essere di tre tipi:
+		\begin{itemize}
+			\item variabili, per i nodi interni
+			\item terminali, per le foglie
+			\item $\epsilon$ la parola vuota, in casi speciali per le foglie
+		\end{itemize}
+\end{itemize}
+Dato un nodo
 \begin{center}
-	\begin{tblr}{c c c}
-		op & DFA & NFA \\
-		\hline
-		unione & $n^\prime \cdot n^{\prime\prime}$ & $1 + n^\prime + n^{\prime\prime} $ \\
-		concatenazione & $n^\prime \cdot 2^{n^{\prime\prime}} $ & $n^\prime + n^{\prime\prime}$ \\
-		star           & $1 + 2^{n^\prime} $ & $n^\prime + 1$ \\
-		intersezione   & $n^\prime \cdot n^{\prime\prime}$ & $ n^\prime \cdot n^{\prime\prime} $ \\
-		complemento    & $n^\prime$ & $2^{n^\prime}$
-	\end{tblr}
+	\begin{tikzpicture}
+		\node {$A$}
+			child { node {$X_1$} }
+			child { node {$X_2$} }
+			child { node {$\dots$} }	% non disegno il nodo
+			child { node {$X_k$} };
+	\end{tikzpicture}
 \end{center}
-L'intersezione di automi funziona anche con NFA con la stessa costruzione dei DFA.
+rappresenta l'applicazione della regola di produzione
+$$ A \rightarrow X_1 X_2 \dots X_k \in P \hspace{1cm} A \in V, \forall i \in 1, \dots, k \mid X_i \in V \cup \Sigma $$
+All'ultimo livello possiamo avere nodi
+\begin{center}
+	\begin{tikzpicture}
+		\node {$A$}
+		child { node {$\epsilon$} };
+	\end{tikzpicture}
+\end{center}
+solo se $A \rightarrow \epsilon \in P$.
 
-\section{Reversal}
-Definiamo l'operazione di inversione o reversal.
-Data una stringa 
-$$ w = a_1 a_2 \dots a_n $$
-definiamo
-$$ w^R = a_n \dots a_2 \dots a_1 $$
-Per DFA e NFA basta sostituire stati iniziali con i finali e viceversa, e invertire le transizioni.
-Però può accadere che un DFA invertito diventi non deterministico, infatti 
-\begin{itemize}
-	\item se l'automa ha diversi stati finali, questi diventeranno stati iniziali multipli
-	\item se uno stato ha più frecce entranti con lo stesso simbolo, queste diventeranno uscenti con lo stesso simbolo
-\end{itemize}
-\begin{tcolorbox}
-	Ad esempio il linguaggio il cui terzo simbolo è una $a$ è un semplice DFA, mentre il linguaggio il cui terzultimo simbolo è una $a$ abbiamo visto che ha $2^3$ stati. % TODO: link
-
-	In generale se chiediamo l'$n$-esimo simbolo da destra servono $n + 1$ stati, mentre se chiediamo l'$n$-esimo simbolo da sinistra ne servono $2^n$.
-\end{tcolorbox}
-
-Mentre per le espressioni regolari, per la costruzione del reversal, basta solo invertire l'espressione.
-O più precisamente
-\begin{itemize}
-	\item nei casi in cui $E = \varnothing$ o $E = \epsilon$ non cambia niente
-	\item nel caso in cui $E \in \Sigma^*$ questo diventa $E^R$
-	\item nel caso in cui $E = E^\prime + E^{\prime\prime}$, abbiamo $E^{\prime R} + E^{\prime\prime R}$
-	\item nel caso in cui $E = E^\prime \cdot E^{\prime\prime}$, abbiamo $E^{\prime\prime R} \cdot E^{\prime R}$
-	\item nel caso in cui $E = E^{\prime}*$, abbiamo $(E^{\prime R})*$
-\end{itemize}
-
-\section{Shuffle}
-Definiamo l'operazione di \textit{shuffle}
-$$ sh(x, y) $$
-che produce ogni possibile interpolazione dei suoi argomenti 
-$$ sh(ab, cd) = \{ abcd, acdb, acbd, cabd, \dots  \} $$
-Cioè vale che se
-$$ sh(w', w'') = w $$
-allora se definiamo che per due simboli $x_i, x_j \in \Sigma$ in posizioni $i$ e $j$ vale $x_i \prec_w x_j$ se $i < j$
-$$ \forall x, y \in w \mid x \prec_{w'} y \Rightarrow x \prec_w y \wedge x \prec_{w''} y \Rightarrow x \prec_w y $$
-Dati due linguaggi, abbiamo che
-$$ sh(L^\prime, L^{\prime\prime}) = \bigcup_{x \in L^\prime, y \in L^{\prime\prime}} sh(x, y) $$
-cioè lo shuffle di due linguaggi è definito come l'unione degli shuffle di tutte le loro stringhe.
-
-% Supponiamo che $L^\prime \subseteq \Sigma^{\prime *}$ e $L^{\prime\prime} \subseteq \Sigma^{\prime\prime *}$ e $\Sigma^\prime \cap \Sigma^{\prime\prime} = \varnothing$.
-% Esercizio, costruisco questo automa, e.g. due sottoinsiemi
-
-\section{Quoziente}
-Definiamo l'operazione di quoziente tra due linguaggi
-$$ L_1 \setminus L_2 = \{ x \in \Sigma^* \mid \exists y \in L_2 \; xy \in L_1 \} $$
-Quindi le stringhe di $L_1$ in cui ho tolto un suffisso di $L_2$.
-\begin{tcolorbox}
-	Ad esempio
-	\begin{align*}
-		L_1 &= a^+bc^+ \\
-		L_2 &= bc^+  \\
-		L_3 &= c^+
-	\end{align*}
-	Ho che
-	$$ L_1 \setminus L_2 = a+ $$
-	e che
-	$$ L_1 \setminus L_3 = a+bc* $$
-\end{tcolorbox}
-
-\begin{tcolorbox}
-	Ad esempio da un linguaggoi su $\Sigma = \{0, 1\}$, voglio togliere tutti gli zeri finali
-	$$(L \setminus 0*) \cap ((0 + 1)*1 + \epsilon)$$
-\end{tcolorbox}
-\begin{fatto}
-	Dato $R$ linguaggio regolare ed $L$ un linguaggio qualsiasi, allora
-	$$ R \setminus L $$
-	è ancora un linguaggio regolare.
-\end{fatto}
-\begin{proof}
-	Dato
-	$$ \mathcal{A} = \langle Q, \Sigma, \delta, q_0, F \rangle $$
-	l'automa per $R$.
-
-	Definisco 
-	$$ \mathcal{A}^\prime = \langle Q, \Sigma, \delta, q_0, F^\prime = \{ q \mid \exists y \in L . \delta(q, y) \in F \} \rangle $$
-	come l'automa per $R \setminus L$.
-
-	Non è detto che sappiamo trovare una $y \in L$.
-	Quindi questa dimostrazione non è costruttiva per tutti i linguaggi.
-\end{proof}
-
-\subsection{Morfismo}
-Il linguaggio delle parentesi bilanciate (Dick) non è regolare.
-Dato un linguaggio di programmazione, lo possiamo ricondurre al linguaggio di Dick, ad esempio
+Abbiamo detto che gli automi a pila riconoscono linguaggi con ricorsione, dove questa nell'automa si esprime nella memoria a pila, nelle grammatiche si esprime nella struttura ad albero.
+ 
+% \begin{tcolorbox}[breakable] 	% extra \else error with externalized tikzpicture
+Definiamo la grammatica per le parentesi correttamente bilanciate
 \begin{align*}
-	\{ &\rightarrow ( \\
-	\} &\rightarrow ) \\
-	a  &\rightarrow \epsilon 
+	S &\rightarrow \epsilon \\
+	S &\rightarrow ( S ) \\
+	S &\rightarrow S S
 \end{align*}
-Con questa operazione stiamo definendo un morfismo tra due alfabeti
-$$ h : \Sigma \rightarrow \Delta^* $$
-Questa funzione è facilmente estendibile alla stringa
-$$
-\begin{cases}
-	h(\epsilon) = \epsilon \\
-	h(xa) = h(x) h(a) 
-\end{cases}
-$$
-e al linguaggio 
-$$ h(L) = \{ h(w) \mid w \in L \} $$
-
-\begin{tcolorbox}
-	Dati $\Sigma = \{a, b \}$, e $\Delta = \{0, 1\}$, definiamo il morfismo $h$ come
-	\begin{align*}
-		h(a) &= 01 \\
-		h(b) &= 1 
-	\end{align*}
-	E vale che se abbiamo
-	$$ L = a^*b$$
-	questo corrisponde a
-	$$ (01)^*1 $$
-	E agli automi corrisponde
-	\begin{center}
-		\begin{tikzpicture}
-			\node[state, initial] 	(q0) {$q_0$};
-			\node[state, accepting]	(q1) [right=of q0] {$q_1$};
-
-			\path[->] (q0)	edge[loop above] node[above]	{a}	()
-					edge		 node[above]	{b}	(q1);
+prendiamo ora la stringa $w = (())()()$ e scriviamone la derivazione
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{0.3\textwidth}
+		\centering
+		\begin{tikzpicture}[scale=0.45, every node/.style={transform shape}]
+			\node {$S$}
+				[sibling distance=4.5cm]
+				child { node {$S$} 
+					[sibling distance=3cm]
+					child { node {$S$} 
+						[sibling distance=1cm]
+						child { node {$($} }
+						child { node {$S$} 
+							[sibling distance=1cm]
+							child { node {$($} }
+							child { node {$S$} 
+								child { node {$\epsilon$} }
+							}
+							child { node {$)$} }
+						}
+						child { node {$)$} }
+					}
+					child { node {$S$}
+						[sibling distance=1cm]
+						child { node {$($} }
+						child { node {$S$} 
+							child { node {$\epsilon$} }
+						}
+						child { node {$)$} }
+					}
+				}
+				child { node {$S$} 
+					[sibling distance=1cm]
+					child { node {$($} }
+					child { node {$S$} 
+						child { node {$\epsilon$} }
+					}
+					child { node {$)$} }
+				};
 		\end{tikzpicture}
-	\end{center}
-	diventa
-	\begin{center}
-		\begin{tikzpicture}
-			\node[state, initial] 	(q0) {$q_0$};
-			\node[state]		(q1) [right=of q0] {$q_1$};
-			\node[state, accepting]	(q2) [below=of q0] {$q_2$};
-
-			\path[->] (q0)	edge[bend left]	node[above]	{0}	(q1)
-					edge		node[left]	{1}	(q2)
-				  (q1)	edge[bend left]	node[below]	{1}	(q0);
-
+		\begin{align*}
+			S &\Rightarrow S S  \\
+			&\Rightarrow S S S  \\
+			&\Rightarrow ( S ) S S  \\
+			&\Rightarrow ( S ) ( S ) S  \\
+			&\Rightarrow ( S ) ( S ) ( S )  \\
+			&\Rightarrow ( ( S ) ) ( S ) ( S )  \\
+			&\Rightarrow ( ( S ) ) ( S ) ( )  \\
+			&\Rightarrow ( ( S ) ) ( ) ( )  \\
+			&\Rightarrow ( ( ) ) ( ) ( )  \\
+		\end{align*}
+	\end{subfigure}
+	\begin{subfigure}{0.3\textwidth}
+		\centering
+		\begin{tikzpicture}[scale=0.45, every node/.style={transform shape}]
+ 			\node {$S$}
+			[sibling distance=4.5cm]
+ 			child { node {$S$} 
+				[sibling distance=1cm]
+ 				child { node {$($} }
+ 				child { node {$S$} 
+					[sibling distance=1cm]
+ 					child { node {$($} }
+ 					child { node {$S$} 
+ 						child { node {$\epsilon$} }
+ 					}
+ 					child { node {$)$} }
+ 				}
+ 				child { node {$)$} }
+ 			}
+ 			child { node {$S$} 
+				[sibling distance=3cm]
+ 				child { node {$S$} 
+					[sibling distance=1cm]
+ 					child { node {$($} }
+ 					child { node {$S$} 
+ 						child { node {$\epsilon$} }
+ 					}
+ 					child { node {$)$} }
+ 				}
+ 				child { node {$S$}
+					[sibling distance=1cm]
+ 					child { node {$($} }
+ 					child { node {$S$} 
+ 						child { node {$\epsilon$} }
+ 					}
+ 					child { node {$)$} }
+ 				}
+ 			};
+ 		\end{tikzpicture}
+		\begin{align*}
+			S &\Rightarrow S S  \\
+			  &\Rightarrow ( S ) S  \\
+			  &\Rightarrow ( ( S ) ) S  \\
+			  &\Rightarrow ( ( ) ) S  \\
+			  &\Rightarrow ( ( ) ) S S  \\
+			  &\Rightarrow ( ( ) ) ( S ) S  \\
+			  &\Rightarrow ( ( ) ) ( ) S  \\
+			  &\Rightarrow ( ( ) ) ( ) ( S )  \\
+			  &\Rightarrow ( ( ) ) ( ) ( )  \\
+		\end{align*}
+	\end{subfigure}
+	\begin{subfigure}{0.3\textwidth}
+		\centering
+		\begin{tikzpicture}[scale=0.45, every node/.style={transform shape}]
+			\node {$S$}
+				[sibling distance=4.5cm]
+				child { node {$S$} 
+					[sibling distance=3cm]
+					child { node {$S$} 
+						[sibling distance=1cm]
+						child { node {$($} }
+						child { node {$S$} 
+							[sibling distance=1cm]
+							child { node {$($} }
+							child { node {$S$} 
+								child { node {$\epsilon$} }
+							}
+							child { node {$)$} }
+						}
+						child { node {$)$} }
+					}
+					child { node {$S$}
+						[sibling distance=1cm]
+						child { node {$($} }
+						child { node {$S$} 
+							child { node {$\epsilon$} }
+						}
+						child { node {$)$} }
+					}
+				}
+				child { node {$S$} 
+					[sibling distance=1cm]
+					child { node {$($} }
+					child { node {$S$} 
+						child { node {$\epsilon$} }
+					}
+					child { node {$)$} }
+				};
 		\end{tikzpicture}
-	\end{center}
-	Quindi basta sostituire ogni stato che riconosce un simbolo $\sigma \in \Sigma$ con gli stati corrispondenti che riconoscerebbero $h(\sigma) \in \Delta$.
+	 	\begin{align*}
+	 		S &\Rightarrow S S \\
+	 		  &\Rightarrow S S S \\
+	 		  &\Rightarrow ( S ) S S \\
+	 		  &\Rightarrow ( ( S ) ) S S \\
+	 		  &\Rightarrow ( ( ) ) S S \\
+	 		  &\Rightarrow ( ( ) ) ( S ) S \\
+	 		  &\Rightarrow ( ( ) ) ( ) S \\
+	 		  &\Rightarrow ( ( ) ) ( ) ( S ) \\
+	 		  &\Rightarrow ( ( ) ) ( ) ( ) \\
+	 	\end{align*}
+	\end{subfigure}
+	\caption{Tre derivazioni diverse per la stringa $(())()()$ e gli alberi corrispondenti}
+\end{figure}
+Possiamo vedere che una stessa stringa ammette diverse derivazioni, ma non tutte queste portano allo stesso albero.
+Infatti la prima e la terza derivazione utilizzano le stesse sostituzioni, solo in ordine diverso, e quindi generano alberi uguali; mentre nel secondo albero applichiamo derivazioni diverse.
+Nella prima e nella terza derivazione abbiamo una struttura
+\begin{center}
+	\begin{tikzpicture}
+		\node {$S$}
+		child { node {$S$} 
+			child { node {$\Delta$} }
+			child { node {$\Delta$} }
+		}
+		child { node {$\Delta$} };
+	\end{tikzpicture}
+\end{center}
+mentre la seconda ha una struttura
+\begin{center}
+	\begin{tikzpicture}
+		\node {$S$}
+		child { node {$\Delta$} }
+		child { node {$S$} 
+			child { node {$\Delta$} }
+			child { node {$\Delta$} }
+		};
+	\end{tikzpicture}
+\end{center}
+% \end{tcolorbox}
+
+Per evitare derivazioni multiple si utilizza un criterio detto di \textit{derivazione leftmost}: una derivazione è lefmost se ogni volta che si fa una sostituzione sostituisco sempre la variabile più a sinistra della forma sentenziale.
+\begin{proposizione}
+	Esiste una corrispondenza uno a uno tra derivazioni leftmost e alberi di derivazione.
+\end{proposizione}
+La seconda e la terza derivazioni dell'esempio di sopra sono due derivazioni leftmost diverse.
+
+Diciamo che una grammatica è \textit{ambigua} se c'è una stringa che ammette almeno due alberi di derivazione -- o derivazioni leftmost -- diversi.
+
+Nell'esempio di sopra si può vedere anche che ogni sottoalbero è una sequenza bilanciate di parentesi.
+
+\begin{tcolorbox} % [breakable] 	% stesso problema di sopra
+Se nella grammatica di sopra vorremmo anche le quadre, senza precedenze, questa è facilmente
+\begin{align*}
+ 	S &\rightarrow \epsilon \\
+ 	S &\rightarrow ( S ) \\
+ 	S &\rightarrow [ S ] \\
+ 	S &\rightarrow S S
+\end{align*}
+Ma se si chiede che le quadre non possano stare all'interno delle tonde, diventa necessario suddividere le variabili in due livelli
+\begin{align*}
+ 	S &\rightarrow T \\
+ 	S &\rightarrow [ S ] \\
+ 	S &\rightarrow S S \\
+ 	T &\rightarrow \epsilon \\
+ 	T &\rightarrow ( T ) \\
+ 	T &\rightarrow T T \\
+\end{align*}
+e vediamo un albero di derivazione di esempio
+\begin{center}
+	\begin{tikzpicture}
+		\node {$S$}
+		[sibling distance=1cm, level distance=1cm]
+		child { node {$[$} }
+		child { node {$S$} 
+			[sibling distance=3cm]
+			child { node {$S$} 
+				[sibling distance=1cm]
+				child { node {$T$} 
+					child { node {$($} }
+					child { node {$T$} 
+						child { node {$\epsilon$} }
+					}
+					child { node {$)$} }
+				}
+			}
+			child { node {$S$} 
+				[sibling distance=1cm]
+				child { node {$[$} }
+				child { node {$S$} 
+					child { node {$T$}
+						child { node {$\epsilon$} }
+					}
+				}
+				child { node {$]$} }
+			}
+		}
+		child { node {$]$} };
+	\end{tikzpicture}
+\end{center}
 \end{tcolorbox}
 
-\subsection{Sostituzione}
-In questa versione si sostituiscono le lettere di un linguaggio con un altro linguaggio, quindi
-$$ s : \Sigma \rightarrow 2^{\Delta^*} $$
-Nel caso di espressioni regolari questo è molto semplice, basta sostituire ogni occorrenza del simbolo $\sigma \in \Sigma$ nell'espressione con $s(\sigma)$.
-\begin{tcolorbox}
-	Ad esempio dato $ \Sigma = \{a, b\}$ e $\Delta = \{0, 1\}$, posso dire che
-	\begin{align*}
-		s(a) &= (01 + 0)^* \\
-		s(b) &= 1
-	\end{align*}
-	e
-	$$ L = (ab)^*(a + b) $$
-	ottengo
-	$$ ((01 + 0)^*1)^*((01 + 0)^* + 1) $$
+
+\section{Equivalenza tra grammatiche di tipo 2 ad automi a pila}
+\subsection{Da una grammatica che genera un linguaggio generiamo un automa che riconosce lo stesso}
+Data una grammatica
+$$ G = \langle V, \Sigma, P, S \rangle $$
+di tipo 2, vogliamo costruire
+$$ M = \langle Q, \Sigma, \Gamma, \delta, q, Z_0, \varnothing \rangle $$
+che accetta per pila vuota, con
+\begin{itemize}
+ 	\item $Q$ formato da un solo stato $\{q\}$
+ 	\item $\Gamma = \Sigma \cup V$
+ 	\item $Z_0 = S$
+\end{itemize}
+e $\delta$ definito come
+\begin{itemize}
+ 	\item se $A \rightarrow \alpha \in P$ allora $(q, \alpha) \in \delta(q, \epsilon, A)$
+ 	\item $\forall \sigma \in \Sigma$, $\delta(q, \sigma, \sigma) = \{ (q, \epsilon) \}$, cioè si consuma il simbolo in cima alla pila
+\end{itemize}
+ 
+Si può dimostrare che il linguaggio generato dalla grammatica $L(G)$ è uguale al linguaggio accettato dall'automa per pila vuota $N(M)$.
+
+\begin{tcolorbox}[breakable]
+ 	Prendiamo
+ 	$$ G = \langle \{S, T, U\}, \{a, b\}, P, S \rangle $$
+ 	con $P$ definito
+ 	\begin{align*}
+ 		S &\rightarrow TU  \\
+ 		T &\rightarrow a T b \mid \epsilon \\
+ 		U &\rightarrow b U a \mid \epsilon \\
+ 	\end{align*}
+ 	questo genera
+ 	$$ L = \{ a^n b^{n + m} a^m \mid n \geq 0, m \geq 0 \} $$
+ 
+ 	Scriviamo le transizioni dell'automa corrispondente
+ 	$$ M = \langle \{q\}, \{a, b\}, \{S, T, U, a, b\}, \delta, q, S, \varnothing \rangle $$
+ 	con $\delta$ definito come
+ 	\begin{align*}
+ 		\delta(q, \epsilon, S) &= \{(q, TU)\} \\
+ 		\delta(q, \epsilon, T) &= \{(q, a T b), (q, \epsilon) \} \\
+ 		\delta(q, \epsilon, U) &= \{(q, b U a), (q, \epsilon) \} \\
+ 		\delta(q, a, a) &= \{(q, \epsilon)\} \\
+ 		\delta(q, b, b) &= \{(q, \epsilon)\} \\
+ 	\end{align*}
+ 	\newpage
+ 	Prendendo per esempio $w = abbbaa$, vediamo come viene accettata nondeterministicamente
+ 	\begin{align*}
+ 		(q, abbbaa, S) &\vdash (q, abbbaa, TU) \\
+ 		               &\vdash (q, abbbaa, TU) \\
+ 		               &\vdash (q, abbbaa, aTbU) \\
+ 		               &\vdash (q, bbbaa, TbU) \\
+ 		               &\vdash (q, bbbaa, bU) \\
+ 		               &\vdash (q, bbaa, U) \\
+ 		               &\vdash (q, bbaa, bUa) \\
+ 		               &\vdash (q, baa, Ua) \\
+		               &\vdash (q, baa, bUaa) \\
+ 		               &\vdash (q, aa, Uaa) \\
+ 		               &\vdash (q, aa, aa) \\
+ 		               &\vdash (q, a, a) \\
+ 		               &\vdash (q, \epsilon, \epsilon) \\
+ 	\end{align*}
+ 	Leggere la i terminali consumati fino a un certo punto e il contentuto della pila in quel punto restituisce la forma sentenziale durante la derivazione.
+ 	Questo corrisponde a
+ 	\begin{align*}
+ 		S &\Rightarrow T U \\
+ 		  &\Rightarrow a T b U \\
+ 		  &\Rightarrow a b U \\
+ 		  &\Rightarrow a b b U a \\
+ 		  &\Rightarrow a b b b U a a \\
+ 		  &\Rightarrow a b b b a a \\
+ 	\end{align*}
 \end{tcolorbox}
+L'automa a pila tenta di simulare il processo di derivazione leftmost della stringa.
 
-Nel caso di automi, basta sostituire una transizione con l'intero automa corrispondente a quel simbolo, quindi:
+\subsection{Da un automa a pila costruiamo una grammatica di tipo 2}
+% iniziamo a introdurla
+Per la dimostrazione useremo una variazione degli automi a pila che non ne cambia la potenza computazionale.
+In questa forma normale
+\begin{itemize}
+	\item all'inizio la pila contiene un simbolo speciale $Z_0$ che viene mai rimosso e non viene mai aggiunto
+ 		% lez 13.1
+		\begin{center}
+			\begin{tikzpicture}[ SQUIGGLY/.style={->
+				, decorate
+				, decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}},
+				]
+				\begin{scope}[local bounding box=wordScope, start chain=word, node distance=0pt]
+					\node [draw, minimum width=25pt, minimum height=25pt, on chain=word] {$\sigma$};
+					\node [draw, minimum width=65pt, minimum height=25pt, on chain=word] {$\dots$};
+				\end{scope}
+
+				\node[draw, minimum width=25pt, minimum height=25pt] (state) [below=of word-1] {$q_0$};
+				\node[draw, minimum width=25pt, minimum height=25pt] (stack) [right=of state] {$Z_0$};
+
+				\draw[SQUIGGLY] (state.north) to (word-1.south);
+				\draw[SQUIGGLY] (state.east) to (stack.west);
+			\end{tikzpicture}
+		\end{center}
+ 	\item alla fine l'input è stato letto completamente, la pila contiene solo $Z_0$ e lo stato è finale.
+ 		% lez 13.2
+		\begin{center}
+			\begin{tikzpicture}[ SQUIGGLY/.style={->
+				, decorate
+				, decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}},
+				]
+				\begin{scope}[local bounding box=wordScope, start chain=word, node distance=0pt]
+					\node [draw, minimum width=65pt, minimum height=25pt, on chain=word] {$\dots$};
+					\node [minimum width=25pt, minimum height=25pt, on chain=word] {};
+				\end{scope}
+
+				\node[draw, minimum width=25pt, minimum height=25pt] (state) [below=of word-2] {$q_F$};
+				\node[draw, minimum width=25pt, minimum height=25pt] (stack) [right=of state] {$Z_0$};
+
+				\draw[SQUIGGLY] (state.north) to (word-2.south);
+				\draw[SQUIGGLY] (state.east) to (stack.west);
+			\end{tikzpicture}
+		\end{center}
+ 	\item le mosse sulla pila possono essere solo
+ 		\begin{itemize}
+ 			\item push di un simbolo
+ 			\item pop di un simbolo
+		 	\item pila invariata
+ 		\end{itemize}
+ 		quindi il pop non è più implicito
+ 	\item se una mossa legge un simbolo da input, allora non modifica la pila. 
+ 		Cioè le mosse che manipolano la pila sono seperate da quelle che manipolano l'input.
+\end{itemize}
+In questa forma
+$$ \delta : Q \times (\Sigma \cup \{\epsilon\}) \times \Gamma \rightarrow 2^{Q \times \{-, \text{pop}, a \in \Gamma \mid \text{push}(A)\}} $$
+ed abbiamo che le mosse possono avere le seguenti forme
+\begin{itemize}
+ 	\item mosse di lettura: $ (p, -) \in \delta(q, a, A) \hspace{1cm} a \in \Sigma \cup \{\epsilon\} $
+ 	\item pop: $(p, \text{pop}) \in \delta(q, \epsilon , A) $
+ 	\item push: $(p, \text{push}(B)) \in \delta(q, \epsilon , A) $
+ 	\item mosse che lasciano la pila invariata: $(p, -) \in \delta(q, \epsilon , A) $
+\end{itemize}
+ 
 \begin{tcolorbox}
-	Ad esempio dato l'automa
-	\begin{center}
-		\begin{tikzpicture}
-			\node[state] 	(qi) {$q$};
-			\node[state]	(qj) [right=of qi] {$p$};
-
-			\path[->] (qi)	edge	node[above]	{a}	(qj);
-		\end{tikzpicture}
-	\end{center}
-	questo verrebbe trasformato in 
+ 	Ad esempio se avessimo una sequenza di parentesi $([()]())$, la pila contiene inizialmente $Z_0$
 	\begin{center}
 		\begin{tikzpicture}[ SQUIGGLY/.style={->
-				  		     , decorate
-				                     , decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}},
-				   ]
-
-			\node[state]	(q0)	at (0, 0)	{};
-			\node[state]	(qa)	at (2, 1)	{};
-			\node		(qb)	at (2, 0)	{$\vdots$};
-			\node[state]	(qc)	at (2, -1)	{};
-			\node[state]	(q)	[left=of q0, xshift=-1cm]	{$q$};
-			\node[state]	(p)	[right=of qb, xshift=1cm]	{$p$};
-
-			\draw (-1, -2)	rectangle ++(4, 4);
-
-			\node at (1, 2.5)	{$s(\text{a})$};
-
-			\draw[SQUIGGLY, bend left]  (q0) to (qa);
-			\draw[SQUIGGLY, bend right] (q0) to (qc);
-
-			\draw[->] 	      (q)	to node[above]	{$\epsilon$}	(q0);
-			\draw[->, bend left]  (qa)	to node[above]	{$\epsilon$}	(p);
-			\draw[->, bend right] (qc)	to node[below]	{$\epsilon$}	(p);
-
+			, decorate
+			, decoration={snake,amplitude=.4mm,segment length=2mm,post length=1mm}},
+			]
+			\begin{scope}[local bounding box=col1, start chain=col1 going above, node distance=0pt]
+				\node [minimum width=25pt, minimum height=25pt, on chain=col1] {$Z_0$};
+			\end{scope}
+			\begin{scope}[local bounding box=col2, start chain=col2 going above, node distance=0pt]
+				\node [minimum width=25pt, minimum height=25pt, on chain=col2] [right=of col1-1]{$Z_0$};
+				\node [minimum width=25pt, minimum height=25pt, on chain=col2] {$($};
+			\end{scope}
+			\begin{scope}[local bounding box=col3, start chain=col3 going above, node distance=0pt]
+				\node [minimum width=25pt, minimum height=25pt, on chain=col3] [right=of col2-1]{$Z_0$};
+				\node [minimum width=25pt, minimum height=25pt, on chain=col3] {$($};
+				\node [minimum width=25pt, minimum height=25pt, on chain=col3] {$[$};
+			\end{scope}
 		\end{tikzpicture}
 	\end{center}
+ 	questo disegno mostra la natura ricorsiva degli automi.
 \end{tcolorbox}
-Se le sostituzioni sono ancora regolari, allora il linguaggio risultante è regolare.
-
-\begin{tcolorbox}
-	Dato un linguaggio $L \subseteq \{a, b\}^*$, voglio creare il linguaggio $L^\prime$ in cui ogni $a$ e $b$ è circondata da un numero arbitrario di $c$, questo è
-	\begin{align*}
-		s(a) &= c^* a c^* \\
-		s(b) &= c^* b c^*
-	\end{align*}
-	Manca però la stringa vuota, quindi abbiamo
-	$$ 
-	L^\prime = 
-	\begin{cases}
-		s(L) & \text{se } \epsilon \not \in L \\
-		s(L) \cup c^* &\text{altrimenti}
-	\end{cases}
-	$$
-	Questo povtevamo farlo anche con lo shuffle, quindi
-	$$ L^\prime = sh(L, c^*) $$
-\end{tcolorbox}
-
-\section{Cycle}
-Definiamo l'operazione di \textit{cycle}, come
-$$ cycle(L) = \{ yx \mid xy \in L \} $$
-ad esempio, se
-$$ L = a^*b^* $$
-$$ cycle(L) = a^*b^*a^* + b^*a^*b^* $$
-
-Dato un automa che riconosca $L$, possiamo costruire un automa che riconosca $cycle(L)$?.
-% fig 07.5
-
-
-
+ 
+Gli automi che abbiamo visto fino ad ora possono essere simulati da questa versione normalizzata, scomponendo una mossa una pop ed una serie di push utilizzando degli stati ausiliari.
+ 
 \end{document}
