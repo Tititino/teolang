@@ -16,7 +16,9 @@
 \usepackage{subcaption}
 \usepackage{tabularray}
 \usepackage[most]{tcolorbox}
-\usepackage{tikz}\usetikzlibrary{automata, chains, scopes, decorations.text, patterns, decorations.pathmorphing, positioning, decorations.pathreplacing, calligraphy, math, fit}
+\usepackage{pgfplots}
+\usepgfplotslibrary{fillbetween}
+\usepackage{tikz}\usetikzlibrary{automata, chains, scopes, decorations.text, patterns, patterns.meta, decorations.pathmorphing, positioning, decorations.pathreplacing, calligraphy, math, fit, shapes.geometric, pgfplots.fillbetween}
 \usetikzlibrary{external}
 \usepackage{todonotes}
 \usepackage{xcolor}
@@ -1423,19 +1425,40 @@ Definiamo la \textit{profondità} (o altezza) di un albero come il più lungo ca
 		\item la produzione applicata alla radice deve per forza essere della forma $A \rightarrow B C$, quindi l'albero si divide in due sottoalberi, un albero $T' : B \overset{*}{\Rightarrow} w'$ e un albero $T'' : C \overset{*}{\Rightarrow} w''$.
 			\begin{center}
 				\begin{tikzpicture}[
-						PUNTO/.style={minimum size=0, inner sep=0, outer sep=0} 
+						PUNTO/.style={minimum size=0, inner sep=0, outer sep=0},
 					]
 					\node[PUNTO, label=above:{$A$}] at (0, 0) (top) {};
-					\node[PUNTO] at (-2, -3) (bottom-left) {};
-					\node[PUNTO] at (2, -3) (bottom-right) {};
-					\node[PUNTO] at (0, -3) (bottom-center) {};
 
-					\draw[-] (top) -- node[PUNTO, near start] (mid-left) {} (bottom-left); 
-					\draw[-] (top) -- node[PUNTO, near start] (mid-right) {} (bottom-right); 
+					\node[minimum size=5pt, inner sep=0, outer sep=0, circle, fill] at (2, -1) (top-right) {};
+					\node[minimum size=5pt, inner sep=0, outer sep=0, circle, fill] at (-2, -1) (top-left) {};
+
+					\node at (0, -1) {$T$};
+					\node at (-2, -3) {$T'$};
+					\node at (2, -3) {$T''$};
+
+
+					\node[PUNTO] at (-4, -4) (bottom-left) {};
+					\node[PUNTO] at (4, -4) (bottom-right) {};
+					\node[PUNTO] at (0, -4) (bottom-center) {};
+
+					\draw[-] (top) -- (top-left); 
+					\draw[-] (top) -- (top-right); 
 					\draw[-] (bottom-left) -- (bottom-right); 
 
-					\draw[-] (mid-left) -- (bottom-center);
-					\draw[-] (mid-right) -- (bottom-center);
+					\draw[-] (top-left) -- (bottom-center);
+					\draw[-] (top-right) -- (bottom-center);
+					\draw[-] (top-right) -- (bottom-right);
+					\draw[-] (top-left) -- (bottom-left);
+
+					\draw[<->] ([xshift=-5pt] -4, -4) -- node[left] {$h - 1$} ([xshift=-5pt] -4, -1);
+					\draw[<->] ([xshift=5pt] 4, -4) -- node[right] {$h$} ([xshift=5pt] 4, 0);
+
+					\draw[dashed, -] (-4, -1) -- (top-left);
+					\draw[dashed, -] (4, 0) -- (top);
+
+					\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] bottom-left.south) to node[below, yshift=-0.2cm] {\tiny $w'$} ([yshift=-5pt] bottom-center.south);
+					\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] bottom-center.south) to node[below, yshift=-0.2cm] {\tiny $w''$} ([yshift=-5pt] bottom-right.south);
+					\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-20pt] bottom-left.south) to node[below, yshift=-0.2cm] {\tiny $w$} ([yshift=-20pt] bottom-right.south);
 				\end{tikzpicture}
 			\end{center}
 			% fig 15.3
@@ -1465,10 +1488,72 @@ Definiamo la \textit{profondità} (o altezza) di un albero come il più lungo ca
 	Sia $k = | V | $ e definiamo $N = 2^k$.
 
 	Sia $z \in L$ con $|z| \geq N$, allora ha un albero di derivazione $T : S \overset{*}{\Rightarrow} z$
+	\begin{center}
+		\begin{tikzpicture}[
+				PUNTO/.style={minimum size=0, inner sep=0, outer sep=0},
+			]
+			\node[PUNTO, label=above:{$S$}] at (0, 0) (top) {};
+
+			\node[PUNTO] at (2, -4) (top-right) {};
+			\node[PUNTO] at (-2, -4) (top-left) {};
+
+			\draw[-] (top) -- (top-left); 
+			\draw[-] (top) -- (top-right); 
+			\draw[-] (top-left) -- (top-right); 
+
+			\draw[<->] ([xshift=5pt] 3, -4) -- node[right] {$\geq k + 1$} ([xshift=5pt] 3, 0);
+			\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] top-left.south) to node[below, yshift=-0.2cm] {$z$} ([yshift=-5pt] top-right.south);
+		\end{tikzpicture}
+	\end{center}
 	% fig 15.4
 	visto che la lunghezza di $z$ è maggiore di $2^k$, allora dal lemma precedente abbiamo che l'altezza di $T$ è almeno $k + 1$, quindi esiste un cammino dalle foglie alle radici da $k + 1$ archi, quindi $k + 2$ nodi.
 	Visto che l'ultimo nodo è un terminale, durante questo cammino incontreremo $k + 1$ non terminali, e quindi almeno un non terminale si ripeterà in questo percorso.
 	Sia $A$ questo non terminale.
+	\begin{center}
+		\begin{tikzpicture}[
+				PUNTO/.style={minimum size=0, inner sep=0, outer sep=0},
+			]
+			\node[circle, fill, minimum size=1pt, inner sep=1pt, label=above:{$S$}] at (0, 0) (top-1) {};
+			\node[circle, fill, minimum size=1pt, inner sep=1pt, label=left:{$A$}] at (0, -2) (top-2) {};
+			\node[circle, fill, minimum size=1pt, inner sep=1pt, label=right:{$A$}] at (0, -4) (top-3) {};
+
+			\node[PUNTO] at (4, -6) (right-1) {};
+			\node[PUNTO] at (2.66666, -6) (right-2) {};
+			\node[PUNTO] at (1.33333, -6) (right-3) {};
+			\node[PUNTO] at (-4, -6) (left-1) {};
+			\node[PUNTO] at (-2.66666, -6) (left-2) {};
+			\node[PUNTO] at (-1.33333, -6) (left-3) {};
+
+			\path[name path=T21] (right-2) -- (top-2) -- (left-2);
+			\path[name path=T22] (right-2) -- (left-2);
+			\path[name path=T31] (right-3) -- (top-3) -- (left-3);
+			\path[name path=T32] (right-3) -- (left-3);
+			\tikzfillbetween[of=T21 and T22]{pattern={Lines[angle=45,distance={3pt/sqrt(2)}]},pattern color=gray, line width=0.2pt};
+			\tikzfillbetween[of=T31 and T32]{white};
+			\tikzfillbetween[of=T31 and T32]{pattern={crosshatch dots}, pattern color=gray, radius=0.1pt};
+
+			\draw[-] (top-1) -- (left-1);
+			\draw[-] (left-1) -- (right-1);
+			\draw[-] (right-1) -- (top-1);
+			\draw[-] (top-2) -- (left-2);
+			\draw[-] (right-2) -- (top-2);
+			\draw[-] (top-3) -- (left-3);
+			\draw[-] (right-3) -- (top-3);
+
+
+			\path[draw, -] (top-1) -- (-0.3, -0.75) -- (0.5, -1.25) -- (top-2) -- (-0.3, -2.75) -- (0.5, -3.25) -- (top-3);
+
+			\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] left-1.south) to node[below, yshift=-0.2cm] {\tiny $u$} ([yshift=-5pt] left-2.south);
+			\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] left-2.south) to node[below, yshift=-0.2cm] {\tiny $v$} ([yshift=-5pt] left-3.south);
+			\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] left-3.south) to node[below, yshift=-0.2cm] {\tiny $w$} ([yshift=-5pt] right-3.south);
+			\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] right-3.south) to node[below, yshift=-0.2cm] {\tiny $x$} ([yshift=-5pt] right-2.south);
+			\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] right-2.south) to node[below, yshift=-0.2cm] {\tiny $y$} ([yshift=-5pt] right-1.south);
+
+			\draw[<->] ([xshift=5pt] 4, -6) -- node[right] {$\geq k + 1$} ([xshift=5pt] 4, 0);
+
+
+		\end{tikzpicture}
+	\end{center}
 	% fig 15.5
 	Per questo non terminale $A$ vale
 	\begin{align*}
