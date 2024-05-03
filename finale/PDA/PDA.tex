@@ -1554,6 +1554,62 @@ Definiamo la \textit{profondità} (o altezza) di un albero come il più lungo ca
 
 		\end{tikzpicture}
 	\end{center}
+	\begin{center}
+		\begin{tikzpicture}[
+				PUNTO/.style={minimum size=0, inner sep=0, outer sep=0},
+			]
+			\node[PUNTO] at (0, 0) (top-1) {};
+			\node[PUNTO] at (0, -2) (top-2) {};
+			\node[PUNTO] at (0, -4) (top-3) {};
+			\node[PUNTO] at (0, -6) (top-4) {};
+
+			\node[PUNTO] at (4, -6) (right-1) {};
+			\node[PUNTO] at (2.66666, -6) (right-2) {};
+			\node[PUNTO] at (2.66666, -8) (right-3) {};
+			\node[PUNTO] at (1.33333, -8) (right-4) {};
+
+			\node[PUNTO] at (-4, -6) (left-1) {};
+			\node[PUNTO] at (-2.66666, -6) (left-2) {};
+			\node[PUNTO] at (-2.66666, -8) (left-3) {};
+			\node[PUNTO] at (-1.33333, -8) (left-4) {};
+
+			\path[name path=T21] (right-2) -- (top-2) -- (left-2);
+			\path[name path=T22] (right-2) -- (left-2);
+
+			\path[name path=T31] (right-3) -- (top-3) -- (left-3);
+			\path[name path=T32] (right-3) -- (left-3);
+
+			\path[name path=T41] (right-4) -- (top-4) -- (left-4);
+			\path[name path=T42] (right-4) -- (left-4);
+
+			\tikzfillbetween[of=T21 and T22]{pattern={Lines[angle=45,distance={3pt/sqrt(2)}]},pattern color=gray, line width=0.2pt};
+			\tikzfillbetween[of=T31 and T32]{white};
+			\tikzfillbetween[of=T31 and T32]{pattern={Lines[angle=45,distance={3pt/sqrt(2)}]}, pattern color=gray, line width=0.2pt};
+			\tikzfillbetween[of=T41 and T42]{white};
+			\tikzfillbetween[of=T41 and T42]{pattern={crosshatch dots}, pattern color=gray, radius=0.1pt};
+			\draw[fill=black] (top-1) circle[radius=1pt];
+			\draw[fill=black] (top-2) circle[radius=1pt]; 
+			\draw[fill=black] (top-3) circle[radius=1pt];
+			\draw[fill=black] (top-4) circle[radius=1pt];
+
+			\node [above=of top-1, yshift=-25pt] {$S$};
+			\node [above=of top-2, yshift=-25pt] {$A$};
+			\node [above=of top-3, yshift=-25pt] {$A$};
+			\node [above=of top-4, yshift=-25pt] {$A$};
+
+			\draw[-] (top-1) -- (left-1);
+			\draw[-] (right-1) -- (top-1);
+			\draw[-] (top-2) -- (left-2);
+			\draw[-] (right-2) -- (top-2);
+			\draw[-] (top-3) -- (left-3);
+			\draw[-] (right-3) -- (top-3);
+			\draw[-] (right-3) -- (left-3);
+			\draw[-] (top-4) -- (left-4);
+			\draw[-] (top-4) -- (right-4);
+			\draw[-] (left-1) -- (-1.33333, -6);
+			\draw[-] (right-1) -- (1.33333, -6);
+		\end{tikzpicture}
+	\end{center}
 	% fig 15.5
 	Per questo non terminale $A$ vale
 	\begin{align*}
@@ -1631,6 +1687,7 @@ Definiamo la \textit{profondità} (o altezza) di un albero come il più lungo ca
 	% vedremo la prossima lezione.
 \end{tcolorbox}
 
+% lezione
 
  
 \end{document}
