@@ -1509,107 +1509,154 @@ Definiamo la \textit{profondità} (o altezza) di un albero come il più lungo ca
 	visto che la lunghezza di $z$ è maggiore di $2^k$, allora dal lemma precedente abbiamo che l'altezza di $T$ è almeno $k + 1$, quindi esiste un cammino dalle foglie alle radici da $k + 1$ archi, quindi $k + 2$ nodi.
 	Visto che l'ultimo nodo è un terminale, durante questo cammino incontreremo $k + 1$ non terminali, e quindi almeno un non terminale si ripeterà in questo percorso.
 	Sia $A$ questo non terminale.
-	\begin{center}
-		\begin{tikzpicture}[
-				PUNTO/.style={minimum size=0, inner sep=0, outer sep=0},
-			]
-			\node[circle, fill, minimum size=1pt, inner sep=1pt, label=above:{$S$}] at (0, 0) (top-1) {};
-			\node[circle, fill, minimum size=1pt, inner sep=1pt, label=left:{$A$}] at (0, -2) (top-2) {};
-			\node[circle, fill, minimum size=1pt, inner sep=1pt, label=right:{$A$}] at (0, -4) (top-3) {};
+	\begin{figure}[H]
+		\centering
+		\begin{subfigure}{\textwidth}
+			% sistemo label sotto pattern
+			\centering
+			\begin{tikzpicture}[
+					PUNTO/.style={minimum size=0, inner sep=0, outer sep=0},
+				]
+				\node[circle, fill, minimum size=1pt, inner sep=1pt, label=above:{$S$}] at (0, 0) (top-1) {};
+				\node[circle, fill, minimum size=1pt, inner sep=1pt, label=left:{$A$}] at (0, -2) (top-2) {};
+				\node[circle, fill, minimum size=1pt, inner sep=1pt, label=right:{$A$}] at (0, -4) (top-3) {};
 
-			\node[PUNTO] at (4, -6) (right-1) {};
-			\node[PUNTO] at (2.66666, -6) (right-2) {};
-			\node[PUNTO] at (1.33333, -6) (right-3) {};
-			\node[PUNTO] at (-4, -6) (left-1) {};
-			\node[PUNTO] at (-2.66666, -6) (left-2) {};
-			\node[PUNTO] at (-1.33333, -6) (left-3) {};
+				\node[PUNTO] at (4, -6) (right-1) {};
+				\node[PUNTO] at (2.66666, -6) (right-2) {};
+				\node[PUNTO] at (1.33333, -6) (right-3) {};
+				\node[PUNTO] at (-4, -6) (left-1) {};
+				\node[PUNTO] at (-2.66666, -6) (left-2) {};
+				\node[PUNTO] at (-1.33333, -6) (left-3) {};
 
-			\path[name path=T21] (right-2) -- (top-2) -- (left-2);
-			\path[name path=T22] (right-2) -- (left-2);
-			\path[name path=T31] (right-3) -- (top-3) -- (left-3);
-			\path[name path=T32] (right-3) -- (left-3);
-			\tikzfillbetween[of=T21 and T22]{pattern={Lines[angle=45,distance={3pt/sqrt(2)}]},pattern color=gray, line width=0.2pt};
-			\tikzfillbetween[of=T31 and T32]{white};
-			\tikzfillbetween[of=T31 and T32]{pattern={crosshatch dots}, pattern color=gray, radius=0.1pt};
+				\path[name path=T21] (right-2) -- (top-2) -- (left-2);
+				\path[name path=T22] (right-2) -- (left-2);
+				\path[name path=T31] (right-3) -- (top-3) -- (left-3);
+				\path[name path=T32] (right-3) -- (left-3);
+				\tikzfillbetween[of=T21 and T22]{pattern={Lines[angle=45,distance={3pt/sqrt(2)}]},pattern color=gray, line width=0.2pt};
+				\tikzfillbetween[of=T31 and T32]{white};
+				\tikzfillbetween[of=T31 and T32]{pattern={crosshatch dots}, pattern color=gray, radius=0.1pt};
 
-			\draw[-] (top-1) -- (left-1);
-			\draw[-] (left-1) -- (right-1);
-			\draw[-] (right-1) -- (top-1);
-			\draw[-] (top-2) -- (left-2);
-			\draw[-] (right-2) -- (top-2);
-			\draw[-] (top-3) -- (left-3);
-			\draw[-] (right-3) -- (top-3);
-
-
-			\path[draw, -] (top-1) -- (-0.3, -0.75) -- (0.5, -1.25) -- (top-2) -- (-0.3, -2.75) -- (0.5, -3.25) -- (top-3);
-
-			\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] left-1.south) to node[below, yshift=-0.2cm] {\tiny $u$} ([yshift=-5pt] left-2.south);
-			\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] left-2.south) to node[below, yshift=-0.2cm] {\tiny $v$} ([yshift=-5pt] left-3.south);
-			\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] left-3.south) to node[below, yshift=-0.2cm] {\tiny $w$} ([yshift=-5pt] right-3.south);
-			\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] right-3.south) to node[below, yshift=-0.2cm] {\tiny $x$} ([yshift=-5pt] right-2.south);
-			\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] right-2.south) to node[below, yshift=-0.2cm] {\tiny $y$} ([yshift=-5pt] right-1.south);
-
-			\draw[<->] ([xshift=5pt] 4, -6) -- node[right] {$\geq k + 1$} ([xshift=5pt] 4, 0);
+				\draw[-] (top-1) -- (left-1);
+				\draw[-] (left-1) -- (right-1);
+				\draw[-] (right-1) -- (top-1);
+				\draw[-] (top-2) -- (left-2);
+				\draw[-] (right-2) -- (top-2);
+				\draw[-] (top-3) -- (left-3);
+				\draw[-] (right-3) -- (top-3);
 
 
-		\end{tikzpicture}
-	\end{center}
-	\begin{center}
-		\begin{tikzpicture}[
-				PUNTO/.style={minimum size=0, inner sep=0, outer sep=0},
-			]
-			\node[PUNTO] at (0, 0) (top-1) {};
-			\node[PUNTO] at (0, -2) (top-2) {};
-			\node[PUNTO] at (0, -4) (top-3) {};
-			\node[PUNTO] at (0, -6) (top-4) {};
+				\path[draw, -] (top-1) -- (-0.3, -0.75) -- (0.5, -1.25) -- (top-2) -- (-0.3, -2.75) -- (0.5, -3.25) -- (top-3);
 
-			\node[PUNTO] at (4, -6) (right-1) {};
-			\node[PUNTO] at (2.66666, -6) (right-2) {};
-			\node[PUNTO] at (2.66666, -8) (right-3) {};
-			\node[PUNTO] at (1.33333, -8) (right-4) {};
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] left-1.south) to node[below, yshift=-0.2cm] {\tiny $u$} ([yshift=-5pt] left-2.south);
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] left-2.south) to node[below, yshift=-0.2cm] {\tiny $v$} ([yshift=-5pt] left-3.south);
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] left-3.south) to node[below, yshift=-0.2cm] {\tiny $w$} ([yshift=-5pt] right-3.south);
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] right-3.south) to node[below, yshift=-0.2cm] {\tiny $x$} ([yshift=-5pt] right-2.south);
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] ([yshift=-5pt] right-2.south) to node[below, yshift=-0.2cm] {\tiny $y$} ([yshift=-5pt] right-1.south);
 
-			\node[PUNTO] at (-4, -6) (left-1) {};
-			\node[PUNTO] at (-2.66666, -6) (left-2) {};
-			\node[PUNTO] at (-2.66666, -8) (left-3) {};
-			\node[PUNTO] at (-1.33333, -8) (left-4) {};
+				\draw[<->] ([xshift=5pt] 4, -6) -- node[right] {$\geq k + 1$} ([xshift=5pt] 4, 0);
 
-			\path[name path=T21] (right-2) -- (top-2) -- (left-2);
-			\path[name path=T22] (right-2) -- (left-2);
 
-			\path[name path=T31] (right-3) -- (top-3) -- (left-3);
-			\path[name path=T32] (right-3) -- (left-3);
+			\end{tikzpicture}
+		\end{subfigure}
+		\begin{subfigure}{0.4\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					PUNTO/.style={minimum size=0, inner sep=0, outer sep=0}, 
+					scale=0.45, 
+					every node/.style={transform shape}
+				]
+				\node[PUNTO] at (0, 0) (top-1) {};
+				\node[PUNTO] at (0, -2) (top-2) {};
+				\node[PUNTO] at (0, -4) (top-3) {};
+				\node[PUNTO] at (0, -6) (top-4) {};
 
-			\path[name path=T41] (right-4) -- (top-4) -- (left-4);
-			\path[name path=T42] (right-4) -- (left-4);
+				\node[PUNTO] at (4, -6) (right-1) {};
+				\node[PUNTO] at (2.66666, -6) (right-2) {};
+				\node[PUNTO] at (2.66666, -8) (right-3) {};
+				\node[PUNTO] at (1.33333, -8) (right-4) {};
 
-			\tikzfillbetween[of=T21 and T22]{pattern={Lines[angle=45,distance={3pt/sqrt(2)}]},pattern color=gray, line width=0.2pt};
-			\tikzfillbetween[of=T31 and T32]{white};
-			\tikzfillbetween[of=T31 and T32]{pattern={Lines[angle=45,distance={3pt/sqrt(2)}]}, pattern color=gray, line width=0.2pt};
-			\tikzfillbetween[of=T41 and T42]{white};
-			\tikzfillbetween[of=T41 and T42]{pattern={crosshatch dots}, pattern color=gray, radius=0.1pt};
-			\draw[fill=black] (top-1) circle[radius=1pt];
-			\draw[fill=black] (top-2) circle[radius=1pt]; 
-			\draw[fill=black] (top-3) circle[radius=1pt];
-			\draw[fill=black] (top-4) circle[radius=1pt];
+				\node[PUNTO] at (-4, -6) (left-1) {};
+				\node[PUNTO] at (-2.66666, -6) (left-2) {};
+				\node[PUNTO] at (-2.66666, -8) (left-3) {};
+				\node[PUNTO] at (-1.33333, -8) (left-4) {};
 
-			\node [above=of top-1, yshift=-25pt] {$S$};
-			\node [above=of top-2, yshift=-25pt] {$A$};
-			\node [above=of top-3, yshift=-25pt] {$A$};
-			\node [above=of top-4, yshift=-25pt] {$A$};
+				\path[name path=T21] (right-2) -- (top-2) -- (left-2);
+				\path[name path=T22] (right-2) -- (left-2);
 
-			\draw[-] (top-1) -- (left-1);
-			\draw[-] (right-1) -- (top-1);
-			\draw[-] (top-2) -- (left-2);
-			\draw[-] (right-2) -- (top-2);
-			\draw[-] (top-3) -- (left-3);
-			\draw[-] (right-3) -- (top-3);
-			\draw[-] (right-3) -- (left-3);
-			\draw[-] (top-4) -- (left-4);
-			\draw[-] (top-4) -- (right-4);
-			\draw[-] (left-1) -- (-1.33333, -6);
-			\draw[-] (right-1) -- (1.33333, -6);
-		\end{tikzpicture}
-	\end{center}
+				\path[name path=T31] (right-3) -- (top-3) -- (left-3);
+				\path[name path=T32] (right-3) -- (left-3);
+
+				\path[name path=T41] (right-4) -- (top-4) -- (left-4);
+				\path[name path=T42] (right-4) -- (left-4);
+
+				\tikzfillbetween[of=T21 and T22]{pattern={Lines[angle=45,distance={3pt/sqrt(2)}]},pattern color=gray, line width=0.2pt};
+				\tikzfillbetween[of=T31 and T32]{white};
+				\tikzfillbetween[of=T31 and T32]{pattern={Lines[angle=45,distance={3pt/sqrt(2)}]}, pattern color=gray, line width=0.2pt};
+				\tikzfillbetween[of=T41 and T42]{white};
+				\tikzfillbetween[of=T41 and T42]{pattern={crosshatch dots}, pattern color=gray, radius=0.1pt};
+				\draw[fill=black] (top-1) circle[radius=1pt];
+				\draw[fill=black] (top-2) circle[radius=1pt]; 
+				\draw[fill=black] (top-3) circle[radius=1pt];
+				\draw[fill=black] (top-4) circle[radius=1pt];
+
+				\node [above=of top-1, yshift=-25pt] {$S$};
+				\node [above=of top-2, yshift=-25pt] {$A$};
+				\node [above=of top-3, yshift=-25pt] {$A$};
+				\node [above=of top-4, yshift=-25pt] {$A$};
+
+				\draw[-] (top-1) -- (left-1);
+				\draw[-] (right-1) -- (top-1);
+				\draw[-] (top-2) -- (left-2);
+				\draw[-] (right-2) -- (top-2);
+				\draw[-] (top-3) -- (left-3);
+				\draw[-] (right-3) -- (top-3);
+				\draw[-] (right-3) -- (left-3);
+				\draw[-] (top-4) -- (left-4);
+				\draw[-] (top-4) -- (right-4);
+				\draw[-] (left-1) -- (-1.33333, -6);
+				\draw[-] (right-1) -- (1.33333, -6);
+			\end{tikzpicture}
+			\caption{Allungamento}
+		\end{subfigure}
+		\begin{subfigure}{0.4\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					PUNTO/.style={minimum size=0, inner sep=0, outer sep=0}, 
+					scale=0.45, 
+					every node/.style={transform shape}
+				]
+				\node[PUNTO] at (0, 0) (top-1) {};
+				\node[PUNTO] at (0, -2) (top-2) {};
+
+				\node[PUNTO] at (4, -6) (right-1) {};
+				\node[PUNTO] at (1.33333, -4) (right-2) {};
+
+				\node[PUNTO] at (-4, -6) (left-1) {};
+				\node[PUNTO] at (-1.33333, -4) (left-2) {};
+
+				\path[name path=T21] (right-2) -- (top-2) -- (left-2);
+				\path[name path=T22] (right-2) -- (left-2);
+
+				\tikzfillbetween[of=T21 and T22]{white};
+				\tikzfillbetween[of=T21 and T22]{pattern={crosshatch dots}, pattern color=gray, radius=0.1pt};
+
+				\draw[fill=black] (top-1) circle[radius=1pt];
+				\draw[fill=black] (top-2) circle[radius=1pt]; 
+
+				\node [above=of top-1, yshift=-25pt] {$S$};
+				\node [above=of top-2, yshift=-25pt] {$A$};
+
+				\draw[-] (top-1) -- (left-1);
+				\draw[-] (right-1) -- (top-1);
+				\draw[-] (right-2) -- (left-2);
+				\draw[-] (top-2) -- (-2.66666, -6);
+				\draw[-] (top-2) -- (2.66666, -6);
+				\draw[-] (left-1) -- (-2.66666, -6);
+				\draw[-] (right-1) -- (2.66666, -6);
+			\end{tikzpicture}
+			\caption{Accorciamento}
+		\end{subfigure}
+	\end{figure}
 	% fig 15.5
 	Per questo non terminale $A$ vale
 	\begin{align*}
@@ -1687,7 +1734,321 @@ Definiamo la \textit{profondità} (o altezza) di un albero come il più lungo ca
 	% vedremo la prossima lezione.
 \end{tcolorbox}
 
-% lezione
+% lezione 16
+Bisogna trovare un $i$ tale per cui 
+$$ m + (i - 1)(l + r) $$
+per cui la somma non sia un numero primo.
+Scegliendo $i = m + 1$, allora 
+$$ m + m(l + r) = m(l + r + 1) $$
+non è primo.
+
+\begin{nota}
+Se l'alfabeto è di una lettera sola, non c'è differenza tra regolari e context free.
+\end{nota}
+
+\begin{tcolorbox}[breakable]
+Sia
+$$ \mathcal{L} = \{ a^n b^n c^k \mid k \neq n \} $$
+Intuitivamente non è CF, infatti posso usare una pila per confrontare le $a$ e le $b$, ma una volta fatto questo ho perso l'informazione su $n$.
+
+Mostriamolo con il pumping lemma. 
+Scegliamo fissiamo la costante $N$ e una scegliamo una stringa
+$$ z = a^m b^m c^j = u v w x y  \in \mathcal{L} \mid |<| \geq N $$
+quindi $2m + j \geq N$.
+
+Analizziamo la composizione di $vwx$:
+\begin{itemize}
+	\item $vwx \in a^+$, questo è facilmente risolvibile mostrando che se si aumentano o diminuiscono le $a$ il loro numero diventa diverso da quello delle $b$
+	\item $vwx \in b^+$, è analogo al caso di sopra
+	\item $vwx \in c^+$, se $j = 1$ allora facilmente possiamo fissare una $i$ tale che rende il numero delle $c$ uguale a $m$
+		Alternativamente possiamo mostrare un caso non valido anche con la stringa 
+		$$ z = a^{N + N!} b^{N + N!} c^N $$
+		se assumiamo che $|vx| = k$, in
+		$$ u v^i w x^i y = a^{N + N!} b^{N + N!} c^{N + k(i - 1)} $$
+		e $0 < k \leq N$, vogliamo che $k(i - 1) = N!$, quindi scegliamo $i - 1 = \frac{N!}{k}$, cioè
+		$$ i = 1 + \frac{N!}{k} $$
+	\item $vwx \in a^+b^+$, questo a sua volta si divide in vari sottocasi
+		\begin{itemize}
+			\item $v \in a^+ b^+$, cioè il confine tra $a$ e $b$ cade in $v$, è facile mostrare che $v^i$ sarebbe una stringa composta da $a$ seguite da $b$ seguite ancora da $a$ e così via
+			\item $w \in a^+ b^+$, allora $v \in a^*$ e $x \in b^*$ abbiamo ancora altri casi
+				\begin{itemize}
+					\item se $v$ e $x$ sono di dimensione diversa è facile
+					\item se $v$ e $x$ sono di dimensione uguale, cioè
+						$$ v = a^h, b = b^h $$
+				\end{itemize}
+		\end{itemize}
+\end{itemize}
+In questo esempio il pumping lemma non si può applicare. % ???
+
+\end{tcolorbox}
+
+Sia $T$ un albero con alcune foglie marcate.
+E definiamo dei nodi interni speciali detti \textit{branch point} definiti come nodi che hanno almeno due figli marcati o due figli con discendenti marcati.
+Definiamo i \textit{nodi speciali} come tutti i branch point e i nodi che hanno almeno un figlio marcato.
+% 16.1
+\begin{center}
+	% rendo più distinguibili i nodi di diverso tipo (e.g. bianco e nero)
+	\begin{tikzpicture}[
+			MARKED/.style={fill=purple, circle, inner sep=2pt},
+			BP/.style={fill=orange, circle, inner sep=2pt},
+			SPECIAL/.style={fill=red, circle, inner sep=2pt},
+			NORMAL/.style={fill=black, circle, inner sep=2pt}
+		]
+		\node[NORMAL] (root) {}
+			[sibling distance=6cm]
+			child { 
+				[sibling distance=4.5cm]
+				node[BP] {}
+				child {
+					[sibling distance=1.5cm]
+					node[NORMAL] {}
+					child {
+						node[BP] {}
+						child {
+							node[NORMAL] {}
+							child { 
+								node[SPECIAL] {} 
+								child { node[MARKED] {} } 
+							}
+							child { node[NORMAL] {} }
+						}
+						child { node[MARKED] {} }
+					}
+					child { node[NORMAL] {} }
+				}
+				child {
+					 [sibling distance=2cm]
+					 node[BP] {}
+					 child {
+						[sibling distance=1cm]
+						node[NORMAL] {}
+						child { node[NORMAL] {} }
+						child { 
+							node[NORMAL] {}
+							child {
+								node[NORMAL] {}
+					 			child {
+									node[SPECIAL] {}
+					 				child { node[MARKED] {} }
+					 			}
+							}
+						}
+						child { node[NORMAL] {} }
+					 }
+					 child {
+					 	[sibling distance=1cm]
+						node[NORMAL] {}
+					 	child[missing]
+					 	child {
+							node[NORMAL] {}
+							child { node[NORMAL] {} }
+					 		child {
+					 			node[SPECIAL] {}			
+					 			child { node[MARKED] {} }
+								child { node[NORMAL] {} }
+					 		}
+						}
+					}
+				}
+			}
+			child { 
+				[sibling distance=2cm]
+				node[NORMAL] {}
+			 	child { node[NORMAL] {} 
+					child { node[NORMAL] {} }
+				}
+				child { 
+					node[NORMAL] {}
+					child {
+						node[NORMAL] {}
+						child { node[NORMAL] {} }
+					}
+				}
+			};
+		\node at (4, -8) {
+			\begin{tblr}{|cl|}
+				\hline
+				\textcolor{purple}{$\blacksquare$} & Nodi marcati \\
+				\textcolor{red}{$\blacksquare$} & Nodi speciali \\
+				\textcolor{orange}{$\blacksquare$} & Branch point \\
+				\hline
+			\end{tblr}
+		};
+	\end{tikzpicture}
+\end{center}
+supponiamo di marcare un altro nodo
+% 16.2
+\begin{center}
+	% rendo più distinguibili i nodi di diverso tipo (e.g. bianco e nero)
+	\begin{tikzpicture}[
+			MARKED/.style={fill=purple, circle, inner sep=2pt},
+			BP/.style={fill=orange, circle, inner sep=2pt},
+			SPECIAL/.style={fill=red, circle, inner sep=2pt},
+			NORMAL/.style={fill=black, circle, inner sep=2pt}
+		]
+		\node[BP] (root) {}
+			[sibling distance=6cm]
+			child { 
+				[sibling distance=4.5cm]
+				node[BP] {}
+				child {
+					[sibling distance=1.5cm]
+					node[NORMAL] {}
+					child {
+						node[BP] {}
+						child {
+							node[NORMAL] {}
+							child { 
+								node[SPECIAL] {} 
+								child { node[MARKED] {} } 
+							}
+							child { node[NORMAL] {} }
+						}
+						child { node[MARKED] {} }
+					}
+					child { node[NORMAL] {} }
+				}
+				child {
+					 [sibling distance=2cm]
+					 node[BP] {}
+					 child {
+						[sibling distance=1cm]
+						node[NORMAL] {}
+						child { node[NORMAL] {} }
+						child { 
+							node[NORMAL] {}
+							child {
+								node[NORMAL] {}
+					 			child {
+									node[SPECIAL] {}
+					 				child { node[MARKED] {} }
+					 			}
+							}
+						}
+						child { node[NORMAL] {} }
+					 }
+					 child {
+					 	[sibling distance=1cm]
+						node[NORMAL] {}
+					 	child[missing]
+					 	child {
+							node[NORMAL] {}
+							child { node[NORMAL] {} }
+					 		child {
+					 			node[SPECIAL] {}			
+					 			child { node[MARKED] {} }
+								child { node[NORMAL] {} }
+					 		}
+						}
+					}
+				}
+			}
+			child { 
+				[sibling distance=2cm]
+				node[NORMAL] {}
+			 	child { node[NORMAL] {} 
+					child { node[NORMAL] {} }
+				}
+				child { 
+					node[NORMAL] {}
+					child {
+						node[SPECIAL] {}
+						child { node[MARKED] {} }
+					}
+				}
+			};
+	\end{tikzpicture}
+\end{center}
+\begin{lemma}
+  	Sia $G = \langle V, \Sigma, P, S\rangle$ una grammatica in FNC e prendiamo un albero di derivazione 
+  	$$A \overset{*}{\Rightarrow} w, \hspace{1cm} A \in V, w \in \Sigma^* $$
+  	e $w$ contiene alcune posizioni marcate.
+  
+  	Se il numero massimo di nodi speciali su un cammino dalla radice alle foglie è minore o uguale a $k$, allora il numero di posizioni marcate in $w$ è $\leq 2^k - 1$.
+\end{lemma}
+Questo è una generalizzazione del lemma della lezione precedente, nell'altro supponevamo marcata l'intera stringa.
+% 
+\begin{proof}
+ 	Procediamo per induzione su $k$
+ 	\begin{itemize}
+ 		\item $k = 1$, quindi in ogni cammino dalla radice ad una foglia esiste al massimo un nodo speciale.
+ 			% 16.3
+ 			Supponiamo che questo nodo speciale sia un branch point
+ 			% 16.4
+ 			ma questo non può valere visto che in FNC l'unica produzione che può generare un terminale è della forma $C \Rightarrow a$, quindi anche questi due dovrebbero essere nodi speciali.
+ 			Quindi esiste una singola foglia marcata, infatti se ne esistesse più di una, allora il loro nodo in comune sarebbe un branch point.
+ 		\item supponiamo che sia vero per valori $< k$, e mostriamo che è vero per $k$.
+ 			% 16.5
+ 			Fermiamoci al primo nodo speciale dalla radice, e che questo sia un branch point, per ipotesi induttiva nell'abero di sinistra e di destra ci saranno al massimo $2^{k - 2}$ posizioni marcate.
+ 			Inoltre $z_0$ e $z_3$ non possono avere posizioni marcate, altrimenti il branch point sarebbe più in alto.
+ 			Quindi $\leq 2^{k - 2} + 2^{k - 2} = 2^{k - 1}$.
+	\end{itemize}
+\end{proof}
+
+\begin{lemma}[Lemma di Oyder]
+	Sia $L \in \text{CF}$, allora esiste una costante $N$ tale che per ogni $z \in L$ sono marcate $N$ posizioni e possiamo scomporre $z$ tale che
+	$$ z = u v w x y $$
+	tale che
+	\begin{itemize}
+		\item $vx$ contiene almeno una posizione marcata
+		\item $vwx$ contiene al più $N$ posizioni marcate
+		\item per ogni $i > 0$, $u v^i w x^i y \in L$
+	\end{itemize}
+\end{lemma}
+Quindi il pumping lemma è un caso speciale di questo in cui ogni posizione è marcata.
+\begin{proof}
+	Sia $G = \langle V, \Sigma, S, P \rangle$ una grammatica in FNC, definiamo $k = |V|$ e fissiamo $N = 2^k$.
+	Prendiamo una stringa $z \in L$ con almeno $N$ nodi marcati.
+	Prendiamo il cammino dalle foglie alla radice che contiene il maggior numero di nodi speciali.
+	In base al lemma di prima, il massimo numero di nodi speciali sul cammino è $\geq k + 1$.
+	Percorrendo il cammino e leggendo le variabili che compaiono sui nodi speciali, sia questa $A$, troveremo almeno una ripetizione.
+	I sottoalberi di questa coppia di definisce le nostre parti $u, v, w, x$ e $y$.
+
+	Visto che la prima occorrenza di $A$ sarà un branch point, questa sarà una produzione del tipo $A \rightarrow BC$, uno dei due rami potrerà alla seconda $A$ e sicuramente il secondo porterà ad una foglia marcata, quindi in $v$ e $x$ c'è almeno un branch point.
+\end{proof}
+
+Con questo nuovo lemma proviamo a dimostrare l'esempio di prima
+\begin{tcolorbox}[breakable]
+	Sia
+	$$ L = \{ a^n b^n c^k \mid k \neq n \} $$
+	con $N$ costnte per $L$.
+	La stringa con cui si può arrivare ad un assurdo è
+	$$ z = a^N b^N c^{N + N!} = uvwxy $$
+	con tutte le $a$ marchiate.
+
+	Visto che $vx$ deve contenere almeno una posizione marcata, allora questo deve avere almeno una $a$ al suo interno.
+	Questo ci restringe ai tre casi
+	\begin{itemize}
+		\item $vwx \in a^+$, il numero di $a$ cresce, ma non il numero di $b$
+		\item $vwx \in a^+ b^+$, si divide in alcuni sottocasi in base a dove il confine tra le $a$ e $b$ cade
+			\begin{itemize}
+				\item $v \in a^+ b^+$, ripetere $v$ fa sì che la stringa perda la struttura e porta ad avere $a$ dopo le $b$
+				\item analogo a sopra se il confine si trova su $x$
+				\item $v \in a^+$ e $x \in b^+$, supponiamo più precisamente che
+					$$ v = a^l, x = b^r $$
+					\begin{itemize}
+						\item se $l \neq r$ è ovvio che la stringa non sia valida, anche solo per $i = 0$ cancellerei un numero diverso di $a$ e di $b$
+						\item se $l = r$, la stringa che otterremmo ripetendo $i$ volte sarebbe
+							$$ a^{N + l(i - 1)} b^{N + l(r - 1)} c^{N + N!} $$
+							se si scegle $i = 1 + \frac{N!}{l}$ allora otteniamo che le $a$ e le $b$ sono uguali al numero di $c$ e $N!$ è sicuramente divisibile da $l$.
+					\end{itemize}
+			\end{itemize}
+		\item $vwx \in a^+ b^N c^+ $, 
+			\begin{itemize}
+				\item se $v$ e $x$ contengono tipi di lettere diverse, come prima ripetendo si perde la struttura
+				\item per il resto si tratta in maniera analogo a il secondo caso
+			\end{itemize}
+	\end{itemize}
+\end{tcolorbox}
+
+% esercizi
+\begin{tcolorbox}[breakable]
+	Sia
+	$$ \mathcal{L} = \{ a^p b^q c^r \mid p = q \vee q = r \} $$
+	e 
+	$$ \mathcal{L} = \{ a^p b^q c^r \mid p = q \otimes q = r \} $$
+\end{tcolorbox}
+
 
  
 \end{document}
