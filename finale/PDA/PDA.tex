@@ -1360,7 +1360,7 @@ L'automa per il linguaggio di prima non può essere adattato a questo linguaggio
 						}
 					child { node {$]$} };
 			\end{tikzpicture}
-			\caption{Allungamento}
+			\caption{Allungamento ($uv^2wx^2z$)}
 		\end{subfigure}
 		\begin{subfigure}{0.45\textwidth}
 			\centering
@@ -1382,7 +1382,7 @@ L'automa per il linguaggio di prima non può essere adattato a questo linguaggio
 						}
 					child { node {$]$} };
 			\end{tikzpicture}
-			\caption{Accorciamento}
+			\caption{Accorciamento ($uwz$)}
 		\end{subfigure}
 	\end{figure}
 	In questo modo possiamo generare infinite stringhe.
@@ -1459,7 +1459,7 @@ Definiamo la \textit{profondità} (o altezza) di un albero come il più lungo ca
 	$$ z = uvwxy $$
 	tali che
 	\begin{enumerate}
-		\item $vwx| \leq N $
+		\item $|vwx| \leq N $
 		\item $vx \neq \varepsilon $
 		\item $\forall i \geq 0 \mid uv^i w x^i y \in L$
 	\end{enumerate}
@@ -1734,7 +1734,7 @@ Intuitivamente non è CF, infatti posso usare una pila per confrontare le $a$ e 
 
 Mostriamolo con il pumping lemma. 
 Scegliamo fissiamo la costante $N$ e una scegliamo una stringa
-$$ z = a^m b^m c^j = u v w x y  \in \mathcal{L} \mid |<| \geq N $$
+	$$ z = a^m b^m c^j = u v w x y  \in \mathcal{L} \text{t.c.} |z| \geq N $$
 quindi $2m + j \geq N$.
 
 Analizziamo la composizione di $vwx$:
@@ -1770,10 +1770,10 @@ Definiamo i \textit{nodi speciali} come tutti i branch point e i nodi che hanno 
 \begin{center}
 	% rendo più distinguibili i nodi di diverso tipo (e.g. bianco e nero)
 	\begin{tikzpicture}[
-			MARKED/.style={fill=purple, circle, inner sep=2pt},
-			BP/.style={fill=orange, circle, inner sep=2pt},
-			SPECIAL/.style={fill=red, circle, inner sep=2pt},
-			NORMAL/.style={fill=black, circle, inner sep=2pt}
+			MARKED/.style={fill=red, circle, inner sep=2pt},
+			BP/.style={fill=yellow, circle, inner sep=2pt},
+			SPECIAL/.style={fill=orange, circle, inner sep=2pt},
+			NORMAL/.style={draw, fill=white, circle, inner sep=2pt}
 		]
 		\node[NORMAL] (root) {}
 			[sibling distance=6cm]
@@ -1849,9 +1849,9 @@ Definiamo i \textit{nodi speciali} come tutti i branch point e i nodi che hanno 
 		\node at (4, -8) {
 			\begin{tblr}{|cl|}
 				\hline
-				\textcolor{purple}{$\blacksquare$} & Nodi marcati \\
-				\textcolor{red}{$\blacksquare$} & Nodi speciali \\
-				\textcolor{orange}{$\blacksquare$} & Branch point \\
+				\textcolor{red}{$\blacksquare$} & Nodi marcati \\
+				\textcolor{orange}{$\blacksquare$} & Nodi speciali \\
+				\textcolor{yellow}{$\blacksquare$} & Branch point \\
 				\hline
 			\end{tblr}
 		};
@@ -1862,10 +1862,10 @@ supponiamo di marcare un altro nodo
 \begin{center}
 	% rendo più distinguibili i nodi di diverso tipo (e.g. bianco e nero)
 	\begin{tikzpicture}[
-			MARKED/.style={fill=purple, circle, inner sep=2pt},
-			BP/.style={fill=orange, circle, inner sep=2pt},
-			SPECIAL/.style={fill=red, circle, inner sep=2pt},
-			NORMAL/.style={fill=black, circle, inner sep=2pt}
+			MARKED/.style={fill=red, circle, inner sep=2pt},
+			BP/.style={fill=yellow, circle, inner sep=2pt},
+			SPECIAL/.style={fill=orange, circle, inner sep=2pt},
+			NORMAL/.style={draw, fill=white, circle, inner sep=2pt}
 		]
 		\node[BP] (root) {}
 			[sibling distance=6cm]
@@ -1966,7 +1966,8 @@ Questo è una generalizzazione del lemma della lezione precedente, nell'altro su
 	\end{itemize}
 \end{proof}
 
-\begin{lemma}[Lemma di Oyder]
+\begin{lemma}[Lemma di Ogden]
+	\label{lemma:ogden}
 	Sia $L \in \text{CF}$, allora esiste una costante $N$ tale che per ogni $z \in L$ sono marcate $N$ posizioni e possiamo scomporre $z$ tale che
 	$$ z = u v w x y $$
 	tale che
@@ -1992,7 +1993,7 @@ Con questo nuovo lemma proviamo a dimostrare l'esempio di prima
 \begin{tcolorbox}[breakable]
 	Sia
 	$$ L = \{ a^n b^n c^k \mid k \neq n \} $$
-	con $N$ costnte per $L$.
+	con $N$ costante per $L$.
 	La stringa con cui si può arrivare ad un assurdo è
 	$$ z = a^N b^N c^{N + N!} = uvwxy $$
 	con tutte le $a$ marchiate.

@@ -1,0 +1,149 @@
+\documentclass[12pt, answers]{exam}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[italian]{babel}
+\usepackage{caption}
+\usepackage[utf8]{inputenc}
+\usepackage{embedall}
+\usepackage{etoolbox}
+\usepackage{float}
+\AtBeginEnvironment{align}{\setcounter{equation}{0}}
+\embedfile{\jobname.tex}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{mathtools}
+\usepackage{subcaption}
+\usepackage{tabularray}
+\usepackage{tikz}
+\usetikzlibrary{positioning, automata, decorations.pathreplacing, calligraphy}
+\usepackage{xcolor}
+\usepackage[bookmarks]{hyperref}
+
+\definecolor{codegray}{gray}{0.95}
+\lstdefinestyle{mystyle}{
+	numberstyle=\scriptsize\color{black},
+	basicstyle=\footnotesize,
+	numbers=left,
+	numbersep=5pt,
+}
+\lstset{style=mystyle}
+\overfullrule=10pt
+
+\newcommand{\grammar}[4]{\langle #1, #2, #3, #4 \rangle}
+\newcommand{\grammarP}[4]{\langle \{ #1 \}, \{ #2 \}, \{ #3 \}, #4 \rangle}
+\newcommand{\der}{\Rightarrow}
+\newcommand{\prd}{\rightarrow}
+
+\footer{}{\thepage}{}
+\begin{document}
+\begin{questions}
+	\question  Dimostrate che il linguaggio
+	$$ L = \{ a^i b^j c^k \mid (i = j \vee j = k) \wedge i = j = k \} $$
+	non è context-free.\\
+	\textit{Suggerimento:} procedete in modo analogo all'esempio $\{a^n b^n c^k \mid k \neq n \}$ presentato a lezione.	
+	\begin{solution}
+		Fissiamo la costante del lemma di Ogden $N$ e scegliamo la stringa
+			$$ z = a^N b^N c^{N + N!} = uvwxy \in L$$
+		con tutte le $a$ marchiate.
+
+		Visto che $vx$ deve contenere almeno una posizione marcata, allora questo deve avere almeno una $a$ al suo interno.
+	Questo ci restringe ai tre casi
+	\begin{itemize}
+		\item $vwx \in a^+$, il numero di $a$ cresce, ma non il numero di $b$
+		\item $vwx \in a^+ b^+$, si divide in alcuni sottocasi in base a dove il confine tra le $a$ e $b$ cade
+			\begin{itemize}
+				\item $v \in a^+ b^+$, ripetere $v$ fa sì che la stringa perda la struttura e porta ad avere $a$ dopo le $b$
+				\item analogo a sopra se il confine si trova su $x$
+				\item $v \in a^+$ e $x \in b^+$, supponiamo più precisamente che
+					$$ v = a^l, x = b^r $$
+					\begin{itemize}
+						\item se $l \neq r$ è ovvio che la stringa non sia valida, anche solo per $i = 0$ cancellerei un numero diverso di $a$ e di $b$
+						\item se $l = r$, la stringa che otterremmo ripetendo $i$ volte sarebbe
+							$$ a^{N + l(i - 1)} b^{N + l(r - 1)} c^{N + N!} $$
+							se si scegle $i = 1 + \frac{N!}{l}$ allora otteniamo che le $a$ e le $b$ sono uguali al numero di $c$ e $N!$ è sicuramente divisibile da $l$.
+					\end{itemize}
+			\end{itemize}
+		\item $vwx \in a^+ b^N c^+ $, 
+			\begin{itemize}
+				\item se $v$ o $x$ contengono tipi di lettere diverse -- quindi nei casi $v \in a^+ b^+$, o $x \in b^+ c^+$, o $v \in a^+ b^N c^+$, o ancora $x \in a^+ b^N c^+$ -- come prima ripetendo si perde la struttura
+				\item se $v \in a^+$ abbiamo due casi per $x$:
+					\begin{itemize}
+						\item $x \in b^+ c^+$ o $x \in a^+ b^+ c^+$, che si riconducono al caso di sopra
+						\item $x \in c^+$ per cui ripetendo $v$ otterremo un numero diverso di $a$ e $b$ visto che le $b$ rimangono immutate
+					\end{itemize}
+			\end{itemize}
+	\end{itemize}
+	\end{solution}
+	\question Utilizzate il lemma di Ogden per dimostrare che 
+	$$ L = \{ a^i b^j c^k \mid i \neq j, j \neq k \text{ e } i \neq k \} $$
+	non è context-free.
+	Riuscite a dimostrare lo stesso risultato utilizzando direttamente il pumping lemma?.\\
+	\textit{Suggerimento:} per la prima parte considerate $z = a^N b^{N + N!} c^{N + 2N!}$ e marcate tutte le $a$.
+	\begin{solution}
+		Intuitivamente l'automa a pila si dovrebbe ricordare il numero di $a$ che ha incontrato quando sta consumando le $c$, dopo però aver però già fatto lo stesso per le $b$, quindi il linguaggio non è CF.
+			
+		Assumiamo però che il lemma di Ogden tenga, e fissiamo la costante $N$.
+		Utilizziamo la stringa
+		$$ z = a^N b^{N + N!} c^{N + 2N!} = uvwxy \in L $$
+		con solo le $a$ marcate.
+		Questo ci restringe ai seguenti casi:
+		\begin{itemize}
+			\item $vwx \in a^+$, allora abbiamo che 
+				$$ v = a^l, x = a^r$$
+			e ripetendo $v$ e $x$ $i$-volte, otterremmo una stringa della forma
+				$$ a^{N + (i - 1)(l + r)} b^{N + N!} c^{N + 2N!} $$
+			quindi scegliendo $i = 1 + \frac{N!}{l + r}$ otterremmo che il numero di $a$ è uguale al numero di $b$.
+			\item il caso $vwx \in a^+ b^+$ può essere scomposto in alcuni sottocasi:
+				\begin{itemize}
+					\item $v \in a^+ b^+$ (o $x \in a^+ b^+$) è semplice perché ripetere $v$ (o $x$) farebbe comparire delle $a$ dopo le $b$, facendo perdere la struttura alla stringa.
+					\item nel caso $v \in a^+$ e $x \in b^+$ prendiamo per esempio $v$ (lo stesso si può fare con $x$).
+						Similmente a sopra 
+						$$v = a^l, x = b^h $$
+						e ripetendo $i$-volte $v$ abbiamo la parola
+						$$ a^{N + (i - 1)l} b^{N + N! + (i - 1)r} c^{N + 2N!} $$
+						quindi selezionando $i = 1 + \frac{2N!}{l}$ abbiamo che il numero delle $a$ è uguale al numero delle $c$.
+				\end{itemize}
+			\item il caso $vwx \in a^+ b^{N + N!} c^+$ può essere scomposto in alcuni sottocasi:
+				\begin{itemize}
+					\item se $v$ o $x$ contengono tipi di lettere diverse -- quindi nei casi $v \in a^+ b^+$, o $x \in b^+ c^+$, o $v \in a^+ b^{N + N!} c^+$, o ancora $x \in a^+ b^{N + N!} c^+$ -- come prima ripetendo si perde la struttura.
+					\item se $v \in a^+$ abbiamo due casi per $x$:
+						\begin{itemize}
+							\item $x \in b^+ c^+$ o $x \in a^+ b^+ c^+$, che si riconducono al caso di sopra.
+							\item $x \in c^+$ per cui ripetendo 
+								$$ v = a^l, x = c^h $$
+								e ripetendo $i$-volte otteniamo
+								$$ a^{N + (i - 1)l} b^{N + N!} c^{N + 2N! + (i - 1)h} $$
+								per cui scegliendo $i = 1 + \frac{N!}{l}$ otteniamo un numero di $a$ uguale al numero di $b$.
+						\end{itemize}
+				\end{itemize}
+		\end{itemize}
+
+		%% pumping lemma???
+	\end{solution}
+	\question Il linguaggio
+	$$ L = \{a^i b^j c^k d^l \mid i = 0 \vee j = k = l \} $$ 
+	non è context-free.
+	\begin{parts}
+		\part Provate a dimostrare questa affermazione utilizzando il pumping lemma: sia partendo da una stringa $z \in L$ non contente il simbolo $a$, cioè della forma $b^j c^k d^l$, sia partendo da una stringa contentente $a$, cioè della forma $a^i b^j c^j d^j$, con $i > 0$, non si riesce ad arrivare a una contraddizione per qualunque decomposizione di $z$ in $uvwxy$.
+		\begin{solution}
+			Mostriamo che il linguaggio non rispetta il pumping lemma.
+			Fissiamo $N$ e scegliamo la stringa
+			$$ a b^N c^N d^N = u v w x y \in L $$
+			abbiamo i seguenti casi:
+			\begin{itemize}
+				\item per tutti i casi $v \in a b^+$, o $v \in b^+ c^+$, o $v \in c^+ d^+$ -- o i corrispondenti per $x$ -- sono facilmente escludibili notando che ripetendo $v$ (o $x$) roviniamo la struttura della parola
+				\item $v = a$ e $x \in b^+ \cup c^+ \cup d^+$, o $v \in b^+$ e $x \in c^+ \cup d^+$, o ancora $v \in c^+$ e $x \in d^+$.
+					In ogni caso aumentare le occorrenze di $v$ e $x$ fa aumentare una o due delle tre lettere, ma non le altre, rendendo la stringa sbilanciata.
+					Ad esempio $b$ e $c$ nel secondo caso, ma non $d$, e così via per gli altri casi.
+			\end{itemize}
+		\end{solution}
+		\part Provate ad utilizzare il Lemma di Ogden. 
+		A questo scopo, scegliete opportunamente una stringa $z \in L$ da cui partire e le posizioni marcate in $z$.
+		\begin{solution}
+			Fissato $N$ scegliamo una stringa della forma
+			% todo
+		\end{solution}
+	\end{parts}
+\end{questions}
+\end{document}
