@@ -29,7 +29,9 @@
 \newtheorem{proprietà}{Proprietà}
 \newtheorem{lemma}{Lemma}
 \newtheorem{fatto}{Fatto}
+\theoremstyle{definition}
 \newtheorem{definizione}{Definizione}
+\theoremstyle{regard}
 \newtheorem{nota}{Nota}
 
 \renewcommand\qedsymbol{$\blacksquare$}
@@ -398,7 +400,7 @@ Supponendo che $M$ sia deterministico, $M'$ rimane deterministico -- la trasform
 \end{proof}
 
 % lezione 13
-\section{Grammatiche di tipo 2}
+\chapter{Grammatiche di tipo 2}
 Una grammatica è formata da quattro elementi:
 $$ G = \langle V, \Sigma, P, S \rangle $$
 e nello specifico, in quelle di tipo 2 le produzioni hanno la forma
@@ -634,7 +636,9 @@ Per evitare derivazioni multiple si utilizza un criterio detto di \textit{deriva
 \end{proposizione}
 La seconda e la terza derivazioni dell'esempio di sopra sono due derivazioni leftmost diverse.
 
+\begin{definizione}
 Diciamo che una grammatica è \textit{ambigua} se c'è una stringa che ammette almeno due alberi di derivazione -- o derivazioni leftmost -- diversi.
+\end{definizione}
 
 Nell'esempio di sopra si può vedere anche che ogni sottoalbero è una sequenza bilanciate di parentesi.
 
@@ -691,7 +695,8 @@ e vediamo un albero di derivazione di esempio
 
 
 \section{Equivalenza tra grammatiche di tipo 2 ad automi a pila}
-\subsection{Da una grammatica che genera un linguaggio generiamo un automa che riconosce lo stesso}
+Mostriamo ora l'equivalenza tra le grammatiche di tipo 2 e gli automi a pila.
+\begin{proof}[Da una grammatica che genera un linguaggio generiamo un automa che riconosce lo stesso]
 Data una grammatica
 $$ G = \langle V, \Sigma, P, S \rangle $$
 di tipo 2, vogliamo costruire
@@ -709,6 +714,7 @@ e $\delta$ definito come
 \end{itemize}
  
 Si può dimostrare che il linguaggio generato dalla grammatica $L(G)$ è uguale al linguaggio accettato dall'automa per pila vuota $N(M)$.
+\end{proof}
 
 \begin{tcolorbox}[breakable]
  	Prendiamo
@@ -762,7 +768,7 @@ Si può dimostrare che il linguaggio generato dalla grammatica $L(G)$ è uguale 
 \end{tcolorbox}
 L'automa a pila tenta di simulare il processo di derivazione leftmost della stringa.
 
-\subsection{Da un automa a pila costruiamo una grammatica di tipo 2}
+Mostriamo ora il lato opposto dell'equivalenza, per fare questo però 
 % iniziamo a introdurla
 Per la dimostrazione useremo una variazione degli automi a pila che non ne cambia la potenza computazionale.
 In questa forma normale
@@ -899,6 +905,10 @@ ed abbiamo che le mosse possono avere le seguenti forme
 \begin{nota}
 	Gli automi che abbiamo visto fino ad ora possono essere simulati da questa versione normalizzata, scomponendo una mossa una pop ed una serie di push utilizzando degli stati ausiliari.
 \end{nota}
+
+\begin{proof}[Da un automa a pila costruiamo una grammatica di tipo 2]
+	% todo sistemo bene
+\end{proof}
 
 % lezione 14
 Ripetiamo la versione di automa a pila semplificato vista a lezione scorsa, in questo per riuscire ad accettare dobbiamo arrivare in uno stato finale con solo $Z_0$ lo stato finale sulla pila.
@@ -1225,6 +1235,7 @@ Data una grammatica genererica $G$ eseguiamo i seguenti passi (l'ordine è impor
 \end{tcolorbox}
 
 % lezione 15
+% magari chapter invece che section
 \section{Appartenenza ai Context Free di un linguaggio}
 Dato un linguaggio ci possiamo chiedere se questo sia CF.
 Ad esempio
@@ -1387,6 +1398,8 @@ L'automa per il linguaggio di prima non può essere adattato a questo linguaggio
 	\end{figure}
 	In questo modo possiamo generare infinite stringhe.
 \end{tcolorbox}
+
+\subsection{Pumping lemma}% TODO: posiziono bene 
 
 Dal fatto che le grammatiche possono essere convertite in FNC (a patto di sacrificare la parola vuota), lavoreremo con grammatiche in FNC per semplificare la dimostrazione del pumping lemma.
 
@@ -1727,6 +1740,8 @@ non è primo.
 Se l'alfabeto è di una lettera sola, non c'è differenza tra regolari e context free.
 \end{nota}
 
+\subsection{Lemma di Odgen}
+
 \begin{tcolorbox}[breakable]
 Sia
 $$ \mathcal{L} = \{ a^n b^n c^k \mid k \neq n \} $$
@@ -1773,7 +1788,8 @@ Definiamo i \textit{nodi speciali} come tutti i branch point e i nodi che hanno 
 			MARKED/.style={fill=red, circle, inner sep=2pt},
 			BP/.style={fill=yellow, circle, inner sep=2pt},
 			SPECIAL/.style={fill=orange, circle, inner sep=2pt},
-			NORMAL/.style={draw, fill=white, circle, inner sep=2pt}
+			NORMAL/.style={draw, fill=white, circle, inner sep=2pt},
+			scale=.6, every node/.style={transform shape}
 		]
 		\node[NORMAL] (root) {}
 			[sibling distance=6cm]
@@ -1865,7 +1881,8 @@ supponiamo di marcare un altro nodo
 			MARKED/.style={fill=red, circle, inner sep=2pt},
 			BP/.style={fill=yellow, circle, inner sep=2pt},
 			SPECIAL/.style={fill=orange, circle, inner sep=2pt},
-			NORMAL/.style={draw, fill=white, circle, inner sep=2pt}
+			NORMAL/.style={draw, fill=white, circle, inner sep=2pt},
+			scale=.6, every node/.style={transform shape}
 		]
 		\node[BP] (root) {}
 			[sibling distance=6cm]
@@ -2031,6 +2048,734 @@ Con questo nuovo lemma proviamo a dimostrare l'esempio di prima
 	$$ \mathcal{L} = \{ a^p b^q c^r \mid p = q \otimes q = r \} $$
 \end{tcolorbox}
 
+% lezione 17
+\section{Ambiguità}
+Prendiamo il linguaggio
+$$ \mathcal{L} = \{ a^p b^q c^r \mid p = q \vee q = r \} $$
+sappiamo gli automi per $a^n b^n c^m$ e per $a^m b^n c^n$, % ref ?
+quindi nondeterministicamente all'inizio scegliamo quale strada prendere nell'automa.
+Lo stesso si può fare con una grammatica
+$$ S \rightarrow S' C \mid A S'' $$
+dove $S' \rightarrow a S' b \mid \varepsilon $ genera $a^n b^n$
+e $S'' \rightarrow b S'' c \mid \varepsilon $ genera $b^n c^n$
+e 
+\begin{align*}
+	C &\rightarrow c C \mid \varepsilon \\
+	A &\rightarrow a A \mid \varepsilon \\
+\end{align*}
+\begin{center}
+	\begin{tikzpicture}
+		\node {$S$}
+			[sibling distance=3cm, level distance=1cm]
+			child {
+				node {$S'$}
+				[sibling distance=1cm]
+				child { node {$a$} }
+				child {
+					node {$S'$}
+					child { node {$\varepsilon$} }
+				}
+				child { node {$b$} }
+			}
+			child {
+				node {$C$}
+				[sibling distance=1cm]
+				child { node {$c$} }
+				child {
+					node {$C$}
+					child { node {$c$} }
+					child { 
+						node {$C$} 
+						child { node {$\varepsilon$} }
+					}
+				}
+			};
+	\end{tikzpicture}
+\end{center}
+% fig 17.1
+vediamo ora i casi particolari dei due alberi
+\begin{figure}[H]
+	\centering
+	\begin{subfigure}{.45\textwidth}
+		\begin{tikzpicture}
+			\node {$S$}
+				[sibling distance=3cm, level distance=1cm]
+				child {
+					node {$S'$}
+					[sibling distance=1cm]
+					child { node {$a$} }
+					child {
+						node {$S'$}
+						child { node {$a$} }
+						child {
+							node {$S'$}
+								child { node {$\varepsilon$} }
+						}
+						child { node {$b$} }
+					}
+					child { node {$b$} }
+				}
+				child {
+					node {$C$}
+					[sibling distance=1cm]
+					child { node {$c$} }
+					child {
+						node {$C$}
+						child { node {$c$} }
+						child { 
+							node {$C$} 
+							child { node {$\varepsilon$} }
+						}
+					}
+				};
+		\end{tikzpicture}
+	\end{subfigure}
+	\begin{subfigure}{.45\textwidth}
+		\begin{tikzpicture}
+			\node {$S$}
+				[sibling distance=3cm, level distance=1cm]
+				child {
+					node {$A$}
+					[sibling distance=1cm]
+					child { node {$a$} }
+					child {
+						node {$A$}
+						child { node {$a$} }
+						child {
+							node {$A$}
+							child { node {$\varepsilon$} }
+						}
+					}
+				}
+				child {
+					node {$S''$}
+					[sibling distance=1cm]
+					child { node {$b$} }
+					child {
+						node {$S''$}
+						child { node {$b$} }
+						child { 
+							node {$S''$}
+							child { node {$\varepsilon$} }
+						}
+						child { node {$c$} }
+					}
+					child { node {$c$} }
+				};
+		\end{tikzpicture}
+	\end{subfigure}
+	\caption{Alberi per la stringa $a^2 b^2 c^2$}
+\end{figure}
+Entrambi gli alberi rappresentano derivazioni leftmost che generano la stessa stringa $a^2 b^2 c^2$. % mostro magari le due derivazioni leftmost
+
+Una grammatica viene detta \textit{ambigua} se esiste almeno una stringa che può essere generata in due modi diversi.
+\begin{definizione}[Grado di ambiguità]
+	Chiamiamo il \textit{grado di ambiguità} di una stringa $w \in \Sigma^*$ in $G$ è uguale al numero di alberi di derivazione di $w$ in $G$.
+	Ed il grado di ambiguità di $G$ è il massimo grado di ambiguità generato dalle stringhe della grammatica.
+\end{definizione}
+
+Non sempre si può trovare una grammatica non ambigua per un linguaggio.
+Esistono linguaggi detti \textit{inerentemente ambigui}, cioè per cui ogni grammatica di tipo 2 che li genera sarà ambigua.
+
+Utilizzando il lemma di Ogden mostreremo che il linguaggio $L$ è interentemente ambiguo.
+Mostriamo prima una versione alternativa del lemma
+\begin{lemma}[Lemma di Ogden]
+	Sia $G$ una grammatica CF e sia $L = L(G)$.
+	Esiste una costante $N$ tale che per ogni $z \in L$ con almeno $N$ posizioni marcate possiamo decomporre $z$ in 5 parti
+	$$ z = uvwxy $$
+	tali che
+	\begin{enumerate}
+		\item $vwx$ contiene al più $N$ posizioni marcate
+		\item $vx$ contiene almeno una posizione marcata
+		\item esiste una variabile $A \in V$ tale che $S \overset{*}{\Rightarrow} uAy$, e $A \overset{*}{\Rightarrow} vAx$ e $A \overset{*}{\Rightarrow} w$.
+			E dunque per ogni $i \geq 0$ $u v^i w x^i y \in L$.
+	\end{enumerate}
+\end{lemma}
+Noi il teorema di Ogden lo abbiamo dimostrato utilizzando grammatiche in CNF, si può fare anche per grammatiche generiche, ma è più tedioso.
+
+\begin{proof}[Ambiguità di $L$]
+	Noi vogliamo dimostrare che
+	$$ \mathcal{L} = \{ a^p b^q c^r \mid p = q \vee q = r \} $$
+	è inerentemente ambiguo.
+	
+	Sia $G$ una qualunque grammatica CF per $\mathcal{L}$.
+	Sia $N$ la costante del lemma di Ogden e $m = \max(N, 3) $ il massimo tra $N$ e 3.
+	Prendiamo 
+	$$ z = a^m b^m c^{m + m!} \in \mathcal{L}$$
+	e marchiamo tutte le $a$.
+
+	Prendiamo la stringa$\alpha$ ottenuta ponendo $i = 2$, cioè la stringa $\alpha = u v^2 w x^2 y \in \mathcal{L}$.
+	Contiamo le $b$ in $\alpha$
+	\begin{align*}
+		\#_b(\alpha) &= \underbrace{\#_b(z)}_{m} + \underbrace{\#_b(vx)}_{\leq m} \\
+		&\leq 2m \\ 
+		&< m + m! \tag{Visto che $m$ è almeno 3} \\
+		&\leq \#_c(\alpha) \tag{Le $c$ rimaste sono almeno quelle che c'erano prima}
+	\end{align*}
+	e visto che $uv^2 w x^2 y \in \mathcal{L}$ allora $\#_b(\alpha) = \#_a(\alpha)$ e per la proprietà 2 del lemma di Ogden $\#_a(vx) = \#_b(vx) \geq 1$.
+	Inoltre affinché $u v^2 w x^2 y \in \mathcal{L}$ sia ancora in $\mathcal{L}$ deve valere che
+	\begin{align*}
+		v &= a^l \\
+		x &= b^l \\
+	\end{align*}
+	con $1 \leq l \leq m$.
+	Altrimenti ripetendo perderemmo la struttura.
+
+	Prendiamo ora
+	$$ u v^i w x^i z = a^{m + (i - 1)l}b^{m + (i - 1)l} c^{m + m!} \in \mathcal{L} $$
+	scegliendo $i = 1 + \frac{m!}{l}$ otteniamo la stringa 
+	$$ \beta = a^{m + m!} b^{m + m!} c^{m + m!} $$
+	che appartiene al nostro linguaggio.
+	\begin{figure}[H]
+		\centering
+		\begin{subfigure}{.3\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					PUNTO/.style={minimum size=0, inner sep=0, outer sep=0}, 
+					scale=0.45, 
+					every node/.style={transform shape}
+				]
+				\node[PUNTO] at (0, 0) (top-1) {};
+				\node[PUNTO] at (0, -2) (top-2) {};
+
+				\node[PUNTO] at (4, -4) (right-1) {};
+				\node[PUNTO] at (2, -4) (right-2) {};
+
+				\node[PUNTO] at (-4, -4) (left-1) {};
+				\node[PUNTO] at (-2, -4) (left-2) {};
+
+				\node [above=of top-1, yshift=-25pt] {$S$};
+				\node [above=of top-2, yshift=-25pt] {$A$};
+
+				\draw[-] (top-1) -- (left-1);
+				\draw[-] (right-1) -- (top-1);
+				\draw[-] (top-2) -- (left-2);
+				\draw[-] (right-2) -- (top-2);
+				\draw[-] (left-1) -- (left-2);
+				\draw[-] (right-1) -- (right-2);
+
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] 
+					([yshift=-5pt] left-1.south) to node[below, yshift=-.5cm] {$u = a^+$} ([yshift=-5pt] left-2.south);
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] 
+					([yshift=-5pt] right-2.south) to node[below, yshift=-.5cm] {$y = c^+$} ([yshift=-5pt] right-1.south);
+			\end{tikzpicture}
+		\end{subfigure}
+		\begin{subfigure}{.3\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					PUNTO/.style={minimum size=0, inner sep=0, outer sep=0}, 
+					scale=0.45, 
+					every node/.style={transform shape}
+				]
+				\node[PUNTO] at (0, 0) (top-1) {};
+				\node[PUNTO] at (0, -2) (top-2) {};
+
+				\node[PUNTO] at (4, -4) (right-1) {};
+				\node[PUNTO] at (2, -4) (right-2) {};
+
+				\node[PUNTO] at (-4, -4) (left-1) {};
+				\node[PUNTO] at (-2, -4) (left-2) {};
+
+				\node [above=of top-1, yshift=-25pt] {$A$};
+				\node [above=of top-2, yshift=-25pt] {$A$};
+
+				\draw[-] (top-1) -- (left-1);
+				\draw[-] (right-1) -- (top-1);
+				\draw[-] (top-2) -- (left-2);
+				\draw[-] (right-2) -- (top-2);
+				\draw[-] (left-1) -- (left-2);
+				\draw[-] (right-1) -- (right-2);
+
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] 
+					([yshift=-5pt] left-1.south) to node[below, yshift=-.5cm] {$v = a^i$} ([yshift=-5pt] left-2.south);
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] 
+					([yshift=-5pt] right-2.south) to node[below, yshift=-.5cm] {$x = b^i$} ([yshift=-5pt] right-1.south);
+			\end{tikzpicture}
+		\end{subfigure}
+		\begin{subfigure}{.3\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					PUNTO/.style={minimum size=0, inner sep=0, outer sep=0}, 
+					scale=0.45, 
+					every node/.style={transform shape}
+				]
+				\node[PUNTO] at (0, 0) (top-1) {};
+				\node[PUNTO] at (0, -2) (top-2) {};
+
+				\node[PUNTO] at (2, -3) (right-1) {};
+
+				\node[PUNTO] at (-2, -3) (left-1) {};
+
+				\node [above=of top-1, yshift=-25pt] {$A$};
+
+				\draw[-] (top-1) -- (left-1);
+				\draw[-] (right-1) -- (top-1);
+				\draw[-] (left-1) -- (right-1);
+
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] 
+					([yshift=-5pt] left-1.south) to node[below, yshift=-.5cm] {$w = a^+ b^+$} ([yshift=-5pt] right-1.south);
+			\end{tikzpicture}
+		\end{subfigure}
+	\end{figure}
+	% fig 17.4
+	Nella stringa $\beta$ la maggior parte delle $b$ è ottenuta replicando il secondo sottoalbero.
+
+	Partiamo invece da una stringa
+	$$ z' = a^{m + m!} b^m c^m $$
+	e marco tutte le $c$.
+	Scomponiamola in
+	$$ u' v' w' x' y' $$
+	e utilizzando i ragionamenti di prima mostriamo che $v' = b^j$ e $x' = c^j$ e ripetendo $i$ volte $v'$ e $x'$ otteniamo
+	$$ a^{m + m!} b^{m + (i - 1)j} c^{m + (i - 1)j} $$
+	e scegliendo $i = 1 + \frac{m!}{j}$ come prima otteniamo $\beta$.
+	Come prima possiamo immaginare alberi di forma
+	% fig 17.5
+	\begin{figure}[H]
+		\centering
+		\begin{subfigure}{.3\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					PUNTO/.style={minimum size=0, inner sep=0, outer sep=0}, 
+					scale=0.45, 
+					every node/.style={transform shape}
+				]
+				\node[PUNTO] at (0, 0) (top-1) {};
+				\node[PUNTO] at (0, -2) (top-2) {};
+
+				\node[PUNTO] at (4, -4) (right-1) {};
+				\node[PUNTO] at (2, -4) (right-2) {};
+
+				\node[PUNTO] at (-4, -4) (left-1) {};
+				\node[PUNTO] at (-2, -4) (left-2) {};
+
+				\node [above=of top-1, yshift=-25pt] {$S$};
+				\node [above=of top-2, yshift=-25pt] {$A'$};
+
+				\draw[-] (top-1) -- (left-1);
+				\draw[-] (right-1) -- (top-1);
+				\draw[-] (top-2) -- (left-2);
+				\draw[-] (right-2) -- (top-2);
+				\draw[-] (left-1) -- (left-2);
+				\draw[-] (right-1) -- (right-2);
+
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] 
+					([yshift=-5pt] left-1.south) to node[below, yshift=-.5cm] {$u' = a^+$} ([yshift=-5pt] left-2.south);
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] 
+					([yshift=-5pt] right-2.south) to node[below, yshift=-.5cm] {$y' = c^+$} ([yshift=-5pt] right-1.south);
+			\end{tikzpicture}
+		\end{subfigure}
+		\begin{subfigure}{.3\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					PUNTO/.style={minimum size=0, inner sep=0, outer sep=0}, 
+					scale=0.45, 
+					every node/.style={transform shape}
+				]
+				\node[PUNTO] at (0, 0) (top-1) {};
+				\node[PUNTO] at (0, -2) (top-2) {};
+
+				\node[PUNTO] at (4, -4) (right-1) {};
+				\node[PUNTO] at (2, -4) (right-2) {};
+3
+				\node[PUNTO] at (-4, -4) (left-1) {};
+				\node[PUNTO] at (-2, -4) (left-2) {};
+
+				\node [above=of top-1, yshift=-25pt] {$A'$};
+				\node [above=of top-2, yshift=-25pt] {$A'$};
+
+				\draw[-] (top-1) -- (left-1);
+				\draw[-] (right-1) -- (top-1);
+				\draw[-] (top-2) -- (left-2);
+				\draw[-] (right-2) -- (top-2);
+				\draw[-] (left-1) -- (left-2);
+				\draw[-] (right-1) -- (right-2);
+
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] 
+					([yshift=-5pt] left-1.south) to node[below, yshift=-.5cm] {$v' = b^j$} ([yshift=-5pt] left-2.south);
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] 
+					([yshift=-5pt] right-2.south) to node[below, yshift=-.5cm] {$x' = c^j$} ([yshift=-5pt] right-1.south);
+			\end{tikzpicture}
+		\end{subfigure}
+		\begin{subfigure}{.3\textwidth}
+			\centering
+			\begin{tikzpicture}[
+					PUNTO/.style={minimum size=0, inner sep=0, outer sep=0}, 
+					scale=0.45, 
+					every node/.style={transform shape}
+				]
+				\node[PUNTO] at (0, 0) (top-1) {};
+
+				\node[PUNTO] at (2, -3) (right-1) {};
+
+				\node[PUNTO] at (-2, -3) (left-1) {};
+
+				\node [above=of top-1, yshift=-25pt] {$A'$};
+
+				\draw[-] (top-1) -- (left-1);
+				\draw[-] (right-1) -- (top-1);
+				\draw[-] (left-1) -- (right-1);
+
+				\draw[decorate, decoration={brace, mirror, amplitude=0.2cm}] 
+					([yshift=-5pt] left-1.south) to node[below, yshift=-.5cm] {$w' = b^+ c^+$} ([yshift=-5pt] right-1.south);
+			\end{tikzpicture}
+		\end{subfigure}
+	\end{figure}
+	Qui ancora la maggior parte delle $b$ è generata dal secondo albero.
+	Ma visto che l'albero di $A$ genera anche $a$ e l'albero di $A'$ genera anche $c$ i due sono per forza diversi.
+\end{proof}
+
+Possiamo dare una definizione analoga di ambiguità per gli automi a pila.
+\begin{definizione}
+	Un PDA è ambiguo se esiste una stringa con due computazioni accettanti differenti.
+\end{definizione}
+\`E facile vedere attraverso la trasformazione da grammatica ad automa che il numero di computazioni diverse è uguale al numero di alberi leftmost diversi, visto che si simulava la derivazione leftmost.
+Dal lato opposto è più difficile da mostrare e soprattutto la trasformazione non preserva il grado di ambiguità.
+\begin{figure}[H]
+	\centering
+	\begin{tikzpicture}
+		\draw[->] (-1, 0) -- (-1, 4) node[left, yshift=-0.2cm] {\rotatebox{90}{\tiny pila}};
+		\draw[->] (-1, 0) -- (7, 0) node[below, xshift=-0.2cm] {\tiny input};
+
+		\node at (0, 0) [circle,fill,inner sep=1.5pt] {};
+		\node at (1.5, 0) [circle,fill,inner sep=1.5pt] {};
+		\node at (3, 0) [circle,fill,inner sep=1.5pt] {};
+		\node at (4.5, 0) [circle,fill,inner sep=1.5pt] {};
+		\node at (6, 0) [circle,fill,inner sep=1.5pt] {};
+
+		\tikzmath {
+			real \x, \rand, \precx, \precy;
+			\precx = 0;
+			\precy = 0;
+			for \x in {0.2,0.4,...,1.3} {
+				\rand = 1 + (random(0, 100) / 66);
+				{ \draw[-] (\precx, \precy) -- (\x, \rand); };
+				\precx = \x;
+				\precy = \rand;
+			};
+			{ \draw[-] (\precx, \precy) -- (1.5, 0); };
+			\precx = 1.5;
+			\precy = 0;
+			for \x in {1.7,1.9,...,2.8} {
+				\rand = 1 + (random(0, 100) / 66);
+				{ \draw[-] (\precx, \precy) -- (\x, \rand); };
+				\precx = \x;
+				\precy = \rand;
+			};
+			{ \draw[-] (\precx, \precy) -- (3, 0); };
+			\precx = 3;
+			\precy = 0;
+			for \x in {3.2,3.4,...,4.3} {
+				\rand = 1 + (random(0, 100) / 66);
+				{ \draw[-] (\precx, \precy) -- (\x, \rand); };
+				\precx = \x;
+				\precy = \rand;
+			};
+			{ \draw[-] (\precx, \precy) -- (4.5, 0); };
+			\precx = 4.5;
+			\precy = 0;
+			for \x in {4.7,4.9,...,5.8} {
+				\rand = 1 + (random(0, 100) / 66);
+				{ \draw[-] (\precx, \precy) -- (\x, \rand); };
+				\precx = \x;
+				\precy = \rand;
+			};
+			{ \draw[-] (\precx, \precy) -- (6, 0); };
+		}
+	\end{tikzpicture}
+\end{figure}
+Si può vedere dal grafico infatti che la pila può essere scomposta in vari modi equivalenti ($1(2(34))$, $(12)(34)$, $(((1)2)3)4$, e così via). % chiarisco meglio
+Quindi parlare di ambiguità negli automi a pila e nelle grammatiche di tipo 2 è equivalente.
+E di conseguenza un linguaggio inerentemente ambiguo avrà sia grammatica che automa a pila ambigui.
+
+Perché un automa a pila ammetta ambiguità questo deve per forza essere nondeterministico.
+Quindi
+$$ \mathcal{L} = \{ a^p b^q c^r \mid p = q \vee q = r \} $$
+necessita il nondeterminismo.
+
+Richiamiamo la definizione di automa a pila deterministico:
+$$ M = \langle Q, \Sigma, \Gamma, \delta, q_0, Z_0, F \rangle $$
+è deterministico se ad ogni passo possiamo fare una singola scelta, cioè sse
+\begin{itemize}
+	\item $\forall q \in Q, A \in \Gamma \mid \delta(q, \varepsilon, A) \neq \varnothing \Rightarrow \forall a \in \Sigma \delta(q, a, A) = \varnothing $
+	\item $\forall q \in Q, A \in \Gamma, a \in \Sigma \cup \{ \varepsilon \} \mid | \delta(q, a, A) | = 1 $
+\end{itemize}
+mostriamo ora che i due criteri di accettazione sono diversi per automi deterministici, specificamente la accettazione per pila vuota è più debole.
+Supponiamo infatti di avere un automa a pila che accetta per pila vuota il linguaggio regolare $(aa)^+$.
+Siccome l'automa deve accettare $aa$ dopo questa avrà la pila vuota.
+Ma da una pila vuota non può più continuare, quindi non può accettare $aaaa$ ad esempio.
+Quindi i linguaggi che accetta sono tutti quelli le cui stringhe non hanno come prefissi altre stringhe del linguaggio, perché nel riconoscere il prefisso svuoterà la pila e non potrà più andare avanti.
+Questi in teoria dei codici sono detti codici prefissi e contengono alcuni regolari e alcuni context free.
+
+Di solito si ovvia a questo utilizzando un simbolo finale non nel linguaggio, ad esempio $(aa)^+ \#$, in modo tale che la pila non si svuoti completamente prima di arrivare al marcatore finale.
+
+Quindi da ora in poi quando parliamo di DCFL, cioè i linguaggi CF deterministici, intendiamo i linguaggi riconosciuti per stati finali.
+Questi contengono per forza i linguaggi regolari, perché semplicemente possiamo non utilizzare la pila.
+Vale che
+$$ \text{Reg} \subset \text{DCFL} \subset \text{CFL} $$
+perché $\{ a^p b^q c^r \mid p = q \vee q = r \} \in \text{CFL}$ ma $\not \in \text{DCFL}$.
+
+Abbiamo visto che l'ambiguità necessità del nondeterminismo.
+Possiamo chiederci l'inverso, cioè se un linguaggio necessita del nondeterminismo allora questo è per forza ambiguo.
+Un linguaggio che necessita del nondeterminismo è quello dei palindromi (non ancora dimostrato), o -- per semplicità -- dei palindromi pari
+$$ L = \{ w w^R \mid w \in \{a, b\}^* \} $$
+L'automa deve ``scommettere'' su quando è arrivato a metà , quindi il nondeterminismo è necessario, ma la metà è una sola, qiundi non è ambiguo.
+\`E anche facile vederlo dalla grammatica che è
+	$$ S \rightarrow a S a \mid b S b \mid \varepsilon $$
+Quindi il nondeterminismo non implica la ambiguità.
+
+Non studieremo il determinismo per le grammatiche perché questo è più strano e ammette miriadi di classi diverse.
+
+\section{Operazioni e chiusura con i linguaggi CF}
+\begin{table}[H]
+	\centering
+	\begin{longtblr}[
+			note{1} = {Risultati non mostrati a lezione},
+			caption = Chiusura delle opreazioni,
+			entry = none
+		]{ colspec = {|c|c|c|}}
+		\hline
+		Operazione & CFL? & DCFL? \\
+		\hline
+		Unione & Sì & No \\
+		\hline
+		Intersezione & No & No \\
+		\hline
+		Intersezione con un regolare & Sì & Sì \\
+		\hline
+		Complemento & No & Sì \\
+		\hline
+		Prodotto & Sì & No \\
+		\hline
+		Chiusura di Kleene & Sì & No \\
+		\hline
+		Morfismo & Sì & No \\
+		\hline
+		Sostituzione & Sì & No \\
+		\hline
+		Reversal\TblrNote{1} & Sì & No \\	% idk l'ha detto e basta
+		\hline
+		Shuffle\TblrNote{1} & No & No  \\	% idk l'ha detto e basta
+		\hline
+	\end{longtblr}
+\end{table}
+
+\paragraph{Unione} Date due grammatiche $G' = \langle V', \Sigma, P', S' \rangle$ e $G'' = \langle V'', \Sigma, P'', S'' \rangle$ con $V' \cap V'' = \varnothing$, definiamo la unione delle due come 
+$$ G = \langle V' \cup V'' \cup \{ S \}, \Sigma, P' \cup P'' \cup \{ S \rightarrow S', S \rightarrow S'' \}, S \rangle $$
+e nel caso degli automi possiamo fare la scelta all'inizio.
+La unione è chiusa per i CFL e non chiusa per i CDFL, infatti dati $L' = \{ a^n b^n c^m \} \in \text{DCFL}$ e $L'' = \{ a^m b^n c^n \} \in \text{DCFL}$ la loro unione $L' \cup L'' = \{ a^p b^q c^r \mid p = q \vee q = r \}$ è ambigua, quindi nondeterministica.
+
+\paragraph{Intersezione} La intersezione non è chiusa, infatti $L' \cap L'' = \{ a^n b^n c^n \}$ che abbiamo dimostrato che non è CF.
+Inoltre non possiamo utilizzare il metodo dei FSA di far andare in parallelo i due automi, qui i due due automi interferirebbero nel loro utilizzo della pila.
+
+\paragraph{Intersezione con un regolare} Possiamo usare il metodo degli FSA di far andare in parallelo i due automi, quindi incorporo nel controllo del PDA l'FSA.
+
+\paragraph{Complemento} Se il complemento fosse chiuso, potremmo ottenere una intersezione chiusa attraverso l'unione e De Morgan, quindi il complemento deve per forza non essere chiuso.
+Il complemento per i deterministici invece è chiuso.
+% lezione 18
+\begin{tcolorbox}[breakable]
+	Esibiamo ora un controesempio che mostra che il complemento non è chiuso rispetto ai CF.
+	Prendiamo il linguaggio
+	$$ L = \{ x \in \{a, b\}^* \mid \forall w : x \neq w w \} \in \text{CF} $$
+	il complemento di questo è
+	$$ L^C = \{ w w \mid w \in \{a, b\}^* \} $$
+	che come abbiamo già mostrato in passato non è context free.	% ci dovrebbe essere un esercizio in cui mostriamo che il linguaggio L è CF
+
+	Per completezza mostriamo anche che $L$ sia effettivamente CF costruendo un automa a pila che lo riconosce.
+	Questo -- molto brevemente -- scommette sulla posizione dei due caratteri diversi.
+	\begin{center}
+		\begin{tikzpicture}[
+				PUNTO/.style={minimum size=0, inner sep=0, outer sep=0}, 
+			]
+			\node[PUNTO] at (0, 0) (left) {};
+			\node[PUNTO] at (4, 0) (middle) {};
+			\node[PUNTO] at (8, 0) (right) {};
+
+			\node[PUNTO, label=below:{\tiny $i$}] at (1, 0) (i) {};
+			\node[PUNTO, label=below:{\tiny $i + n$}] at (5, 0) (in) {};
+
+			\draw (i) circle[radius=2pt];
+			\draw (in) circle[radius=2pt];
+
+			\draw[|-|] (left) -- node {\tiny $|$} (right);
+
+			\draw[decorate, decoration={brace, mirror, amplitude=.2cm}] ([yshift=-.35cm]left.south) to node[below, yshift=-.2cm] {\tiny $n'$} ([yshift=-.35cm]i.south);
+			\draw[decorate, decoration={brace, mirror, amplitude=.2cm}] ([yshift=-.35cm]i.south) to node[below, yshift=-.2cm] {\tiny $n$} ([yshift=-.35cm]in.south);
+			\draw[decorate, decoration={brace, mirror, amplitude=.2cm}] ([yshift=-.35cm]in.south) to node[below, yshift=-.2cm] {\tiny $n''$} ([yshift=-.35cm]right.south);
+			\draw[decorate, decoration={brace, amplitude=.2cm}] ([yshift=.2cm]left.north) to node[above, yshift=.2cm] {\tiny $n$} ([yshift=.2cm]middle.north);
+			\draw[decorate, decoration={brace, amplitude=.2cm}] ([yshift=.2cm]middle.north) to node[above, yshift=.2cm] {\tiny $n$} ([yshift=.2cm]right.north);
+		\end{tikzpicture}
+	\end{center}
+	con $n' + n'' = n$ e $w_i \neq w_{i + n}$.
+	Più precisamete l'automa segue le seguenti fasi
+	\begin{enumerate}
+		\item sulla pila viene contato $n'$.
+		\item si sceglie nondeterministicamente un terminale $\sigma$ e si iniziano a togliere i $n'$ simboli accumulati finché non si svuota la pila.
+		\item a questo punto si ricomincia a contare sulla pila fino a che non si sceglie un secondo terminale $\rho$ che deve essere differente.
+		\item si ricomincia a togliere i simboli $n''$ dalla pila consumando l'input
+		\item deve valere che alla fine dell'input sia vuota anche la pila e viceversa, affinché $n' + n'' = n$
+	\end{enumerate}
+\end{tcolorbox}
+
+\begin{lemma}
+	I DCFL sono chiusi rispetto al complemento.
+\end{lemma}
+Uno dei problemi con gli automi a pila è che questi possono non terminare.
+Infatti utillizzando le $\varepsilon$-mosse l'automa può continuare a far oscillare la pila o far crescere la pila all'infinito.
+Visto però che gli stati e i simboli della pila sono finiti, data una configurazione di superficie (\textit{surface configuration}, o lo stato e il simbolo in cima alla pila) capire se ci sarà un ciclo infinito è decidibile, e consiste banalmente nel controllare se lo stesso stato e simbolo di pila si ripetono senza consumare input.
+
+Inoltre visto che sono ammesse le $\varepsilon$-mosse, in un automa che accetta per stato finale, può accadere che una volta che l'input è finito l'automa continui a fare mosse, e addirittura può finire in un ciclo infinito.
+In ogni caso se c'è almeno uno stato finale tra quelli che visita dopo la fine dell'input, allora l'input è accettato.
+
+\begin{lemma}
+	Supponiamo che
+	$$ M = \langle Q, \Sigma, \Gamma, \delta, q_0, Z_0, F \rangle $$
+	sia un automa a pila deterministico.
+	Costruiamo 
+	$$ M' = \langle Q', \Sigma, \Gamma', \delta', q_0', X_0, F' \rangle $$
+	tale che
+	$$ L(M) = L(M') $$
+	ed $M'$ scandisce sempre l'intero input.
+\end{lemma}
+\begin{proof}
+	Definiamo l'automa $M'$ tale che
+	\begin{itemize}
+		\item $Q' = Q \cup \{q_0', d, f \}$, con $d$ detto \textit{stato trappola}
+		\item $\Gamma' = \Gamma \cup \{X_0\} $
+		\item $F' = F \cup \{ f \} $
+	\end{itemize}
+	e definiamo le mosse che fa l'automa
+	\begin{itemize}
+		\item $\delta'(q_0', \varepsilon, X_0) = (q_0, Z_0X_0)$, cioè -- come in altre costruzioni -- ``infiliamo'' in fondo alla pila un nostro simbolo.
+			Questo è necessario perché la prossima mossa potrebbe non essere definita perché si è svuotata la pila.
+		\item mostriamo ora alcune regole particolari che portano allo stato trappola
+			\begin{itemize}
+				\item se in una certa configurazione di superficie dell'automa $M$ non esiste una prossima mossa definita, cioè se
+					$$\delta(q, a, X) = \delta(q, \varepsilon, X) = \varnothing, \hspace{1cm} q \in Q, a \in \Sigma, X \in \Gamma$$
+					allora nell'automa $M'$ finisco nello stato trappola
+					$$\delta'(q, a, X) = (d, X)$$
+				\item se nell'automa $M$ la pila si è svuotata e non potrei pià fare mosse nell'automa $M'$ finisco nello stato trappola
+					$$\delta'(q, a, X_0) = (d, X_0),\hspace{1cm}q \in Q', a \in \Sigma$$
+				\item nello stato trappola consumo l'input e rimango nello stato trappola
+					$$\delta'(d, a, X) = (d, X),\hspace{1cm}a \in \Sigma, X \in \Gamma'$$
+				\item se da $(q, X)$, con $q \in Q$ e $X \in \Gamma$ è possibile un loop di $\varepsilon$-mosse
+					$$\delta'(q, \varepsilon, X) = 
+					\begin{cases}
+						(d, X) & \text{se il loop non visita stati finali} \\
+						(f, X) & \text{altrimenti}
+					\end{cases}
+					$$
+				\item se sono nello stato finale $f$ e posso ancora leggere input, allora non sono alla fine quindi mi sposto nello stato trappola
+					$$\delta'(f, a, X) = (d, X), \hspace{1cm}a \in \Sigma, X \in \Gamma'$$
+			\end{itemize}
+		\item in tutti gli altri casi $\delta'(q, a, X) = \delta(q, a, X)$ con $q \in Q, a \in \Sigma \cup \{\varepsilon\}, X \in \Gamma$
+	\end{itemize}
+\end{proof}
+
+\begin{proof}[Automa per il complemento]
+Sia 
+$$ M = \langle Q, \Sigma, \Gamma, \delta, q_0, Z_0, F \rangle $$
+un DPDA che accetta $L$ e scandisce sempre l'intero input.
+Costruiamo l'automa per il complemento
+$$ M' = \langle Q', \Sigma, \Gamma, \delta', q_0', Z_0, F' \rangle $$
+con 
+\begin{itemize}
+	\item $Q' = Q \times \{y, n, A \}$, dove $y, n, A$ servono a ricordare se nell'ultima sequenza di $\varepsilon$-mosse ho visto uno stato finale, rispettivamente:
+		\begin{itemize}
+			\item $y$ indica che nell'attuale stato della sequenza di $\varepsilon$-mosse è stato visitato uno stato finale.
+			\item $n$ indica che nell'attuale stato della sequenza di $\varepsilon$-mosse non è stato visitato uno stato finale.
+			\item $A$ indica che non ho visitato uno stato finale e non posso fare alcuna mossa.
+		\end{itemize}
+	\item $F' = Q \times \{ A \}$, cioè tutti gli stati in cui non posso procedere e non ho visitato uno stato finale
+\end{itemize}
+Definiamo ora $\delta'$ come
+\begin{itemize}
+	\item se $\delta(q, \varepsilon, X) = (p, \gamma)$ allora 
+		\begin{itemize}
+			\item $\delta'([q, y], \varepsilon, X) = ([p, y], \gamma)$, quindi se in passato ho visitato uno stato finale, continuo a ricordare che ho visitato uno stato finale.
+			\item se non ho ancora visto uno stato finale, e il prossimo lo è, cambio $n$ a $y$ 
+				$$\delta'([q, n], \varepsilon, X) = \begin{cases} ([p, n], \gamma) & \text{se } p \not \in F \\ ([p, y], \gamma) & \text{se } p \in F \end{cases}$$
+		\end{itemize}
+	\item se $\delta(q, a, X) = (p, \gamma)$ con $a \in \Sigma$, allora
+		\begin{itemize}
+			\item se ero in uno stato $y$ e consumo dell'input e finisco in uno stato non finale, cambio $y$ a $n$
+				$$\delta'([q, y], a, X) = \begin{cases} ([p, n], \gamma) & \text{se } p \not \in F \\ ([p, y], \gamma) & \text{se } p \in F \end{cases}$$
+			\item alternativametne se ero in uno stato $n$ spezzo la mossa in due parti
+				\begin{align*}
+					\delta'([q, n], \varepsilon, X) &= ([q, A], X) \\
+					\delta'([q, A], a, X) &= \begin{cases} ([p, n], \gamma) & \text{se } p \not \in F \\ ([p, y], \gamma) & \text{se } p \in F \end{cases}
+				\end{align*}
+				cioè prima di consumare dell'input assumo di aver finito la stringa senza esser passato per stati finali nella sequenza di $\varepsilon$-mosse.
+				Se c'è ancora in input trasformo lo $A$ in $y$ o $n$.
+		\end{itemize}
+\end{itemize}
+Infine definiamo
+$$ q_0' = \begin{cases} [q_0, n] & \text{se } q_0 \not \in F \\ [q_0, y] & \text{se } q_0 \in F \end{cases} $$
+\end{proof}
+
+Dalla costruzione di sopra si vede che le $\varepsilon$-mosse sono molto fastidiose.
+Come abbiamo visto attraverso la trasformazione in GNF nel caso di PDA si può fare a meno delle $\varepsilon$-mosse a patto di sacrificare la parola vuota.
+Lo stesso non vale nel caso di DPDA, e senza $\varepsilon$-mosse otteniamo un modello meno potente.
+
+Dai linguaggi 
+\begin{align*}
+	L' &= \{ a^i b^j c^k \mid i = j \} \\
+	L'' &= \{ a^i b^j c^k \mid j = k \}
+\end{align*}
+Definiamo il linguaggio 
+$$ L_0 = L' \cup dL'' \in DCFL $$
+in base a se la stringa inizia con una $d$ o no sappiamo se dobbiamo riconoscere una parola di $L'$ o di $L''$.
+
+\paragraph{Prodotto} Non deterministicamente quando un automa arriva in fondo faccio partire l'automa successivo.
+Questo si può fare anche in termini di grammatiche, date $G' = \langle V', \Sigma, P', S' \rangle$ e $G'' = \langle V'', \Sigma, P'', S'' \rangle$ con $V' \cap V'' = \varnothing$ creiamo
+$$ G = \langle V' \cup V'' \cup \{ S \}, \Sigma, P' \cup P'' \cup \{ S \rightarrow S' S'' \}, S \rangle $$
+Per il caso deterministico utilizziamo $L_0$ di prima % ref
+e definiamo
+$$ L' = \{ \varepsilon, d \} \cdot L_0 = \{ d^s a^i b^j c^k \mid 0 \leq s \leq 2 \} $$
+con 
+$$\begin{cases} s = 0 & i = j \\ s = 2 & j = k \\ s = 1 & i = j \vee j = k \end{cases}\} $$
+Per mostrare che è ambiguo prendiamo
+$$ L' \cap d a^* b^* c^* = \{ d a^i b^j c^k \mid i = j \vee j = k \} \not \in \text{DCFL}$$
+con $d a^* b^* c^*$ regolare, visto che i deterministici sono chiusi rispetto all'intersezione con regolari, $L'$ non può essere deterministico.
+Inoltre $\{\varepsilon, d\}$ è finito, quindi non solo i linguaggi deterministici non sono chiusi rispetto al prodotto, ma non sono chiusi neanche rispetto al prodotto a sinistra con linguaggi finiti.
+
+Si può mostrare però che i DCFL sono chiusi rispetto al prodotto a destra con regolari, cioè dati $L \in \text{DCFL}$ e $R \in \text{Reg}$ il prodotto $L \cdot R \in \text{DCFL}$.
+Questa costruzione è simile al prodotto per gli automi a stati finiti.
+
+\paragraph{Chiusura di Kleene -- star} Questo costruzione è molto simile al prodotto. 
+Data la grammatica $G' = \langle V', \Sigma, P', S' \rangle$, costruiamo
+$$ G = \langle V' \cup \{ S \}, \Sigma, P' \cup \{ S \rightarrow \varepsilon, S \rightarrow S' S \}, S \rangle $$
+Nel caso dei deterministici prendiamo ancora $L_0$ e analizziamo
+$$ L_0^* \cap d a^* b^* c^* = d (L_1 \cup L_2) $$
+infatti questo ha stringhe della forma
+$$ da^ib^jc^k $$
+tali che
+\begin{itemize}
+	\item $dL_2$, per cui $j = k$
+	\item o il prodotto $d \in L_2$ per $a^i b^j c^j \in L_1$, per cui $i = j$
+\end{itemize}
+ma questo abbiamo visto che non è deterministico, quindi $L_0^*$ non è chiuso rispetto alla star.
+
+\paragraph{Morfismo} Per ogni terminale $a \in \Sigma$, lo sostituisco con una stringa $w \in \Delta^*$ utilizzando una funzione
+$$ h : \Sigma \rightarrow \Delta^* $$
+Per questo basta sostituire i terminali in ogni produzione.
+
+Nel caso dei deterministici  prendiamo 
+\begin{align*}
+	L' &= \{ a^i b^j c^k \mid i = j \} \\
+	L'' &= \{ a^i b^j c^k \mid j = k \} 
+\end{align*}
+e sappiamo che $L', L'' \in \text{DCFL}$, e che $L' \cup L'' \not \in \text{DCFL}$.
+Mentre vale che $L_0 = L' \cup dL'' \in \text{DCFL}$.
+Prendiamo il morfismo
+$$ h(\sigma) = \begin{cases} \sigma & \text{se } \sigma \neq d \\ \varepsilon & \text{altrimenti} \end{cases} $$
+vale che $h(L_0) = L' \cup L'' \not \in \text{DCFL}$, quindi i determinisici non sono chiusi rispetto al morfismo.
+
+\paragraph{Sostituzione} Ad ogni terminale associamo un linguaggio, utilizzando una funzione
+$$ s : \Sigma \rightarrow 2^{\Delta^*} $$
+Se $L \in \text{CFL}$ e $\forall a \in \Sigma \mid s(a) \in \text{CFL}$, allora $s(L) \in \text{CFL}$.
+Molto ad alto livello ad ogni terminale corrisponde una grammatica, nelle produzioni sostituiamo ai terminali l'assioma della grammatica.
+
+Visto che il morfismo è un caso particolare della sostituzione, i determinisitici non sono chiusi rispetto alla sostituzione.
 
  
 \end{document}
