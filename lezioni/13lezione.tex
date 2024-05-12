@@ -1,0 +1,421 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{cancel}
+\usepackage{caption}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage{float}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{subcaption}
+\usepackage{tabularray}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata, chains, scopes, decorations.text, patterns, decorations.pathmorphing, positioning, decorations.pathreplacing, calligraphy}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\newtheorem{teorema}{Teorema}
+\newtheorem{corollario}{Corollario}
+\newtheorem{proposizione}{Proposizione}
+\newtheorem{proprietà}{Proprietà}
+\newtheorem{lemma}{Lemma}
+\newtheorem{fatto}{Fatto}
+\newtheorem{definizione}{Definizione}
+\newtheorem{nota}{Nota}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage{teolang}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+
+\section{Grammatiche di tipo 2}
+Una grammatica è formata da quattro elementi:
+$$ G = \langle V, \Sigma, P, S \rangle $$
+e nello specifico, in quelle di tipo 2 le produzioni hanno la forma
+$$ A \rightarrow \alpha \hspace{1cm} A \in V, \alpha \in (V \cup \Sigma)^* $$
+
+Una rappresentazione utile per le derivazioni di linguaggi CF sono gli alberi, ad esempio data $w \in L(G)$, allora $S \overset{*}{\Rightarrow} w$.
+Questa derivazione io la possono rappresentare come un albero di derivazione, o albero di parsing, o ancora parse tree.
+Questo è un albero 
+\begin{itemize}
+	\item con radice etichettata con il simbolo iniziale della grammatica
+	\item le foglie da sinistra a destra sono $w$
+	\item i nodi possono essere di tre tipi:
+		\begin{itemize}
+			\item variabili, per i nodi interni
+			\item terminali, per le foglie
+			\item $\epsilon$ la parola vuota, in casi speciali per le foglie
+		\end{itemize}
+\end{itemize}
+Dato un nodo
+\begin{center}
+	\begin{tikzpicture}
+		\node {$A$}
+		child { node {$X_1$} }
+		child { node {$X_2$} }
+		child { node {$\dots$} }	% non disegno il nodo
+		child { node {$X_k$} };
+	\end{tikzpicture}
+\end{center}
+rappresenta l'applicazione della regola di produzione
+$$ A \rightarrow X_1 X_2 \dots X_k \in P \hspace{1cm} A \in V, \forall i \in 1, \dots, k \mid X_i \in V \cup \Sigma $$
+All'ultimo livello possiamo avere nodi
+\begin{center}
+	\begin{tikzpicture}
+		\node {$A$}
+		child { node {$\epsilon$} };
+	\end{tikzpicture}
+\end{center}
+solo se $A \rightarrow \epsilon \in P$.
+
+Abbiamo detto che gli automi a pila riconoscono linguaggi con ricorsione, dove questa nell'automa si esprime nella memoria a pila, nelle grammatiche si esprime nella struttura ad albero.
+
+\begin{tcolorbox}
+	Definiamo la grammatica per le parentesi correttamente bilanciate
+	\begin{align*}
+		S &\rightarrow \epsilon \\
+		S &\rightarrow ( S ) \\
+		S &\rightarrow S S
+	\end{align*}
+	prendiamo ora la stringa $w = (())()()$ e scriviamone la derivazione
+	\begin{align*}
+		S &\Rightarrow S S  \\
+		  &\Rightarrow S S S  \\
+		  &\Rightarrow ( S ) S S  \\
+		  &\Rightarrow ( S ) ( S ) S  \\
+		  &\Rightarrow ( S ) ( S ) ( S )  \\
+		  &\Rightarrow ( ( S ) ) ( S ) ( S )  \\
+		  &\Rightarrow ( ( S ) ) ( S ) ( )  \\
+		  &\Rightarrow ( ( S ) ) ( ) ( )  \\
+		  &\Rightarrow ( ( ) ) ( ) ( )  \\
+	\end{align*}
+	\begin{center}
+		\begin{tikzpicture}
+			\node {$S$}
+			child { node {$S$} 
+				child { node {$S$} 
+					child { node {$($} }
+					child { node {$S$} 
+						child { node {$($} }
+						child { node {$S$} 
+							child { node {$\epsilon$} }
+						}
+						child { node {$)$} }
+					}
+					child { node {$)$} }
+				}
+				child { node {$S$}
+					child { node {$($} }
+					child { node {$S$} 
+						child { node {$\epsilon$} }
+					}
+					child { node {$)$} }
+				}
+			}
+			child { node {$S$} 
+				child { node {$($} }
+				child { node {$S$} 
+					child { node {$\epsilon$} }
+				}
+				child { node {$)$} }
+			};
+		\end{tikzpicture}
+	\end{center}
+	Però possiamo notare che per la stessa stringa potevamo fare anche la derivazione
+	\begin{align*}
+		S &\Rightarrow S S  \\
+		  &\Rightarrow ( S ) S  \\
+		  &\Rightarrow ( ( S ) ) S  \\
+		  &\Rightarrow ( ( ) ) S  \\
+		  &\Rightarrow ( ( ) ) S S  \\
+		  &\Rightarrow ( ( ) ) ( S ) S  \\
+		  &\Rightarrow ( ( ) ) ( ) S  \\
+		  &\Rightarrow ( ( ) ) ( ) ( S )  \\
+		  &\Rightarrow ( ( ) ) ( ) ( )  \\
+	\end{align*}
+	e si può notare che questa genera un albero differente
+	\begin{center}
+		\begin{tikzpicture}
+			\node {$S$}
+			child { node {$S$} 
+				child { node {$($} }
+				child { node {$S$} 
+					child { node {$($} }
+					child { node {$S$} 
+						child { node {$\epsilon$} }
+					}
+					child { node {$)$} }
+				}
+				child { node {$)$} }
+			}
+			child { node {$S$} 
+				child { node {$S$} 
+					child { node {$($} }
+					child { node {$S$} 
+						child { node {$\epsilon$} }
+					}
+					child { node {$)$} }
+				}
+				child { node {$S$}
+					child { node {$($} }
+					child { node {$S$} 
+						child { node {$\epsilon$} }
+					}
+					child { node {$)$} }
+				}
+			};
+		\end{tikzpicture}
+	\end{center}
+	Vediamo un'utlima derivazione
+	\begin{align*}
+		S &\Rightarrow S S \\
+		  &\Rightarrow S S S \\
+		  &\Rightarrow ( S ) S S \\
+		  &\Rightarrow ( ( S ) ) S S \\
+		  &\Rightarrow ( ( ) ) S S \\
+		  &\Rightarrow ( ( ) ) ( S ) S \\
+		  &\Rightarrow ( ( ) ) ( ) S \\
+		  &\Rightarrow ( ( ) ) ( ) ( S ) \\
+		  &\Rightarrow ( ( ) ) ( ) ( ) \\
+	\end{align*}
+	e l'albero
+	\begin{center}
+		\begin{tikzpicture}
+			\node {$S$}
+			child { node {$S$} 
+				child { node {$S$} 
+					child { node {$($} }
+					child { node {$S$} 
+						child { node {$\epsilon$} }
+					}
+					child { node {$)$} }
+				}
+				child { node {$S$}
+					child { node {$($} }
+					child { node {$S$} 
+						child { node {$\epsilon$} }
+					}
+					child { node {$)$} }
+				}
+			}
+			child { node {$S$} 
+				child { node {$($} }
+				child { node {$S$} 
+					child { node {$\epsilon$} }
+				}
+			};
+		\end{tikzpicture}
+	\end{center}
+	% faccio in tre subfigure una in fianco all'altra
+	possiamo vedere che questo albero è uguale al primo che abbiamo fatto, anche se le due derivazioni sono apparentemente diverse.
+	Infatti la prima e la terza derivazione utilizzano le stesse sostituzioni, solo in ordine diverso, mentre nel secondo albero applichiamo derivazioni diverse.
+	Nella prima e nella terza derivazione abbiamo una struttura
+	\begin{center}
+		\begin{tikzpicture}
+			\node {$S$}
+			child { node {$S$} 
+				child { node {$S$} }
+				child { node {$S$} }
+			}
+			child { node {$S$} };
+		\end{tikzpicture}
+	\end{center}
+	mentre la seconda ha una struttura
+	\begin{center}
+		\begin{tikzpicture}
+			\node {$S$}
+			child { node {$S$} }
+			child { node {$S$} 
+				child { node {$S$} }
+				child { node {$S$} }
+			};
+		\end{tikzpicture}
+	\end{center}
+\end{tcolorbox}
+Per evitare derivazioni multiple si utilizza un criterio detto di \textit{derivazione leftmost}: una derivazione è lefmost se ogni volta che si fa una sostituzione sostituisco sempre la variabile più a sinistra della forma sentenziale.
+Si può dimostrare che esiste una corrispondenza uno a uno tra derivazioni leftmost e alberi di derivazione.
+La seconda e la terza derivazioni dell'esempio sono due derivazioni leftmost diverse.
+
+Diciamo che una grammatica è ambigua se c'è una stringa che ammette almeno due alberi di derivazione -- o derivazioni leftmost -- diversi.
+
+Nell'esempio di sopra si può vedere anche che ogni sottoalbero è una sequenza bilanciate di parentesi.
+
+\begin{tcolorbox}
+	Se nella grammatica di sopra vorremmo anche le quadre, senza precedenze, questa è facilmente
+	\begin{align*}
+		S &\rightarrow \epsilon \\
+		S &\rightarrow ( S ) \\
+		S &\rightarrow [ S ] \\
+		S &\rightarrow S S
+	\end{align*}
+	Ma se si chiede che le quadre non possano stare all'interno delle tonde
+	\begin{align*}
+		S &\rightarrow T \\
+		S &\rightarrow [ S ] \\
+		S &\rightarrow S S \\
+		T &\rightarrow \epsilon \\
+		T &\rightarrow ( T ) \\
+		T &\rightarrow T T \\
+	\end{align*}
+	e vediamo un albero di derivazione di esempio
+	\begin{center}
+		\begin{tikzpicture}
+			\node {$S$}
+			child { node {$[$} }
+			child { node {$S$} 
+				child { node {$S$} 
+					child { node {$T$} 
+						child { node {$($} }
+						child { node {$T$} 
+							child { node {$\epsilon$} }
+						}
+						child { node {$)$} }
+					}
+				}
+				child { node {$S$} 
+					child { node {$[$} }
+					child { node {$S$} 
+						child { node {$T$}
+							child { node {$\epsilon$} }
+						}
+					}
+					child { node {$]$} };
+				}
+			}
+			child { node {$]$} };
+		\end{tikzpicture}
+	\end{center}
+\end{tcolorbox}
+
+\section{Equivalenza tra grammatiche di tipo 2 ad automi a pila}
+\subsection{Da una grammatica che genera un linguaggio generiamo un automa che riconosce lo stesso}
+Data una grammatica
+$$ G = \langle V, \Sigma, P, S \rangle $$
+di tipo 2, vogliamo costruire
+$$ M = \langle Q, \Sigma, \Gamma, \delta, q, Z_0, \varnothing \rangle $$
+che accetta per pila vuota, con
+\begin{itemize}
+	\item $Q$ formato da un solo stato $\{q\}$
+	\item $\Gamma = \Sigma \cup V$
+	\item $Z_0 = S$
+\end{itemize}
+e $\delta$ definito come
+\begin{itemize}
+	\item se $A \rightarrow \alpha \in P$ allora $(q, \alpha) \in \delta(q, \epsilon, A)$
+	\item $\forall \sigma \in \Sigma$, $\delta(q, \sigma, \sigma) = \{ (q, \epsilon) \}$, quindi si consuma il simbolo in cima alla pila
+\end{itemize}
+
+Si può dimostrare che il linguaggio generato dalla grammatica $L(G)$ è uguale al linguaggio accettato dall'automa per pila vuota $N(M)$.
+
+\begin{tcolorbox}[breakable]
+	Prendiamo
+	$$ G = \langle \{S, T, U\}, \{a, b\}, P, S \rangle $$
+	con $P$ definito
+	\begin{align*}
+		S &\rightarrow TU  \\
+		T &\rightarrow a T b \mid \epsilon \\
+		U &\rightarrow b U a \mid \epsilon \\
+	\end{align*}
+	questo genera
+	$$ L = \{ a^n b^{n + m} a^m \mid n \geq 0, m \geq 0 \} $$
+
+	Scriviamo le transizioni dell'automa corrispondente
+	$$ M = \langle \{q\}, \{a, b\}, \{S, T, U, a, b\}, \delta, q, S, \varnothing \rangle $$
+	con $\delta$ definito come
+	\begin{align*}
+		\delta(q, \epsilon, S) &= \{(q, TU)\} \\
+		\delta(q, \epsilon, T) &= \{(q, a T b), (q, \epsilon) \} \\
+		\delta(q, \epsilon, U) &= \{(q, b U a), (q, \epsilon) \} \\
+		\delta(q, a, a) &= \{(q, \epsilon)\} \\
+		\delta(q, b, b) &= \{(q, \epsilon)\} \\
+	\end{align*}
+	\newpage
+	Prendendo per esempio $w = abbbaa$, vediamo come viene accettata nondeterministicamente
+	\begin{align*}
+		(q, abbbaa, S) &\vdash (q, abbbaa, TU) \\
+		               &\vdash (q, abbbaa, TU) \\
+		               &\vdash (q, abbbaa, aTbU) \\
+		               &\vdash (q, bbbaa, TbU) \\
+		               &\vdash (q, bbbaa, bU) \\
+		               &\vdash (q, bbaa, U) \\
+		               &\vdash (q, bbaa, bUa) \\
+		               &\vdash (q, baa, Ua) \\
+		               &\vdash (q, baa, bUaa) \\
+		               &\vdash (q, aa, Uaa) \\
+		               &\vdash (q, aa, aa) \\
+		               &\vdash (q, a, a) \\
+		               &\vdash (q, \epsilon, \epsilon) \\
+	\end{align*}
+	Leggere la i terminali consumati fino a un certo punto e il contentuto della pila in quel punto restituisce la forma sentenziale durante la derivazione.
+	Questo corrisponde a
+	\begin{align*}
+		S &\Rightarrow T U \\
+		  &\Rightarrow a T b U \\
+		  &\Rightarrow a b U \\
+		  &\Rightarrow a b b U a \\
+		  &\Rightarrow a b b b U a a \\
+		  &\Rightarrow a b b b a a \\
+	\end{align*}
+\end{tcolorbox}
+L'automa a pila tenta di simulare il processo di derivazione leftmost della stringa.
+
+\subsection{Da un automa a pila costruiamo una grammatica di tipo 2}
+% iniziamo a introdurla
+Per la dimostrazione useremo una variazione degli automi a pila che non ne cambia la potenza computazionale.
+In questa forma normale
+\begin{itemize}
+	\item all'inizio la pila contiene un simbolo speciale $Z_0$ che viene mai rimosso e non viene mai aggiunto
+		% lez 13.1
+	\item alla fine l'input è stato letto completamente, la pila contiene solo $Z_0$ e lo stato è finale.
+		% lez 13.2
+	\item le mosse sulla pila possono essere solo
+		\begin{itemize}
+			\item push di un simbolo
+			\item pop di un simbolo
+			\item pila invariata
+		\end{itemize}
+		quindi il pop non è più implicito
+	\item se una mossa legge un simbolo da input, allora non modifica la pila. 
+		Cioè le mosse che manipolano la pila sono seperate da quelle che manipolano l'input.
+\end{itemize}
+In questa forma
+$$ \delta : Q \times (\Sigma \cup \{\epsilon\}) \times \Gamma \rightarrow 2^{Q \times \{-, \text{pop}, a \in \Gamma \mid \text{push}(A)\}} $$
+ed abbiamo che le mosse possono avere le seguenti forme
+\begin{itemize}
+	\item mosse di lettura: $ (p, -) \in \delta(q, a, A) \hspace{1cm} a \in \Sigma \cup \{\epsilon\} $
+	\item pop: $(p, \text{pop}) \in \delta(q, \epsilon , A) $
+	\item push: $(p, \text{push}(B)) \in \delta(q, \epsilon , A) $
+	\item mosse che lasciano la pila invariata: $(p, -) \in \delta(q, \epsilon , A) $
+\end{itemize}
+
+
+\begin{tcolorbox}
+	Ad esempio se avessimo una sequenza di parentesi $([()]())$, la pila contiene inizialmente $Z_0$
+	% lez 13.3
+	questo disegno mostra la natura ricorsiva degli automi.
+\end{tcolorbox}
+
+Gli automi che abbiamo visto fino ad ora possono essere simulati da questa versione normalizzata, scomponendo una mossa una pop ed una serie di push utilizzando degli stati ausiliari.
+
+\end{document}

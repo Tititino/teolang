@@ -1,0 +1,227 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{cancel}
+\usepackage{caption}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage{float}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{subcaption}
+\usepackage{tabularray}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata, chains, scopes, decorations.text, patterns, decorations.pathmorphing, positioning, decorations.pathreplacing, calligraphy}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\newtheorem{teorema}{Teorema}
+\newtheorem{corollario}{Corollario}
+\newtheorem{proposizione}{Proposizione}
+\newtheorem{proprietà}{Proprietà}
+\newtheorem{lemma}{Lemma}
+\newtheorem{fatto}{Fatto}
+\newtheorem{definizione}{Definizione}
+\newtheorem{nota}{Nota}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage{teolang}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+\section{Ambiguità}
+Prendiamo il linguaggio
+$$ \mathcal{L} = \{ a^p b^q c^r \mid p = q \vee q = r \} $$
+sappiamo gli automi pre $a^n b^n c^m$ e per $a^m b^n c^n$, quindi nondeterministicamente all'inizio scegliamo quale strada prendere nell'automa.
+Lo stesso si può fare con una grammatica
+$$ S \rightarrow S' C \mid A S'' $$
+dove $S'$ genera $a^n b^n$
+$$ S' \rightarrow a S' b \mid \varepsilon $$
+e $S''$ genera $b^n c^n$
+$$ S'' \rightarrow b S'' c \mid \varepsilon $$
+e 
+\begin{align*}
+	C &\rightarrow c C \mid \varepsilon \\
+	A &\rightarrow a A \mid \varepsilon \\
+\end{align*}
+% fig 17.1
+vediamo il caso particolare
+% fig 17.2
+e questo corrisponde alla stringa $a^2 b^2 c^2$.
+% fig 17.3
+ma anche questo corrisponde alla stringa $a^2 b^2 c^2$.
+Entrambi gli alberi rappresentano derivazioni leftmost che generano la stessa stringa. % mostro magari le due derivazioni leftmost
+
+Una grammatica viene detta \textit{ambigua} se esiste almeno una stringa che può essere generata in due modi diversi.
+Chiamiamo il \textit{grado di ambiguità} di una stringa $w \in \Sigma^*$ in $G$ è uguale al numero di alberi di derivazione di $w$ in $G$.
+Ed il grado di ambiguità di $G$ è il massimo grado di ambiguità generato dalle stringhe della grammatica.
+
+Non sempre si può trovare una grammatica non ambigua per un linguaggio.
+Esistono linguaggi deti \textit{inerentemente ambigui}, cioè per cui ogni grammatica di tipo 2 che li genera sarà ambigua.
+
+Utilizzando il lemma di Ogden mostreremo che il linguaggio $L$ è interentemente ambiguo.
+
+Mostriamo prima una versione alternativa del lemma
+\begin{lemma}[Lemma di Ogden]
+	Sia $G$ una grammatica CF e sia $L = L(G)$.
+	Esiste una costante $N$ tale che per ogni $z \in L$ con almeno $N$ posizioni marcate possiamo decomporre $z$ in 5 parti
+	$$ z = uvwxy $$
+	tali che
+	\begin{enumerate}
+		\item $vwx$ contiene al più $N$ posizioni marcate
+		\item $vx$ contiene almeno una posizione marcata
+		\item esiste una variabile $A \in V$ tale che $S \overset{*}{\Rightarrow} uAy$, e $A \overset{*}{\Rightarrow} vAx$ e $A \overset{*}{\Rightarrow} w$.
+			E dunque per ogni $i \geq 0$ $u v^i w x^i y \in L$.
+	\end{enumerate}
+\end{lemma}
+Noi il teorema di Ogden lo abbiamo dimostrato utilizzando grammatiche in CNF, si può fare anche per grammatiche generiche, ma è più tedioso.
+
+\begin{proof}
+	Noi vogliamo dimostrare che
+	$$ \mathcal{L} = \{ a^p b^q c^r \mid p = q \vee q = r \} $$
+	è inerentemente ambiguo.
+	Sia $G$ una qualunque grammatica CF per $\mathcal{L}$.
+
+	Sia $N$ la costante del lemma di Ogden e $m = \max(N, 3) $ il massimo tra $N$ e 3.
+	Prendiamo 
+	$$ z = a^m b^m c^{m + m!} \in \mathcal{L}$$
+	e marchiamo tutte le $a$.
+
+	Prendiamo la stringa$\alpha$ ottenuta ponendo $i = 2$, cioè la stringa $u v^2 w x^2 y \in \mathcal{L}$.
+	Contiamo le $b$ in $\alpha$
+	\begin{align*}
+		\#_b(\alpha) &= \underbrace{\#_b(z)}_{m} + \underbrace{\#_b(vx)}_{\leq m} \\
+		&\leq 2m \\ 
+		&< m + m! \tag{Visto che $m$ è almeno 3} \\
+		&\leq \#_c(\alpha) \tag{Le $c$ rimaste sono almeno quelle che c'erano prima}
+	\end{align*}
+	e visto che $uv^2 w^{x^2} y \in \mathcal{L}$ allora $\#_b(\alpha) = \#_a(\alpha)$ e per la proprietà 2 del lemma di Ogden $\#_a(vx) = \#_b(vx) \geq 1$.
+	Inoltre affinché $u v^2 w x^2 y \in \mathcal{L}$ sia ancora in $\mathcal{L}$ deve valere che
+	\begin{align*}
+		v &= a^l \\
+		x &= b^l \\
+	\end{align*}
+	con $1 \leq l \leq m$.
+	Altrimenti ripetendo perderemmo la struttura.
+
+	Prendiamo ora
+	$$ u v^i w x^i z = a^{m + (i - 1)l}b^{m + (i - 1)l} c^{m + m!} \in \mathcal{L} $$
+	scegliendo $i = 1 + \frac{m!}{l}$ otteniamo la stringa 
+	$$ \beta = a^{m + m!} b^{m + m!} c^{m + m!} $$
+	che appartiene al nostro linguaggio.
+	% fig 17.4
+	Nella stringa $\beta$ la maggior parte delle $b$ è ottenuta replicando il secondo sottoalbero.
+
+	Partiamo invece da una stringa
+	$$ z' = a^{m + m!} b^m c^m $$
+	e marco tutte le $c$.
+	Scomponiamola in
+	$$ u' v' w' x' y' $$
+	e utilizzando i ragionamenti di prima mostriamo che $v' = b^j$ e $x' = c^j$ e ripetendo $i$ volte $v'$ e $x'$ otteniamo
+	$$ a^{m + m!} b^{m + (i - 1)j} c^{m + (i - 1)j} $$
+	e scegliendo $i = 1 + \frac{m!}{j}$ come prima otteniamo $\beta$.
+	Come prima possiamo immaginare alberi di forma
+	% fig 17.5
+	Qui ancora la maggior parte delle $b$ è generata dal secondo albero.
+	Ma visto che l'albero di $A$ genera anche $a$ e l'albero di $A'$ genera anche $c$ i due sono per forza diversi.
+\end{proof}
+
+Possiamo dare una definizione analoga di ambiguità per gli automi a pila.
+\begin{definizione}
+	Un PDA è ambiguo se esiste una stringa con due computazioni accettanti differenti.
+\end{definizione}
+\`E facile vedere attraverso la trasformazione da grammatica ad automa che il numero di computazioni diverse è uguale al numero di alberi leftmost diversi, visto che si simulava la derivazione leftmost.
+Dal lato opposto è più difficile da mostrare e soprattutto non preserva il grado di ambiguità.
+% fig 17.6
+Quindi parlare di ambiguità negli automi a pila e nelle grammatiche di tipo 2 è equivalente.
+E di conseguenza un linguaggio inerentemente ambiguo avrà sia grammatica che automa a pila ambigui.
+
+Perché un automa a pila ammetta ambiguità questo deve per forza essere nondeterministico.
+Quindi
+$$ \mathcal{L} = \{ a^p b^q c^r \mid p = q \vee q = r \} $$
+necessita il nondeterminismo.
+
+Richiamiamo la definizione di automa a pila deterministico
+$$ M = \langle Q, \Sigma, \Gamma, \delta, q_0, Z_0, F \rangle $$
+è deterministico se ad ogni passo possiamo fare una singola scelta, cioè sse
+\begin{itemize}
+	\item $\forall q \in Q, A \in \Gamma \mid \delta(q, \varepsilon, A) \neq \varnothing \Rightarrow \forall a \in \Sigma \delta(q, a, A) = \varnothing $
+	\item $\forall q \in Q, A \in \Gamma, a \in \Sigma \cup \{ \varepsilon \} \mid | \delta(q, a, A) | = 1 $
+\end{itemize}
+mostriamo ora che i due criteri di accettazione sono diversi per automi deterministici, specificamente la accettazione per pila vuota è più debole.
+Supponiamo infatti di avere un automa a pila che accetta per pila vuota il linguaggio regolare $(aa)^+$.
+Siccome l'automa deve accettare $aa$ dopo questa avrà la pila vuota.
+Ma da una pila vuota non può più continuare, quindi non può accettare $aaaa$ ad esempio.
+Quindi i linguaggi che accetta sono tutti quelli le cui stringhe non hanno come prefissi altre stringhe del linguaggio, perché nel riconoscere il prefisso svuoterà la pila e non potrà più andare avanti.
+Questi in teoria dei codici sono detti codici prefissi e contengono alcuni regolari e alcuni context free.
+
+Di solito si ovvia a questo utilizzando un simbolo finale non nel linguaggio, ad esempio $(aa)^+ \#$, in modo tale che la pila non si svuoti completamente fino ad arrivare al marcatore.
+
+Quindi da ora in poi quando parliamo di DCFL, cioè i linguaggi CF deterministici, intendiamo i linguaggi riconosciuti per stati finali.
+Questi contengono per forza i linguaggi regolari, perché semplicemente possiamo non utilizzare la pila.
+Vale che
+$$ \text{Reg} \subset \text{DCFL} \subset \text{CFL} $$
+perché $\{ a^p b^q c^r \mid p = q \vee q = r \} \in \text{CFL}$ ma $\not \in \text{DCFL}$.
+
+Abbiamo visto che l'ambiguità necessità del nondeterminismo.
+Possiamo chiederci l'inverso, cioè se un linguaggio necessita del nondeterminismo allora questo è per forza ambiguo.
+Un linguaggio che necessita del nondeterminismo è quello dei palindromi (non ancora dimostrato), o -- per semplicità -- dei palindromi pari
+$$ L = \{ w w^R \mid w \in \{a, b\}^* \} $$
+L'automa deve ``scommettere'' su quando è arrivato a metà , quindi il nondeterminismo è necessario, ma la metà è una sola, qiundi non è ambiguo.
+\`E anche facile vederlo dalla grammatica che è
+	$$ S \rightarrow a S a \mid b S b \mid \varepsilon $$
+Quindi il nondeterminismo non implica la ambiguità.
+
+Il determinismo per le grammatiche è più strano.
+
+\section{Operazioni e chiusura con i linguaggi CF}
+\begin{table}
+	\begin{tblr}{|c|c|c|}
+		& CFL & DCFL \\
+		\hline
+		Unione & Sì & No \\
+		\hline
+		Intersezione & No & No \\
+		\hline
+		Intersezione con un regolare & Sì & Sì \\
+		\hline
+		Complemento & No & Sì \\
+		\hline
+	\end{tblr}
+	\caption{Chisura delle operazioni}
+\end{table}
+
+\paragraph{Unione} Date due grammatiche $G' = \langle V', \Sigma, P', S' \rangle$ e $G'' = \langle V'', \Sigma, P'', S'' \rangle$ con $V' \cap V'' = \varnothing$, definiamo la unione delle due come 
+$$ G = \langle V' \cup V'' \cup \{ S \}, \Sigma, P' \cup P'' \cup \{ S \rightarrow S', S \rightarrow S'' \}, S \rangle $$
+e nel caso degli automi possiamo fare la scelta all'inizio.
+La unione è chiusa per i CFL e non chiusa per i CDFL, infatti dati $L' = \{ a^n b^n c^m \} \in \text{DCFL}$ e $L'' = \{ a^m b^n c^n \} \in \text{DCFL}$ la loro unione $L' \cup L'' = \{ a^p b^q c^r \mid p = q \vee q = r \}$ è ambigua, quindi nondeterministica.
+
+\paragraph{Intersezione} La intersezione non è chiusa, infatti $L' \cap L'' = \{ a^n b^n c^n \}$ che abbiamo dimostrato che non è CF.
+Inoltre non possiamo utilizzare il metodo dei FSA di far andare in parallelo i due automi, qui i due due automi interferirebbero nel loro utilizzo della pila.
+
+\paragraph{Intersezione con un regolare} Possiamo usare il metodo degli FSA di far andare in parallelo i due automi, quindi incorporo nel controllo del PDA l'FSA.
+
+\paragraph{Complemento} Se il complemento fosse chiuso, potremmo ottenere una intersezione chiusa attraverso l'unione e De Morgan, quindi il complemento deve per forza non essere chiuso.
+Il complemento per i deterministici invece è chiuso.
+
+
+\end{document}

@@ -1,0 +1,285 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{cancel}
+\usepackage{caption}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage{float}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{subcaption}
+\usepackage{tabularray}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata, chains, scopes, decorations.text, patterns, decorations.pathmorphing, positioning, decorations.pathreplacing, calligraphy}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\newtheorem{teorema}{Teorema}
+\newtheorem{corollario}{Corollario}
+\newtheorem{proposizione}{Proposizione}
+\newtheorem{proprietà}{Proprietà}
+\newtheorem{lemma}{Lemma}
+\newtheorem{fatto}{Fatto}
+\newtheorem{definizione}{Definizione}
+\newtheorem{nota}{Nota}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage{teolang}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+\section{Operazioni e chiusura dei CF (continua)}
+\begin{tcolorbox}[breakable]
+	Esibiamo ora un controesempio che mostra che il complemento non è chiuso rispetto ai CF.
+	Prendiamo il linguaggio
+	$$ L = \{ x \in \{a, b\}^* \mid \forall w : x \neq w w \} \in \text{CF} $$
+	il complemento di questo è
+	$$ L^C = \{ w w \mid w \in \{a, b\}^* \} $$
+	che come abbiamo già mostrato in passato non è context free.	% ci dovrebbe essere un esercizio in cui mostriamo che il linguaggio L è CF
+
+	Per completezza mostriamo anche che $L$ sia effettivamente CF costruendo un automa a pila che lo riconosce.
+	Questo -- molto brevemente -- scommette sulla posizione dei due caratteri diversi.
+	\begin{center}
+		\begin{tikzpicture}[
+				PUNTO/.style={minimum size=0, inner sep=0, outer sep=0}, 
+			]
+			\node[PUNTO] at (0, 0) (left) {};
+			\node[PUNTO] at (4, 0) (middle) {};
+			\node[PUNTO] at (8, 0) (right) {};
+
+			\node[PUNTO, label=below:{\tiny $i$}] at (1, 0) (i) {};
+			\node[PUNTO, label=below:{\tiny $i + n$}] at (5, 0) (in) {};
+
+			\draw (i) circle[radius=2pt];
+			\draw (in) circle[radius=2pt];
+
+			\draw[|-|] (left) -- node {\tiny $|$} (right);
+
+			\draw[decorate, decoration={brace, mirror, amplitude=.2cm}] ([yshift=-.35cm]left.south) to node[below, yshift=-.2cm] {\tiny $n'$} ([yshift=-.35cm]i.south);
+			\draw[decorate, decoration={brace, mirror, amplitude=.2cm}] ([yshift=-.35cm]i.south) to node[below, yshift=-.2cm] {\tiny $n$} ([yshift=-.35cm]in.south);
+			\draw[decorate, decoration={brace, mirror, amplitude=.2cm}] ([yshift=-.35cm]in.south) to node[below, yshift=-.2cm] {\tiny $n''$} ([yshift=-.35cm]right.south);
+			\draw[decorate, decoration={brace, amplitude=.2cm}] ([yshift=.2cm]left.north) to node[above, yshift=.2cm] {\tiny $n$} ([yshift=.2cm]middle.north);
+			\draw[decorate, decoration={brace, amplitude=.2cm}] ([yshift=.2cm]middle.north) to node[above, yshift=.2cm] {\tiny $n$} ([yshift=.2cm]right.north);
+		\end{tikzpicture}
+	\end{center}
+	con $n' + n'' = n$ e $w_i \neq w_{i + n}$.
+	Più precisamete l'automa segue le seguenti fasi
+	\begin{enumerate}
+		\item sulla pila viene contato $n'$.
+		\item si sceglie nondeterministicamente un terminale $\sigma$ e si iniziano a togliere i $n'$ simboli accumulati finché non si svuota la pila.
+		\item a questo punto si ricomincia a contare sulla pila fino a che non si sceglie un secondo terminale $\rho$ che deve essere differente.
+		\item si ricomincia a togliere i simboli $n''$ dalla pila consumando l'input
+		\item deve valere che alla fine dell'input sia vuota anche la pila e viceversa, affinché $n' + n'' = n$
+	\end{enumerate}
+\end{tcolorbox}
+
+\begin{lemma}
+	I DCFL sono chiusi rispetto al complemento.
+\end{lemma}
+Uno dei problemi con gli automi a pila è che questi possono non terminare.
+Infatti utillizzando le $\varepsilon$-mosse l'automa può continuare a far oscillare la pila o far crescere la pila all'infinito.
+Visto però che gli stati e i simboli della pila sono finiti, data una configurazione di superficie (\textit{surface configuration}, o lo stato e il simbolo in cima alla pila) capire se ci sarà un ciclo infinito è decidibile, e consiste banalmente nel controllare se lo stesso stato e simbolo di pila si ripetono senza consumare input.
+
+Inoltre visto che sono ammesse le $\varepsilon$-mosse, in un automa che accetta per stato finale, può accadere che una volta che l'input è finito l'automa continui a fare mosse, e addirittura può finire in un ciclo infinito.
+In ogni caso se c'è almeno uno stato finale tra quelli che visita dopo la fine dell'input, allora l'input è accettato.
+
+\begin{lemma}
+	Supponiamo che
+	$$ M = \langle Q, \Sigma, \Gamma, \delta, q_0, Z_0, F \rangle $$
+	sia un automa a pila deterministico.
+	Costruiamo 
+	$$ M' = \langle Q', \Sigma, \Gamma', \delta', q_0', X_0, F' \rangle $$
+	tale che
+	$$ L(M) = L(M') $$
+	ed $M'$ scandisce sempre l'intero input.
+\end{lemma}
+\begin{proof}
+	Definiamo l'automa $M'$ tale che
+	\begin{itemize}
+		\item $Q' = Q \cup \{q_0', d, f \}$, con $d$ detto \textit{stato trappola}
+		\item $\Gamma' = \Gamma \cup \{X_0\} $
+		\item $F' = F \cup \{ f \} $
+	\end{itemize}
+	e definiamo le mosse che fa l'automa
+	\begin{itemize}
+		\item $\delta'(q_0', \varepsilon, X_0) = (q_0, Z_0X_0)$, cioè -- come in altre costruzioni -- ``infiliamo'' in fondo alla pila un nostro simbolo.
+			Questo è necessario perché la prossima mossa potrebbe non essere definita perché si è svuotata la pila.
+		\item mostriamo ora alcune regole particolari che portano allo stato trappola
+			\begin{itemize}
+				\item se in una certa configurazione di superficie dell'automa $M$ non esiste una prossima mossa definita, cioè se
+					$$\delta(q, a, X) = \delta(q, \varepsilon, X) = \varnothing, \hspace{1cm} q \in Q, a \in \Sigma, X \in \Gamma$$
+					allora nell'automa $M'$ finisco nello stato trappola
+					$$\delta'(q, a, X) = (d, X)$$
+				\item se nell'automa $M$ la pila si è svuotata e non potrei pià fare mosse nell'automa $M'$ finisco nello stato trappola
+					$$\delta'(q, a, X_0) = (d, X_0),\hspace{1cm}q \in Q', a \in \Sigma$$
+				\item nello stato trappola consumo l'input e rimango nello stato trappola
+					$$\delta'(d, a, X) = (d, X),\hspace{1cm}a \in \Sigma, X \in \Gamma'$$
+				\item se da $(q, X)$, con $q \in Q$ e $X \in \Gamma$ è possibile un loop di $\varepsilon$-mosse
+					$$\delta'(q, \varepsilon, X) = 
+					\begin{cases}
+						(d, X) & \text{se il loop non visita stati finali} \\
+						(f, X) & \text{altrimenti}
+					\end{cases}
+					$$
+				\item se sono nello stato finale $f$ e posso ancora leggere input, allora non sono alla fine quindi mi sposto nello stato trappola
+					$$\delta'(f, a, X) = (d, X), \hspace{1cm}a \in \Sigma, X \in \Gamma'$$
+			\end{itemize}
+		\item in tutti gli altri casi $\delta'(q, a, X) = \delta(q, a, X)$ con $q \in Q, a \in \Sigma \cup \{\varepsilon\}, X \in \Gamma$
+	\end{itemize}
+\end{proof}
+
+\begin{proof}[Automa per il complemento]
+Sia 
+$$ M = \langle Q, \Sigma, \Gamma, \delta, q_0, Z_0, F \rangle $$
+un DPDA che accetta $L$ e scandisce sempre l'intero input.
+Costruiamo l'automa per il complemento
+$$ M' = \langle Q', \Sigma, \Gamma, \delta', q_0', Z_0, F' \rangle $$
+con 
+\begin{itemize}
+	\item $Q' = Q \times \{y, n, A \}$, dove $y, n, A$ servono a ricordare se nell'ultima sequenza di $\varepsilon$-mosse ho visto uno stato finale, rispettivamente:
+		\begin{itemize}
+			\item $y$ indica che nell'attuale stato della sequenza di $\varepsilon$-mosse è stato visitato uno stato finale.
+			\item $n$ indica che nell'attuale stato della sequenza di $\varepsilon$-mosse non è stato visitato uno stato finale.
+			\item $A$ indica che non ho visitato uno stato finale e non posso fare alcuna mossa.
+		\end{itemize}
+	\item $F' = Q \times \{ A \}$, cioè tutti gli stati in cui non posso procedere e non ho visitato uno stato finale
+\end{itemize}
+Definiamo ora $\delta'$ come
+\begin{itemize}
+	\item se $\delta(q, \varepsilon, X) = (p, \gamma)$ allora 
+		\begin{itemize}
+			\item $\delta'([q, y], \varepsilon, X) = ([p, y], \gamma)$, quindi se in passato ho visitato uno stato finale, continuo a ricordare che ho visitato uno stato finale.
+			\item se non ho ancora visto uno stato finale, e il prossimo lo è, cambio $n$ a $y$ 
+				$$\delta'([q, n], \varepsilon, X) = \begin{cases} ([p, n], \gamma) & \text{se } p \not \in F \\ ([p, y], \gamma) & \text{se } p \in F \end{cases}$$
+		\end{itemize}
+	\item se $\delta(q, a, X) = (p, \gamma)$ con $a \in \Sigma$, allora
+		\begin{itemize}
+			\item se ero in uno stato $y$ e consumo dell'input e finisco in uno stato non finale, cambio $y$ a $n$
+				$$\delta'([q, y], a, X) = \begin{cases} ([p, n], \gamma) & \text{se } p \not \in F \\ ([p, y], \gamma) & \text{se } p \in F \end{cases}$$
+			\item alternativametne se ero in uno stato $n$ spezzo la mossa in due parti
+				\begin{align*}
+					\delta'([q, n], \varepsilon, X) &= ([q, A], X) \\
+					\delta'([q, A], a, X) &= \begin{cases} ([p, n], \gamma) & \text{se } p \not \in F \\ ([p, y], \gamma) & \text{se } p \in F \end{cases}
+				\end{align*}
+				cioè prima di consumare dell'input assumo di aver finito la stringa senza esser passato per stati finali nella sequenza di $\varepsilon$-mosse.
+				Se c'è ancora in input trasformo lo $A$ in $y$ o $n$.
+		\end{itemize}
+\end{itemize}
+Infine definiamo
+$$ q_0' = \begin{cases} [q_0, n] & \text{se } q_0 \not \in F \\ [q_0, y] & \text{se } q_0 \in F \end{cases} $$
+\end{proof}
+
+Dalla costruzione di sopra si vede che le $\varepsilon$-mosse sono molto fastidiose.
+Come abbiamo visto attraverso la trasformazione in GNF nel caso di PDA si può fare a meno delle $\varepsilon$-mosse a patto di sacrificare la parola vuota.
+Lo stesso non vale nel caso di DPDA, e senza $\varepsilon$-mosse otteniamo un modello meno potente.
+
+Vediamo ora altre operazioni
+\begin{table}[H]
+	\centering
+	\begin{tblr}{|c|c|c|}
+		\hline
+		Operazione & CFL? & DCFL? \\
+		\hline
+		Unione & Sì & No \\
+		\hline
+		Intersezione & No & No \\
+		\hline
+		Intersezione con un regolare & Sì & Sì \\
+		\hline
+		Complemento & No & Sì \\
+		\hline
+		Prodotto & Sì & No \\
+		\hline
+		Chiusura di Kleene & Sì & No \\
+		\hline
+		Morfismo & Sì & No \\
+		\hline
+		Sostituzione & Sì & No \\
+		\hline
+		Reversal & Sì & No \\	% idk l'ha detto e basta
+		\hline
+		Shuffle & No & No  \\	% idk l'ha detto e basta
+		\hline
+	\end{tblr}
+	\caption{Chisura delle operazioni}
+\end{table}
+
+Dai linguaggi 
+\begin{align*}
+	L' &= \{ a^i b^j c^k \mid i = j \} \\
+	L'' &= \{ a^i b^j c^k \mid j = k \}
+\end{align*}
+Definiamo il linguaggio 
+$$ L_0 = L' \cup dL'' \in DCFL $$
+Infatti ...
+
+\paragraph{Prodotto} Non deterministicamente quando un automa arriva in fondo faccio partire l'automa successivo.
+Questo si può fare anche in termini di grammatiche, date $G' = \langle V', \Sigma, P', S' \rangle$ e $G'' = \langle V'', \Sigma, P'', S'' \rangle$ con $V' \cap V'' = \varnothing$ creiamo
+$$ G = \langle V' \cup V'' \cup \{ S \}, \Sigma, P' \cup P'' \cup \{ S \rightarrow S' S'' \}, S \rangle $$
+Per il caso deterministico utilizziamo $L_0$ che abbiamo visto dopo e definiamo
+$$ L' = \{ \varepsilon, d \} \cdot L_0 = \{ d^s a^i b^j c^k \mid 0 \leq s \leq 2 \} $$
+con 
+$$\begin{cases} s = 0 & i = j \\ s = 2 & j = k \\ s = 1 & i = j \vee j = k \end{cases}\} $$
+Per mostrare che è ambiguo prendiamo
+$$ L' \cap d a^* b^* c^* = \{ d a^i b^j c^k \mid i = j \vee j = k \} \not \in \text{DCFL}$$
+con $d a^* b^* c^*$ regolare, visto che i deterministici sono chiusi rispetto all'intersezione con regolari, $L'$ non può essere deterministico.
+Inoltre $\{\varepsilon, d\}$ è finito, quindi non solo i linguaggi deterministici non sono chiusi rispetto al prodotto, ma non sono chiusi neanche rispetto al prodotto a sinistra con linguaggi finiti.
+
+Si può mostrare però che i DCFL sono chiusi rispetto al prodotto a destra con regolari, cioè dati $L \in \text{DCFL}$ e $R \in \text{Reg}$ il prodotto $L \cdot R \in \text{DCFL}$.
+Questa costruzione è simile al prodotto per gli automi a stati finiti.
+
+\paragraph{Chiusura di Kleene -- star} Questo costruzione è molto simile al prodotto. 
+Data la grammatica $G' = \langle V', \Sigma, P', S' \rangle$, costruiamo
+$$ G = \langle V' \cup \{ S \}, \Sigma, P' \cup \{ S \rightarrow \varepsilon, S \rightarrow S' S \}, S \rangle $$
+Nel caso dei deterministici prendiamo ancora $L_0$ e analizziamo
+$$ L_0^* \cap d a^* b^* c^* = d (L_1 \cup L_2) $$
+infatti questo ha stringhe della forma
+$$ da^ib^jc^k $$
+tali che
+\begin{itemize}
+	\item $dL_2$, per cui $j = k$
+	\item o il prodotto $d \in L_2$ per $a^i b^j c^j \in L_1$, per cui $i = j$
+\end{itemize}
+ma questo abbiamo visto che non è deterministico, quindi $L_0^*$ non è chiuso rispetto alla star.
+
+\paragraph{Morfismo} Per ogni terminale $a \in \Sigma$, lo sostituisco con una stringa $w \in \Delta^*$ utilizzando una funzione
+$$ h : \Sigma \rightarrow \Delta^* $$
+Per questo basta sostituire i terminali in ogni produzione.
+Nel caso dei deterministici  prendiamo 
+\begin{align*}
+	L' &= \{ a^i b^j c^k \mid i = j \} \\
+	L'' &= \{ a^i b^j c^k \mid j = k \} 
+\end{align*}
+e sappiamo che $L', L'' \in \text{DCFL}$, e che $L' \cup L'' \not \in \text{DCFL}$.
+Mentre vale che $L_0 = L' \cup dL'' \in \text{DCFL}$.
+Prendiamo il morfismo
+$$ h(\sigma) = \begin{cases} \sigma & \text{se } \sigma \neq d \\ \varepsilon & \text{altrimenti} \end{cases} $$
+vale che $h(L_0) = L' \cup L'' \not \in \text{DCFL}$, quindi i determinisici non sono chiusi rispetto al morfismo.
+
+\paragraph{Sostituzione} Ad ogni terminale associamo un linguaggio, utilizzando una funzione
+$$ s : \Sigma \rightarrow 2^{\Delta^*} $$
+Se $L \in \text{CFL}$ e $\forall a \in \Sigma \mid s(a) \in \text{CFL}$, allora $s(L) \in \text{CFL}$.
+Molto ad alto livello ad ogni terminale corrisponde una grammatica, nelle produzioni sostituiamo ai terminali l'assioma della grammatica.
+Visto che il morfismo è un caso particolare della sostituzione, i determinisitici non sono chiusi rispetto alla sostituzione.
+
+\end{document}
