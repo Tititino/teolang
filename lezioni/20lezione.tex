@@ -1,0 +1,239 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{cancel}
+\usepackage{caption}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage{float}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{subcaption}
+\usepackage{tabularray}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata, chains, scopes, decorations.text, patterns, decorations.pathmorphing, positioning, decorations.pathreplacing, calligraphy}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\newtheorem{teorema}{Teorema}
+\newtheorem{corollario}{Corollario}
+\newtheorem{proposizione}{Proposizione}
+\newtheorem{proprietà}{Proprietà}
+\newtheorem{lemma}{Lemma}
+\newtheorem{fatto}{Fatto}
+\newtheorem{definizione}{Definizione}
+\newtheorem{nota}{Nota}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage{teolang}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+Data la grammatica
+$$ G = \langle V = \{S, T, A, B\}, \Sigma = \{a, b, c, d\}, S, P \rangle $$
+con $P$ definito come
+\begin{align*}
+		S &\rightarrow cAT \mid c T \\
+		T &\rightarrow  d S \mid d \\
+		A &\rightarrow B a A \mid B a \\
+		B &\rightarrow b B \mid \varepsilon
+\end{align*}
+% ????
+% !!! MISSING !!!
+\begin{align*}
+	S &\rightarrow c A T \mid c T \\
+	T &\rightarrow A S \mid d 
+\end{align*}
+
+% fig 20.1
+
+Proviamo a fare la conversione da automa a linguaggio regolare:
+$$ \left { \begin{array}{ccc} S & = & c Q + c T \\ Q & = & A T \\ T & = & d S + d \end{array} $$
+sostituendo la terza nella prima e la seconda abbiamo
+$$ \left { \begin{array}{ccc} S & = & c Q + c d S + c d \\ Q & = & A d S + A d \\ T & = & d S + d \end{array} $$
+e poi sostituiamo la seconda nella prima
+$$ \left { \begin{array}{ccc} S & = & c A d S + c A d + c d S + c d \\ Q & = & A d S + A d \\ T & = & d S + d \end{array} $$
+e semplificando
+$$ \left { \begin{array}{ccc} S & = & (c A d + c d)S + c A d + c d \\ Q & = & A d S + A d \\ T & = & d S + d \end{array} $$
+che corrisponde a $S = (cAd + cd)^* (cAd + c) = (cAd + cd)^+$.
+
+Alla regola $A \rightarrow B a A \mid B a$ corrisponde il linguaggio regolare $A \overset{*}{\Rightarrow} (B a)^+$, e a $B \rightarrow b B \mid \varepsilon$ corrisponde ovviamente $B \overset{*}{\Rightarrow} b^*$.
+Quindi sostituendo nel regolare di $A$ abbiamo $A \overset{*}{\Rightarrow} (b^* a)^+$, e sostituendo in $S \overset{*}{\Rightarrow} (c (b^* a)^+ d + cd)^+$.
+Quindi $L(G) = (c (b^* a)^* d)^+$.
+
+\begin{teorema}[Teorema di Chomsky-Schutzenberger]	% sciutzenberger, pronunciabile alla francese (bergie) o alla tedesca (bergher)
+	Sia $\Omega_k$ un alfabeto di $k$ tipi di parentesi
+	$$ \Omega_k = \{ (_1, (_2, \dots, (_k, )_1, )_2, \dots, )_k \} $$
+	$D_k \subseteq \Omega_k^*$ è detto un linguaggio di Dyck, se è il linguaggio delle parentesi bilanciate correttamente.
+	Sia $L \subseteq \Sigma^*$ un linguaggio CF, allora 
+	$$ \exists k > 0 \mid h : \Omega_k \rightarrow \Sigma \; \text{morfismo} \; \text{e} R \subseteq \Omega_k \; \text{regolare} $$
+	tale che $L = h(D_k \cap R)$.
+\end{teorema}
+Non dimostrato.
+
+\begin{tcolorbox}[breakable]
+	Prendiamo il caso banale $L = D_1$, allora $k = 1$ e $h = \text{id}$ e $R = \Omega_1^*$.
+\end{tcolorbox}
+\begin{tcolorbox}[breakable]
+	Prendiamo il caso 
+	$$L = \{ a^n b^n \mid n \geq 0 \} $$
+	allora $k = 1$ e 
+	$$ h = \begin{cases} ( = a \\ ) = b \end{cases} $$ 
+	e infine $R = (^* )^*$.
+\end{tcolorbox}
+
+\begin{tcolorbox}[breakable]
+	Prendiamo il caso 
+	$$L = \{ w w^R \mid \mid w \in \{a, b\}^* \} $$
+	allora prendiamo $k = 2$ e 
+	$$ h = \begin{cases} ( = a & \\ a = ) \\ [ = b \\ ] = b \end{cases} $$ 
+	e infine il filtro $R = (\text{\texttt{$($}} + \text{\texttt{$[$}})^* (\text{\texttt{$]$}} + \text{\texttt{$)$}})^*$.
+\end{tcolorbox}
+
+\begin{tcolorbox}[breakable]
+	Prendiamo il caso 
+	$$L = \{ x \mid \mid x \in \{a, b\}^* \wedge x = x^R \} $$
+	allora prendiamo $k = 4$ e similmente a prima definiamo $h$
+	$$ h = 
+	\begin{cases} 
+		\langle = a \\
+		\rangle = \varepsilon \\
+		\lfloor = b \\
+		\rfloor = \varepsilon \\
+		( = a \\ 
+		a = ) \\ 
+		[ = b \\ 
+		] = b 
+	\end{cases} $$ 
+	e infine il filtro $R = (\text{\texttt{$($}} + \text{\texttt{$[$}})^* ( \varepsilon + \text{\texttt{$\langle \rangle$}} + \text{\texttt{$\lfloor \rloor$}}) (\text{\texttt{$]$}} + \text{\texttt{$)$}})^*$.
+\end{tcolorbox}
+Quindi il riconoscimento di un linguaggio CF si riconduce a riconoscere un linguaggio di parentesi.
+Quindi si potrebbe pensare di costruire una macchina
+% fig 20.2
+Il componente $h^{-1}$ può essere realizzato come un componente a stati finiti.
+Quindi l'unica cosa non a stati finiti è il componente $D_k$.
+
+\section{Lingauaggi unari}
+Un linguaggio unario è un linguaggio tale che $| \Sigma | = 1$.
+Mostreremo che nel caso unario i linguaggi CF e i regolari sono la stessa classe.
+
+Supponiao di avere un automa deterministico per un alfabeto unario
+% fig 20.3
+Visto che c'è un solo simbolo, questi sono formati da una serie di stati e opzionali loop indietro.
+Il linguaggio riconosciuto da sopra è
+$$ L = \varepsilon, a^6, a^11, a^16, \dots = a^0 + a^6(a^5)^* $$
+Modificandolo in questo modo
+% fig 20.4
+$$ L = a^0 + a^5(a^6)^* + a^6(a^5)^*$$
+Questi rappresentano più o meno successioni numeriche.
+
+Prendiamo ora l'automa
+% fig 20.5
+questo riconosce
+$$ L = a^8 + a^{11}(a^5)^* + a^{12}(a^5)^* $$
+% ???? mi sono perso
+
+\begin{lemma}
+	Supponiamo di avere una serie di naturali
+	$$ l_1, l_2, l_3, \dots $$
+	e un $q > 0$.
+	Supponiamo di avere linguaggi del tipo
+	$$ K_i = a^{l_i} (a^q)^* $$
+	allora l'unione
+	$$ \bigcup_{i \geq 0} K_i \in \text{Reg} $$
+\end{lemma}
+Noi abbiamo visto che l'unione di linguaggi regolari è ancora regolare, ma qui il risultato importante è che l'unione può essere di un numero potenzialmente infinito di regolari.il risultato importante è che l'unione può essere di un numero potenzialmente infinito di regolari.
+Ad esempio questo non vale per l'unione infinita di 
+$$ \bigcup_{i \geq 0} a^i b^i $$
+
+Tutti questi possono essere ricondotti all'automa di sopra purché abbiano tutti lo stesso periodo $q$.
+
+\begin{lemma}
+	Sia $N$ un intero e prendiamo dei linguaggi
+	$$ K_i = a^{l_i} (a^{q_i})^* \subseteq a^* $$
+	quindi senza un periodo fissato.
+	Se però che $\forall i \mid 1 \leq q_i \leq N$, allora l'unione
+	$$ \bigcup_i K_i \in \text{Reg} $$
+\end{lemma}
+Infatti possiamo generare per il lemma di prima i linguaggi regolari per ogni $q$, e visto che $N$ è finito facciamo l'unione finita di tutti i linguaggi per ogni $q$ nel range.
+
+\begin{teorema}
+	$L \subseteq a^* \in \text{CFL}$ implica $L$ regolare.
+\end{toerema}
+\begin{proof}
+	Utilizzeremo il pumping lemma per i linguaggi CF.
+	Sia $N$ la costante del pumping lemma per $L$.
+	Prendiamo $a^m \in L$ con $m \geq N$, allora
+	$$ a^m = u v w x y $$
+	sappiamo che
+	\begin{itemize}
+		\item $vx \neq \varepsilon$, e chiamiamo $q_m = |vx|$
+		\item $|vwx| \leq N$
+		\item $\forall i \geq 0 \mid u v^i w x^i y \in L$, la lunghezza di questa stringa è (escludendo il caso $i = 0$) 
+			$$ m + (i - 1)q^m $$
+			quindi $a^{m + (i - 1)q_m} \in L $
+			cioè $a^m (a^{q_m})^* \subseteq L$
+	\end{itemize}
+	quindi $q \leq q_m \leq N$.
+	Prendiamo
+	\begin{align*}
+		L' &= \{ a^m \in L \mid m < N \} \\
+		L'' &= \{ a^m \in L \mid m \leq N \} 
+	\end{align*}
+	e vale che
+	$$ L = L' \cup L'' \subseteq L' \cup \bigucp_{m \geq N} a^m (a^{q_m})^* \subseteq L $$
+	quindi
+	$$ L = L' \cup \bigcup_{m \geq N} a^m(a^{q_m})^* $$
+	e $L'$ è regolare perché finito e per il lemma di prima anche il secondo è ancora regolare, visto che $1 \leq q_m \leq N$ per il pumping lemma.
+	E visto che l'unione di due regolari è regolare, allora $L$ è regolare.
+\end{proof}
+Dati 
+% fig 20.7
+si può vedere che generalmente il periodo è il $\text{MCD}$ tra i due periodi dei linguaggi.
+
+Nei linguaggi unari si può mostrare lo strano risultato che per passare da un nodeterministico a un deterministico il costo è $e^{\sqrt{n \ln{n}}}$
+
+\begin{teorema}[Teorema di Parikh]
+	Dato un alfabeto $\Sigma$ di qualsiasi dimensione e una stringa $w$.
+	Sia ad esempio $\Sigma = \{a, b\}$, associamo a questa stringa il vettore 
+	$$ \phi(w) = ( \#_a(w), \#_b(w) ) $$
+	chiamato immagine di Parikh.
+	E definiamo l'immagine di Parikh del linguaggio come
+	$$ \phi(L) = \{ \phi(w) \mid w \in L \} $$
+	Se $L \in \text{CFL}$, allora $\exists L' \in \text{Reg}$ tale che $\phi(L) = \phi(L')$.
+\end{teorema}
+Quindi se non ci interessa l'ordine dei simboli, il linguaggi regolari e i linguaggi CF sono uguali.
+Un corollario è che vale l'uguaglianza del CF e dei regolari nel caso di alfabeti unari.
+
+\begin{tcolorbox}[breakable]
+	Sia 
+	$$ L = \{ a^n b^n \mid n \geq 0 \} $$
+	e 
+	$$ \phi(L) = \{ (n, n) \mid n \geq 0 \} $$
+	allora possiamo prendere il linguaggio regolare $R = (ab)^*$ e vale che
+	$$ \phi(L) = \phi(R) $$
+\end{tcolorbox}
+
+% prossima volta automi a pila two way
+\end{document}
+
+
