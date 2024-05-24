@@ -1,0 +1,203 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{cancel}
+\usepackage{caption}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage{float}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{subcaption}
+\usepackage{tabularray}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata, chains, scopes, decorations.text, patterns, decorations.pathmorphing, positioning, decorations.pathreplacing, calligraphy}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\newtheorem{teorema}{Teorema}
+\newtheorem{corollario}{Corollario}
+\newtheorem{proposizione}{Proposizione}
+\newtheorem{proprietà}{Proprietà}
+\newtheorem{lemma}{Lemma}
+\newtheorem{fatto}{Fatto}
+\newtheorem{definizione}{Definizione}
+\newtheorem{nota}{Nota}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage{teolang}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+Si possono considerare modelli diversi rispetto ai LBA, ad esempio un automa con un nastro di input read-only e con $n$-nastri ausiliari.
+
+\begin{definizione}[Memoria di Turing ad un nastro]
+	Un macchina di Turing è un automa con una testina e un nastro illimitato che, sulle celle che non contengono l'input, contiene un carattere speciale detto \textit{blank}.
+	$$ M = \langle Q, \Sigma, \Gamma, \delta, q_0, F \rangle $$
+	\begin{itemize}
+		\item $Q$ un insieme di stati
+		\item $\Sigma$ un alfabeto, e $\Sigma \subseteq \Gamma$
+		\item $\Gamma$ un alfabeto di lavoro, e il blank $\# \in \Gamma \setdiff \Sigma$
+		\item $q_0 \in Q$
+		\item $F \subseteq Q$
+		\item $\delta : Q \times \Gamma \rightarrow Q \times \Gamma \times \{-1, 0, +1\} $ nel caso determinsitico,
+			dove
+			\begin{itemize}
+				\item $-1$ è un movimento a destra
+				\item $0$ nessun movimento
+				\item $+1$ un movimento a destra
+			\end{itemize}
+	\end{itemize}
+\end{definizione}
+Quindi una macchina di Turing può utilizzare una memoria illimitata.
+
+Ci sono diverse varianti dell'automa, ad esempio con un nastro infinito solo da un lato, o più nastri.
+
+Assumeremo che gli stati finali siano stati \textit{halting}, quindi che non ci siano transizioni da essi, e inoltre assumeremo che il blank non possa essere scritto.
+
+\`E importante notare che la macchina potrebbe entrare in un loop.
+
+Nel caso delle macchine di Turing, il modello nondeterministico e il modello deterministico sono gli stessi, se non ci sono vincoli di risorse.
+Infatti una macchina nondetermininistica in ogni momento può fare delle scelte, nella versione deterministica si utilizza una BFS.
+
+Si può mostrare che la classe dei linguaggi riconosciuti da questa macchina sono i linguaggi di tipo 0.
+Infatti si può pensare di, tenendo l'input sul nastro, e applicando tutte le produzioni al contrario finché non si trova l'assioma, opzionalmente andando avanti in eterno.
+Possiamo avere quindi tre possibili risposte
+% fig. 22.1
+per questo i linguaggi sono detti ricorsivi numberabili.
+
+Possiamo vedere le macchine di Turing anche come macchine che calcolano funzioni, e le funzioni calcolate da una macchina di Turing sono le stesse calcolate da un linguaggio di programmazione generico.
+
+Vediamo ora alcuni problemi indecibili per le macchine di Turing.
+\begin{itemize}
+	\item problema dell'arresto (HALT), tale che abbiamo in input una macchina di Turing $M$ e una stringa $x \in \Sigma^*$, e ci chiediamo se la macchina termini su input $x$
+	\item vuotezza del linguaggio riconosciuto, tale che abbiamo in input una macchina di Turing $M$ e ci chiediamo se $L(M) = \varnothing$
+\end{itemize}
+
+\begin{definizione}[Configurazione]
+Definiamo ora la configurazione di una macchina di Turing.
+Questa non contiene l'intero nastro infinito, ma solo la parte non-blank.
+Suponiamo che la parte a sinistra della testina sia chiamata $x$ e che la parte della stringa da dove la testina si trova all'estremo destro si chiami $y$, una configurazione è
+$$ xqy $$
+con $q \in Q$ e $x, y \in \Gamma^*$.
+\end{definizione}
+
+\begin{definizione}[Configurazione iniziale]
+	La configurazione iniziale su input $w$ è
+	$$ q_0w $$
+\end{definizione}
+\begin{definizione}[Configurazione finale]
+	Una configurazione è finale o acecttante se lo stato $q$ è finale.
+\end{definizione}
+
+\begin{definizione}[Mossa]
+	Una mossa, scritta $C \vdash C'$, o nel caso di più mosse $C \overset{*}{\vdash*} C'$ è una applicazione di $\delta$.
+\end{definizione}
+
+\begin{definizione}[Linguaggio riconosciuto da una macchina di Turing]
+	Data la definizione di mossa definiamo il linguaggio riconosciuto da una macchina di Turing $M$ come
+	$$ L(M) = \{ w \in \Sigma^* \mid q_0w \overset{*}{\vdash} xqy, x, y \in \Gamma^*, q \in F \} $$
+\end{definizione}
+Supponiamo di trovarci nella configurazione
+% fig 22.2.
+possiamo avere tre casi di mossa $\delta(q, a)$
+\begin{itemize}
+	\item $(p, b, 0)$ fa passare alla configurazione $xqay' \vdash xpby'$
+	\item $(p, b, +1)$ fa passare alla configurazione $xqay' \vdash xbpy'$
+	\item $(p, b, -1)$ fa passare alla configurazione $xqay' \vdash x'pcby'$
+\end{itemize}
+
+Chiamiamo (questo cancelletto non è il blank, è un altro)
+$$ \Delta = Q \cup \Gamma \cup \{\# \} $$
+e definiamo un linguaggio su questo alfabeto
+$$ L'_{succ} = \{ \alpha \# \beta^{R} \mid \text{$\alpha$ e $\beta$ sono configurazioni di $M$ e $\alpha \vdash \beta$} \} $$
+Per riconoscere questo basta un automa a pila, infatti ad esempio sia $\alpha = xqay'$ e $\beta = y'^Rbpx^R$, carico $x$ e con la funzione di transizione calcolo con cosa sostituire $qa$ e carico $y'$ e poi scarico dopo il cancelletto.
+Definiamo anche
+$$ L''_{succ} = \{ \alpha^R \# \beta \mid \dots \} $$
+come sopra.
+Questi automi a pila sono deterministici, visto che il successore è deterministico.
+
+Definiamo ora il linguaggio delle computazioni valide per un automa $M$, o le computazioni accettanti
+$$ \text{valid}(M) = \{ \alpha_1 \# \alpha^2^R \# \alpha^3 \# \dots \# \alpha_k^{(R)} \mid \alpha_i \in (Q \cup \Gamma)^* \} $$
+$(R)$ indica che se $k$ è dispari allora non è rovesciato, altrimenti sì.
+E devono valere le seguenti condizioni:
+\begin{itemize}
+	\item per $i \in 1, \dots, k$ deve valere che $\alpha_i \in \Gamma^* Q \Gamma^*$, cioè $\alpha_i$ rappresenta una configurazione di $M$
+	\item $\alpha_1$ rappresenta una configurazione iniziale
+	\item $\alpha_k$ rappresenta una configurazione accettante
+	\item per $i \in 2, \dots, k$, deve valere che $\alpha_{i - 1} \vdash \alpha_i$, cioè $\alpha_i$ è raggiunto in una mossa da $\alpha_{i - 1}$
+\end{itemize}
+La prima, la seconda e la terza condizioni possono essere controllate da automi a stati finiti.
+Per la quarta condizione, abbiamo visto che un passaggio è il linguaggio $L'_{succ}$ (o $L''_{succ}$), ma confrontare dopo aver confrontato $\alpha_1$ e $\alph_2^R$, abbiamo distrutto la pila per $\alpha_3$.
+Quello che possiamo fare con un automa a pila è confrontare $\alpha_1$ e $\alpha_2^R$, $\alpha_3$ e $\alpha_4^R$ e così via.
+Poi si può fare un secondo automa che confronta $\alpha_2^R$ e $\alpha_3$, $\alpha_4^R$ e $\alpha_5$, e così via.
+Quindi questo linguaggio è l'intersezione di due linguaggi CF.
+
+\begin{teorema}
+	Esistono due linguaggi CF $L_1$ e $L_2$ tali che $\text{valid}(M) = L_1 \cap L_2$, ed esiste un algoritmo che data $M$ costruisce PDA (deterministico) o CFG per $L_1$ e $L_2$.
+\end{teorema}
+Se la macchina $M$ riconosce l'insieme vuoto, quindi
+$$ L(M) = \varnothing $$
+sse non ci sono computazioni valide, quindi
+$$ \text{valid}(M) = \varnothing $$
+sse $L_1 \cap L_2 = \varnothing$.
+Quindi non è possibile decidiere se l'intersezione di due linguaggi CF è vuota, perché se si potesse allora potremmo anche decidere se un certo linguaggi riconosciuto da una macchina di Turing è vuota.
+\begin{corollario}
+	Non è possibile decidere se l'intersezione di due CFL (e anche DCFL) è vuota.
+\end{corollario}
+
+Vediamo ora invece
+$$ ( \text{valid}(M) )^C = \Delta^* \setdiff \text{valid}(M) $$
+Costruiamo un dispositivo nondeterministico che scommette quele delle quattro condizioni non sia rispettata.
+\begin{itemize}
+	\item se la prima è infranta basta controllare che tra due cancelletti non ci sia uno stato, o ci siano più stati.
+	\item ...
+	\item ...
+	\item esiste almeno un $i$ tale che $\alpha_i$ non è raggiunta da una mossa da $\alpha_{i - 1}$.
+		Questo è verificabile con una pila.
+\end{itemize}
+Le prime proprietà sono controllabili ancora con automi a stati finiti.
+Mentre la quarta è riconoscibile da una pila.
+\begin{teorema}
+	$(\text{valid}(M))^C \in \text{CFL}$ ed esiste un algoritmo che, data $M$ costruisce una CFG o un PDA per $(\text{valid}(M))^2$.
+\end{teorema}
+Vale che $L = \varnothing$ sse $\text{valid}(M) = \varnothing$ sse $(\text{valid}(M))^C = \Delta^*$.
+Se esistesse un algoritmo per determinare se un $L \in \text{CFL} = \Delta^*$, allora potremmo determinare che $L(M) = \varnothing$.
+\begin{corollarion}[Problema dell'universalità]
+	Dato $L \in \text{CFL}$ non è possibile determinare se $L = \Sigma^*$.
+\end{corollario}
+Invece visto che i DCFL sono chiusi rispetto al complemento, basta costruire l'automa a pila per un linguaggio e vedere se il suo complemento riconosce il linguaggio vuoto.
+\begin{corollario}[Problema dell'equivalenza]
+	Dati $L_1, L_2 \in \text{CFL}$ non è possibile decidere se $L_1 = L_2$.
+\end{corollario}
+Questo perché il problema dell'universalità è un caso particolare dell'equivalenza ($L_1 = \Delta^*$).
+
+\begin{corollario}[Problema dell'equivalenza con regolari]
+	Dati $L \in \text{CFL}$ e $L \in \text{Reg}$, non è possibile decidere se $L = R$.
+\end{corollario}
+La motivazione è la stessa di sopra.
+
+Invece dati due DPDA è possibile determinare se sono equivalenti.
+\end{document}
+
+
+

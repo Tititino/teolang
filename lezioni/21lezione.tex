@@ -1,0 +1,203 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[italian]{babel}
+\usepackage{bytefield}
+\usepackage{cancel}
+\usepackage{caption}
+\usepackage{embedall}\embedfile{\jobname.tex}
+\usepackage{float}
+\usepackage[bookmarks]{hyperref}
+\usepackage{listings}
+\usepackage[scr=rsfs]{mathalpha}
+\usepackage{siunitx}
+\usepackage{subcaption}
+\usepackage{tabularray}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}\usetikzlibrary{automata, chains, scopes, decorations.text, patterns, decorations.pathmorphing, positioning, decorations.pathreplacing, calligraphy}
+\usepackage{todonotes}
+\usepackage{xcolor}
+
+\newtheorem{teorema}{Teorema}
+\newtheorem{corollario}{Corollario}
+\newtheorem{proposizione}{Proposizione}
+\newtheorem{proprietà}{Proprietà}
+\newtheorem{lemma}{Lemma}
+\newtheorem{fatto}{Fatto}
+\newtheorem{definizione}{Definizione}
+\newtheorem{nota}{Nota}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+
+\usepackage{teolang}
+
+\definecolor{codegray}{gray}{0.95}
+
+\lstdefinestyle{mystyle}{
+  numberstyle=\tiny,
+  basicstyle=\footnotesize,
+  breaklines=true,
+  numbers=left,
+  numbersep=5pt,
+}
+\lstset{style=mystyle}
+
+\overfullrule=0.2cm
+\begin{document}
+\tableofcontents
+\newpage
+\section{Automi two-way}
+Degli automi a pila abbiamo studiato un modello one-way.
+A differenza degli FSA già nel modello one-way abbiamo differenza tra il modello detrministico e non-deterministico.
+
+Vediamo ora il modello two-way, e prendiamo il linguaggio
+$$ L = \{ a^n b^n c^n \mid n \geq 0 \} $$
+nel caso one-way way l'informazione del numero di $a$ viene distrutta durante il confronto con le $b$.
+Mentre nel caso two-way possiamo tornare indietro a recuperarla per confrontare le $a$ anche con le $c$.
+Anche il caso 
+$$ L = \{ w \# w \mid w \in \{a, b\}^* \} $$
+basta copiare $w$ sulla pila fino al cancelletto, poi si salta fino in fondo e si confronta con la seconda stringa.
+% Supponendo di togliere il cancelletto non 
+
+Pendiamo un altro linguaggio
+$$ L = \{ a^{2^n} \mid n \geq 0 \} $$
+Dobbiamo ``dividere per due'' iterativametne.
+Questo è fatto scorrendo la stringa e ogni due simboli aggiungendone uno sulla stringa.
+Ad esempio
+% fig 21.1
+In questo modo se arriviamo all'end marker in uno stato ``dispari'', è equivalente ad avere resto non zero e quindi non si accetta (tranne nel caso $2^0$).
+Quindi è possibile riconoscere questo linguaggio, che non è CF.
+
+Ritornando all'esempio di prima
+$$ L = \{ w w \mid w \in \{a, b\}^* \} $$
+con il sistema di prima riusciamo a trovare la metà con la pila vuota.
+Una volta a metò si carica la seconda parte della stringa sulla pila.
+Poi si ritrova la metà e si confronta con la prima parte della stringa al cotnratio.
+% fig 21.2
+Ed è per giunta deterministico.
+
+Chiamiamo i PDA (deterministici e non ) two-way 2PDA, mentre i deterministici li chiamiamo 2DPDA.
+Abbiamo visto che sicuramente sono più potentei dei PDA normali perché abbiamo visto 3 linguaggio non CF che riescono a riconoscere.
+Non si sa però se 2PDA e 2DPDA siano classi distinti, cioè se il modello nondeterministico sia più potente di quello determnistico.
+
+Inoltre sicuramente non si sà se la classe dei 2PDA sia strattamente inclusa nei CS, se sia più grande, o se siano inconfrontabili.
+
+Inoltre non si sà se i linguaggi riconosciuti dai 2DPDA siano un superset dei CFL.
+
+\section{Automi limitati linearmente}
+Supponiamo ora di avere un automa two-way che può anche modificare il nastro.
+Questo è chiamato automa limitato linearmente, o LBA.
+
+\begin{tcolorbox}[breakable]
+	Il linguaggio
+	$$ L = \{ a^n b^n c^n \mid n \geq 0 \} $$
+	è riconoscibile cancellando la prima $a$, poi la prima $b$ e poi la prima $c$ e poi tonando indietro all'inizio della stringa.
+	Si procede in questo modo finché non finiscono le $a$ e se il nastro è tutto cancellato allora la parola è accettata.
+\end{tcolorbox}
+\begin{Ŧcolorbox}[breakable]
+	Il linguaggio
+	$$ L = \{ a^{2^n} \mid n \geq 0 \} $$
+	è riconosciuto similmente a prima: ogni due $a$ se ne cancella una, una volta arrivati alla fine si torna all'inizio e si ripete.
+\end{tcolorbox}
+\begin{tcolorbox}[breakable]
+	Per il linguaggio
+	$$ L = \{ w w \mid w \in \{a, b\}^* \} $$
+	si trova il centro
+	% fig 21.3
+	una volta trovata la metà il simbolo che la si ricorda nello stato e lo si cancella.
+	si va fino in fondo e si cerca se l'ultimo simbolo è uguale e se lo è lo si cancella e si va avanti.
+\end{tcolorbox}
+
+\begin{tcolorbox}[breakable]
+	Per il linguaggio delle parentesi a un simbolo.
+	Si cerca la prima parentesi chiusa e si controlla se il primo simbolo precedente (non cancellato) è una aperta.
+	Si procede iterativamente finché non si arriva all'end-marker.
+	\begin{aling*}
+		\rhs ( ( ) ( ) ) (()) \lhs \\
+		\rhs ( \cancel{(} \cancel{)} ( ) ) (()) \lhs \\
+		% ...
+	\end{align*}
+\end{tcolorbox}
+
+\begin{tcolorbox}[breakable]
+	Vediamo il linguaggio di quadrati di interi in notazione unaria
+	$$ L = \{ a^{n^2} \mid n \geq 0 \} $$
+	possiamo usare il fatto che il quadrato di $n$ è uguale alla somma dei primi $n$ numeri dispari
+	$$ n^2 = \sum_{i = 1}^n (2i + 1) $$
+	Ora procediamo le seguente modo
+	\begin{aling*}
+		\rhs aaaaaaaaaaaaaaaa \lhs \\
+		\rhs Xaaaaaaaaaaaaaaa \lhs \\
+		\rhs XYYYaaaaaaaaaaaa \lhs \\
+		\rhs XYYYXXXXXaaaaaaa \lhs \\
+		\rhs XYYYXXXXXYYYYYYY \lhs \\
+	\end{align*}
+	Quindi l'idea per un blocco è fare la copia del blocco precedente e aggiungere 2.
+\end{tcolorbox}
+
+Gli automi LBA (non deterministici) corrispondono alla classe dei linguaggi CS.
+Ricordiamo che le grammatice CS sono della forma
+$$ \alpha \rightarrow \beta, \hspace{1cm} |\beta| \geq |\alpha | $$
+L'idea dell'automa è di simulare la derivazione applicando le regole al contrario: se si trova una parte dell'input che corrisponde ad una parte destra di una regola, lo si sostituisce con la sua parte sinistra (nel caso riepmpiendo lo spazio extra con un simbolo nullo).
+
+In generale si può mostrare che i linguaggi CS possono essere riconosciuti anche da macchine che hanno un nastro di input e un nastro di lavoro separato (di lunghezza limitata).
+Infatti i linguaggi CS sono riconosciuti da tutte queste macchine che hanno una memoria limitata linearmente rispetto l'input.
+
+Vediamo ora le proprietà di chiusura di questi linguaggi:
+\begin{itemize}
+	\item chiusi rispetto all'unione, il motivo è lo stesso della chiusura rispetto all'unione dei CF
+	\item chiusi rispetto all'intersezione: si esegue il primo automa e se questo accetta si esegue il secondo.
+		Per evitare che il primo automa sporchi l'input per il secondo, si ``sdoppia'' l'input e ogni cella contiene una coppia di simboli e il primo automa tocca solo uno dei due elementi.
+	\item chiusi rispetto al complemento (dimostrato da Immermann nell'88).
+		Se c'è una macchina nondeterministica che lavora in spazio $s(n)$ della lunghezza di input, si può ottenre una macchina limitata da $s(n)$ per il complemento
+\end{itemize}
+Non si sà se il modello nondeterministico sia più potente o no di quello deterministico
+$$ \text{DLBA} \overset{?}{=} LBA $$
+\begin{teorema}[Teorema di Sevitch]
+	Se ho una classe di linguaggi riconosciuta da una macchina nondeterministica, si può sempre costruire una macchina determinisitca che riconosce in spazio quadratico.
+	$$ \text{NSPACE}(s(n)) \subseteq \text{DSPACE}(s^2(n)) $$
+\end{teorema}
+Quindi da questo 
+$$ \text{CS} = \text{NSPACE}(n) \subseteq \text{DSPACE}(n^2) $$
+ma non si sà se si può fare meglio di così.
+
+\section{Problemi di decisione sui linguaggi CF}
+\begin{teorema}
+	Sia $L \in \text{CF}$ e $N$ la sua costante del pumping lemma per $L$, allora
+	$$ \begin{cases}
+		L \neq \varnothing & \text{sse } \exists w \in L \mid |w| < N \\
+		L \text{ è infinito} & \text{sse } \exists w \in L \mid N \leq |w| < 2N
+	\end{cases}
+	$$
+\end{teorema}
+La dimsotrazione di questo è uguale allo stesso teorema per i regolari.
+
+Per mostrare che $L \neq \varnothing$, supponiamo che $L$ sia generato dalla grammatica
+$$ G = \langle V, \Sigma, P, S \rangle $$
+Possiamo costrire l'insieme delle variabili che sono in grado di generare terminali, e se questo contiene $S$ allora il linguaggio non è vuoto.
+Iniziamo costruendo l'insieme
+$$ T_0 = \Sigma $$
+e 
+$$ T_{i + 1} = T_i \cup \{ A \in V \mid \exists A \rightarrow B \in P \mid \beta \in T_i^* \} $$
+Vale che
+$$ T_0 \subseteq T_1 \subseteq \dots \subseteq \Sigma \cup V $$
+
+Mostriamo ora se un linguaggio $L$ è finito o infinito.
+Supponiamo che $L$ sia riconosciuto dalla grammatica $G$ in FNC, priva di simboli raggiungibili e produttivi.
+Costruiamo il grafo delle produzioni: i vertici sono le variabili ed esiste un arco da $A$ a $B$ se esiste una variabile $C$ tale che
+$$ A \rightarrow BC \in P \vee A \rightarrow CB \in P $$
+Dato questo grafo, $L$ è infinito sse il grafo contiene un ciclo.
+Infatti vuol dire che esiste una serie di produzioni per cui una variabile può riprodurre sé stessa e visto che tutte le variabili in FNC sono produttive, la stringa non può che crescere.
+
+Quindi questa è una quesione decidibile.
+
+Vedremo invece che non possiamo decidere se 
+$$ L \overset{?}{=} \Sigma^* $$
+
+
+\end{document}
+
+
+
