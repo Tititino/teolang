@@ -56,7 +56,7 @@ Si possono considerare modelli diversi rispetto ai LBA, ad esempio un automa con
 	\begin{itemize}
 		\item $Q$ un insieme di stati
 		\item $\Sigma$ un alfabeto, e $\Sigma \subseteq \Gamma$
-		\item $\Gamma$ un alfabeto di lavoro, e il blank $\# \in \Gamma \setdiff \Sigma$
+		\item $\Gamma$ un alfabeto di lavoro, e il blank $\# \in \Gamma \setminus \Sigma$
 		\item $q_0 \in Q$
 		\item $F \subseteq Q$
 		\item $\delta : Q \times \Gamma \rightarrow Q \times \Gamma \times \{-1, 0, +1\} $ nel caso determinsitico,
@@ -137,7 +137,7 @@ come sopra.
 Questi automi a pila sono deterministici, visto che il successore è deterministico.
 
 Definiamo ora il linguaggio delle computazioni valide per un automa $M$, o le computazioni accettanti
-$$ \text{valid}(M) = \{ \alpha_1 \# \alpha^2^R \# \alpha^3 \# \dots \# \alpha_k^{(R)} \mid \alpha_i \in (Q \cup \Gamma)^* \} $$
+$$ \text{valid}(M) = \{ \alpha_1 \# \alpha_2^R \# \alpha_3 \# \dots \# \alpha_k^{(R)} \mid \alpha_i \in (Q \cup \Gamma)^* \} $$
 $(R)$ indica che se $k$ è dispari allora non è rovesciato, altrimenti sì.
 E devono valere le seguenti condizioni:
 \begin{itemize}
@@ -147,7 +147,7 @@ E devono valere le seguenti condizioni:
 	\item per $i \in 2, \dots, k$, deve valere che $\alpha_{i - 1} \vdash \alpha_i$, cioè $\alpha_i$ è raggiunto in una mossa da $\alpha_{i - 1}$
 \end{itemize}
 La prima, la seconda e la terza condizioni possono essere controllate da automi a stati finiti.
-Per la quarta condizione, abbiamo visto che un passaggio è il linguaggio $L'_{succ}$ (o $L''_{succ}$), ma confrontare dopo aver confrontato $\alpha_1$ e $\alph_2^R$, abbiamo distrutto la pila per $\alpha_3$.
+Per la quarta condizione, abbiamo visto che un passaggio è il linguaggio $L'_{succ}$ (o $L''_{succ}$), ma confrontare dopo aver confrontato $\alpha_1$ e $\alpha_2^R$, abbiamo distrutto la pila per $\alpha_3$.
 Quello che possiamo fare con un automa a pila è confrontare $\alpha_1$ e $\alpha_2^R$, $\alpha_3$ e $\alpha_4^R$ e così via.
 Poi si può fare un secondo automa che confronta $\alpha_2^R$ e $\alpha_3$, $\alpha_4^R$ e $\alpha_5$, e così via.
 Quindi questo linguaggio è l'intersezione di due linguaggi CF.
@@ -166,7 +166,7 @@ Quindi non è possibile decidiere se l'intersezione di due linguaggi CF è vuota
 \end{corollario}
 
 Vediamo ora invece
-$$ ( \text{valid}(M) )^C = \Delta^* \setdiff \text{valid}(M) $$
+$$ ( \text{valid}(M) )^C = \Delta^* \setminus \text{valid}(M) $$
 Costruiamo un dispositivo nondeterministico che scommette quele delle quattro condizioni non sia rispettata.
 \begin{itemize}
 	\item se la prima è infranta basta controllare che tra due cancelletti non ci sia uno stato, o ci siano più stati.
@@ -178,12 +178,12 @@ Costruiamo un dispositivo nondeterministico che scommette quele delle quattro co
 Le prime proprietà sono controllabili ancora con automi a stati finiti.
 Mentre la quarta è riconoscibile da una pila.
 \begin{teorema}
-	$(\text{valid}(M))^C \in \text{CFL}$ ed esiste un algoritmo che, data $M$ costruisce una CFG o un PDA per $(\text{valid}(M))^2$.
+	$(\text{valid}(M))^C \in \text{CFL}$ ed esiste un algoritmo che, data $M$ costruisce una CFG o un PDA per $(\text{valid}(M))^C$.
 \end{teorema}
 Vale che $L = \varnothing$ sse $\text{valid}(M) = \varnothing$ sse $(\text{valid}(M))^C = \Delta^*$.
 Se esistesse un algoritmo per determinare se un $L \in \text{CFL} = \Delta^*$, allora potremmo determinare che $L(M) = \varnothing$.
-\begin{corollarion}[Problema dell'universalità]
-	Dato $L \in \text{CFL}$ non è possibile determinare se $L = \Sigma^*$.
+\begin{corollario}[Problema dell'universalità]
+	Dato $L \in \text{CFL}$ non è possibile determinare (è indecidibile) se $L = \Sigma^*$.
 \end{corollario}
 Invece visto che i DCFL sono chiusi rispetto al complemento, basta costruire l'automa a pila per un linguaggio e vedere se il suo complemento riconosce il linguaggio vuoto.
 \begin{corollario}[Problema dell'equivalenza]
@@ -197,6 +197,9 @@ Questo perché il problema dell'universalità è un caso particolare dell'equiva
 La motivazione è la stessa di sopra.
 
 Invece dati due DPDA è possibile determinare se sono equivalenti.
+
+%%%
+Un automa a pila con due pile ha la stessa potenza computazionale di una macchina di Turing.
 \end{document}
 
 

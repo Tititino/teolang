@@ -31,7 +31,7 @@
 \newtheorem{fatto}{Fatto}
 \theoremstyle{definition}
 \newtheorem{definizione}{Definizione}
-\theoremstyle{regard}
+% \theoremstyle{regard}
 \newtheorem{nota}{Nota}
 
 \renewcommand\qedsymbol{$\blacksquare$}
@@ -53,30 +53,36 @@
 
 \tikzexternalize 
 \tcbset{shield externalize}
+
 \begin{document}
 \tableofcontents
 \newpage
 
 \chapter{Intro}
-Gli automi a pila sono automi che oltre ad avere un controllo a stati finiti hanno una memoria arbitrariamente grande, ma organizzata a pila; cioè una memoria a cui si può accedere solo all'elemento più in cima.
-Questo modello è one-way sul nastro di input, e dimostreremo che la versione two-way è più potente. % ref
-
-Durante il corso analizzeremo principalmente il modello nondeterministico, infatti un altro risultato che dimostriamo % ref
-è che il modello deterministico è -- a differenza degli FSA -- meno potente di quello nondeterministico.
-
-Un automa a pila è una tupla
-$$ M = \langle Q, \Sigma, \Gamma, \delta, q_0, Z_0, F \rangle $$
-\noindent dove
+Gli automi a pila sono automi che, oltre ad avere un controllo a stati finiti, hanno una memoria arbitrariamente grande organizzata -- appunto -- pila; cioè una memoria a cui si può accedere solo all'elemento più in cima.
+Il modello di cui tratteremo principalmente è quello non-deterministico e one-way sul nastro di input.
+Infatti due risultati che mostreremo sono che:
 \begin{itemize}
-	\item $\Gamma$ è l'alfabeto della pila o alfabeto di lavoro
-	\item $\delta$ è la funzione di transizione
-	\item $q_0 \in Q$ è lo stato iniziale dell'automa
-	\item $Z_0 \in \Gamma$ è lo stato iniziale della pila
-	\item $F$ è un insieme di stati finali
+	\item la versione two-way è più potente (Sezione \ref{sec:Automi a pila two-way});
+	\item il modello deterministico è -- a differenza degli FSA -- meno potente di quello nondeterministico (Sezione \ref{sec:???}).
 \end{itemize}
-La funzione di transizione dipende da tre cose: dallo stato corrente, dal simbolo dell'input corrente e dal simbolo in cima alla pila
-$$ \delta : Q \times (\Sigma \cup \{\varepsilon\}) \times \Gamma \rightarrow \text{PF}(Q \times \Gamma^*) $$
-La funzione di transizione contemporaneamente cambia lo stato dell'automa e rimpiazza il simbolo in cima alla pila con una stringa di stati della pila\footnote{$\text{PF}(-)$ sta per le parti finite, infatti se utilizzassimo $2^{Q \times \Gamma^*}$ potremmo avere programmi infiniti, visto che $\Gamma^*$ è un insieme infinito.} \footnote{Scriviamo $\Sigma \cup \{ \varepsilon \}$ perché sono contemplate mosse in base allo stato dell'automa che modificano la pila senza leggere un simbolo in input.} \footnote{Per convenzione la stringa di stati viene messa sulla pila da destra a sinistra, quindi il simbolo più a sinistra sarà in cima alla pila.}.
+
+\begin{definizione}[Automa a pila]
+	\label{def:Automa a pila}
+	Un automa a pila è una tupla
+	$$ M = \langle Q, \Sigma, \Gamma, \delta, q_0, Z_0, F \rangle $$
+	dove
+	\begin{itemize}
+		\item $\Gamma$ è l'alfabeto della pila o alfabeto di lavoro
+		\item $\delta$ è la funzione di transizione
+		\item $q_0 \in Q$ è lo stato iniziale dell'automa
+		\item $Z_0 \in \Gamma$ è lo stato iniziale della pila
+		\item $F$ è un insieme di stati finali
+	\end{itemize}
+	La funzione di transizione dipende da tre cose: dallo stato corrente, dal simbolo dell'input corrente e dal simbolo in cima alla pila
+	$$ \delta : Q \times (\Sigma \cup \{\varepsilon\}) \times \Gamma \rightarrow \text{PF}(Q \times \Gamma^*) $$
+	La funzione di transizione contemporaneamente cambia lo stato dell'automa e rimpiazza il simbolo in cima alla pila con una stringa di stati della pila\footnote{$\text{PF}(-)$ sta per le parti finite, infatti se utilizzassimo $2^{Q \times \Gamma^*}$ potremmo avere programmi infiniti, visto che $\Gamma^*$ è un insieme infinito.} \footnote{Scriviamo $\Sigma \cup \{ \varepsilon \}$ perché sono contemplate mosse in base allo stato dell'automa che modificano la pila senza leggere un simbolo in input.} \footnote{Per convenzione la stringa di stati viene messa sulla pila da destra a sinistra, quindi il simbolo più a sinistra sarà in cima alla pila.}.
+\end{definizione}
 % fig 12.1
 \begin{figure}[H]
 	\centering
@@ -2525,7 +2531,7 @@ Quindi il nondeterminismo non implica la ambiguità.
 
 Non studieremo il determinismo per le grammatiche perché questo è più strano e ammette miriadi di classi diverse.
 
-\section{Operazioni e chiusura con i linguaggi CF}
+\section{Operazioni e chiusura con i linguaggi CF}\label{sec:operazioni di chiusura con i linguaggi CF}
 \begin{table}[H]
 	\centering
 	\begin{longtblr}[
@@ -2536,24 +2542,16 @@ Non studieremo il determinismo per le grammatiche perché questo è più strano 
 		\hline
 		Operazione & CFL? & DCFL? \\
 		\hline
+		\hline
 		Unione & Sì & No \\
-		\hline
 		Intersezione & No & No \\
-		\hline
 		Intersezione con un regolare & Sì & Sì \\
-		\hline
 		Complemento & No & Sì \\
-		\hline
 		Prodotto & Sì & No \\
-		\hline
 		Chiusura di Kleene & Sì & No \\
-		\hline
 		Morfismo & Sì & No \\
-		\hline
 		Sostituzione & Sì & No \\
-		\hline
 		Reversal\TblrNote{1} & Sì & No \\	% idk l'ha detto e basta
-		\hline
 		Shuffle\TblrNote{1} & No & No  \\	% idk l'ha detto e basta
 		\hline
 	\end{longtblr}
@@ -2776,6 +2774,678 @@ Se $L \in \text{CFL}$ e $\forall a \in \Sigma \mid s(a) \in \text{CFL}$, allora 
 Molto ad alto livello ad ogni terminale corrisponde una grammatica, nelle produzioni sostituiamo ai terminali l'assioma della grammatica.
 
 Visto che il morfismo è un caso particolare della sostituzione, i determinisitici non sono chiusi rispetto alla sostituzione.
+
+% lezione 19
+% !!! MISSING !!!
+% lezione del 15-05-2024
+
+% lezione 20
+Data la grammatica
+$$ G = \langle V = \{S, T, A, B\}, \Sigma = \{a, b, c, d\}, S, P \rangle $$
+con $P$ definito come
+\begin{align*}
+		S &\rightarrow cAT \mid c T \\
+		T &\rightarrow  d S \mid d \\
+		A &\rightarrow B a A \mid B a \\
+		B &\rightarrow b B \mid \varepsilon
+\end{align*}
+% ????
+% !!! MISSING !!!
+\begin{align*}
+	S &\rightarrow c A T \mid c T \\
+	T &\rightarrow A S \mid d 
+\end{align*}
+
+% fig 20.1
+\begin{center}	%TODO: inintelligible ****
+	\begin{tikzpicture}
+		\node[state, initial] (s) {$S$};
+		\node[state] (t) [right=of s] {$T$};
+		\node[state] (q) [above right=of s] {$q$};
+		\node[state, accepting] (f) [below right=of s] {};
+
+		\draw[->] (s) edge node[above left] {$C$} (q);
+		\draw[->] (s) edge[bend left] node[above] {$C$} (t);
+		\draw[->] (q) edge node[above right] {$A$} (t);
+		\draw[->] (t) edge[bend left] node[below] {$D$} (s);
+		\draw[->] (t) edge[bend left] node[below right] {$D$} (f);
+	\end{tikzpicture}
+\end{center}
+
+Proviamo a fare la conversione da automa a linguaggio regolare:
+$$ \left \{ \begin{array}{ccc} S & = & c Q + c T \\ Q & = & A T \\ T & = & d S + d \end{array} \right .$$
+sostituendo la terza nella prima e la seconda abbiamo
+$$ \left \{ \begin{array}{ccc} S & = & c Q + c d S + c d \\ Q & = & A d S + A d \\ T & = & d S + d \end{array} \right .$$
+e poi sostituiamo la seconda nella prima
+$$ \left \{ \begin{array}{ccc} S & = & c A d S + c A d + c d S + c d \\ Q & = & A d S + A d \\ T & = & d S + d \end{array} \right .$$
+e semplificando
+$$ \left \{ \begin{array}{ccc} S & = & (c A d + c d)S + c A d + c d \\ Q & = & A d S + A d \\ T & = & d S + d \end{array} \right .$$
+che corrisponde a $S = (cAd + cd)^* (cAd + c) = (cAd + cd)^+$.
+
+Alla regola $A \rightarrow B a A \mid B a$ corrisponde il linguaggio regolare $A \overset{*}{\Rightarrow} (B a)^+$, e a $B \rightarrow b B \mid \varepsilon$ corrisponde ovviamente $B \overset{*}{\Rightarrow} b^*$.
+Quindi sostituendo nel regolare di $A$ abbiamo $A \overset{*}{\Rightarrow} (b^* a)^+$, e sostituendo in $S \overset{*}{\Rightarrow} (c (b^* a)^+ d + cd)^+$.
+Quindi $L(G) = (c (b^* a)^* d)^+$.
+
+\begin{teorema}[Teorema di Chomsky-Schutzenberger]	% sciutzenberger, pronunciabile alla francese (bergie) o alla tedesca (bergher)
+	Sia $\Omega_k$ un alfabeto di $k$ tipi di parentesi
+	$$ \Omega_k = \{ (_1, (_2, \dots, (_k, )_1, )_2, \dots, )_k \} $$
+	$D_k \subseteq \Omega_k^*$ è detto un linguaggio di Dyck, se è il linguaggio delle parentesi bilanciate correttamente.
+	Sia $L \subseteq \Sigma^*$ un linguaggio CF, allora 
+	$$ \exists k > 0 \mid h : \Omega_k \rightarrow \Sigma \; \text{morfismo} \; \text{e} R \subseteq \Omega_k \; \text{regolare} $$
+	tale che $L = h(D_k \cap R)$.
+\end{teorema}
+Non dimostrato.
+
+\begin{tcolorbox}[breakable]
+	Prendiamo il caso banale $L = D_1$, allora $k = 1$ e $h = \text{id}$ e $R = \Omega_1^*$.
+\end{tcolorbox}
+\begin{tcolorbox}[breakable]
+	Prendiamo il caso 
+	$$L = \{ a^n b^n \mid n \geq 0 \} $$
+	allora $k = 1$ e 
+	$$ h = \begin{cases} ( = a \\ ) = b \end{cases} $$ 
+	e infine $R = (^* )^*$.
+\end{tcolorbox}
+
+\begin{tcolorbox}[breakable]
+	Prendiamo il caso 
+	$$L = \{ w w^R \mid \mid w \in \{a, b\}^* \} $$
+	allora prendiamo $k = 2$ e 
+	$$ h = \begin{cases} ( = a & \\ a = ) \\ [ = b \\ ] = b \end{cases} $$ 
+	e infine il filtro $R = (\text{\texttt{$($}} + \text{\texttt{$[$}})^* (\text{\texttt{$]$}} + \text{\texttt{$)$}})^*$.
+\end{tcolorbox}
+
+\begin{tcolorbox}[breakable]
+	Prendiamo il caso 
+	$$L = \{ x \mid \mid x \in \{a, b\}^* \wedge x = x^R \} $$
+	allora prendiamo $k = 4$ e similmente a prima definiamo $h$
+	$$ h = 
+	\begin{cases} 
+		\langle = a \\
+		\rangle = \varepsilon \\
+		\lfloor = b \\
+		\rfloor = \varepsilon \\
+		( = a \\ 
+		a = ) \\ 
+		[ = b \\ 
+		] = b 
+	\end{cases} $$ 
+	e infine il filtro $R = (\text{\texttt{$($}} + \text{\texttt{$[$}})^* ( \varepsilon + \text{\texttt{$\langle \rangle$}} + \text{\texttt{$\lfloor \rfloor$}}) (\text{\texttt{$]$}} + \text{\texttt{$)$}})^*$.
+\end{tcolorbox}
+Quindi il riconoscimento di un linguaggio CF si riconduce a riconoscere un linguaggio di parentesi.
+Quindi si potrebbe pensare di costruire una macchina
+% fig 20.2
+Il componente $h^{-1}$ può essere realizzato come un componente a stati finiti.
+Quindi l'unica cosa non a stati finiti è il componente $D_k$.
+
+\section{Lingauaggi unari}\label{sec:linguaggi unari}
+Un linguaggio unario è un linguaggio tale che $| \Sigma | = 1$.
+Mostreremo che nel caso unario i linguaggi CF e i regolari sono la stessa classe.
+
+Supponiao di avere un automa deterministico per un alfabeto unario
+% fig 20.3
+Visto che c'è un solo simbolo, questi sono formati da una serie di stati e opzionali loop indietro.
+Il linguaggio riconosciuto da sopra è
+$$ L = \varepsilon, a^6, a^11, a^16, \dots = a^0 + a^6(a^5)^* $$
+Modificandolo in questo modo
+% fig 20.4
+$$ L = a^0 + a^5(a^6)^* + a^6(a^5)^*$$
+Questi rappresentano più o meno successioni numeriche.
+
+Prendiamo ora l'automa
+% fig 20.5
+questo riconosce
+$$ L = a^8 + a^{11}(a^5)^* + a^{12}(a^5)^* $$
+% ???? mi sono perso
+
+\begin{lemma}
+	Supponiamo di avere una serie di naturali
+	$$ l_1, l_2, l_3, \dots $$
+	e un $q > 0$.
+	Supponiamo di avere linguaggi del tipo
+	$$ K_i = a^{l_i} (a^q)^* $$
+	allora l'unione
+	$$ \bigcup_{i \geq 0} K_i \in \text{Reg} $$
+\end{lemma}
+Noi abbiamo visto che l'unione di linguaggi regolari è ancora regolare, ma qui il risultato importante è che l'unione può essere di un numero potenzialmente infinito di regolari.il risultato importante è che l'unione può essere di un numero potenzialmente infinito di regolari.
+Ad esempio questo non vale per l'unione infinita di 
+$$ \bigcup_{i \geq 0} a^i b^i $$
+
+Tutti questi possono essere ricondotti all'automa di sopra purché abbiano tutti lo stesso periodo $q$.
+
+\begin{lemma}
+	Sia $N$ un intero e prendiamo dei linguaggi
+	$$ K_i = a^{l_i} (a^{q_i})^* \subseteq a^* $$
+	quindi senza un periodo fissato.
+	Se però che $\forall i \mid 1 \leq q_i \leq N$, allora l'unione
+	$$ \bigcup_i K_i \in \text{Reg} $$
+\end{lemma}
+Infatti possiamo generare per il lemma di prima i linguaggi regolari per ogni $q$, e visto che $N$ è finito facciamo l'unione finita di tutti i linguaggi per ogni $q$ nel range.
+
+\begin{teorema}
+	$L \subseteq a^* \in \text{CFL}$ implica $L$ regolare.
+\end{teorema}
+\begin{proof}
+	Utilizzeremo il pumping lemma per i linguaggi CF.
+	Sia $N$ la costante del pumping lemma per $L$.
+	Prendiamo $a^m \in L$ con $m \geq N$, allora
+	$$ a^m = u v w x y $$
+	sappiamo che
+	\begin{itemize}
+		\item $vx \neq \varepsilon$, e chiamiamo $q_m = |vx|$
+		\item $|vwx| \leq N$
+		\item $\forall i \geq 0 \mid u v^i w x^i y \in L$, la lunghezza di questa stringa è (escludendo il caso $i = 0$) 
+			$$ m + (i - 1)q^m $$
+			quindi $a^{m + (i - 1)q_m} \in L $
+			cioè $a^m (a^{q_m})^* \subseteq L$
+	\end{itemize}
+	quindi $q \leq q_m \leq N$.
+	Prendiamo
+	\begin{align*}
+		L' &= \{ a^m \in L \mid m < N \} \\
+		L'' &= \{ a^m \in L \mid m \leq N \} 
+	\end{align*}
+	e vale che
+	$$ L = L' \cup L'' \subseteq L' \cup \bigcup_{m \geq N} a^m (a^{q_m})^* \subseteq L $$
+	quindi
+	$$ L = L' \cup \bigcup_{m \geq N} a^m(a^{q_m})^* $$
+	e $L'$ è regolare perché finito e per il lemma di prima anche il secondo è ancora regolare, visto che $1 \leq q_m \leq N$ per il pumping lemma.
+	E visto che l'unione di due regolari è regolare, allora $L$ è regolare.
+\end{proof}
+Dati 
+% fig 20.7
+si può vedere che generalmente il periodo è il $\text{MCD}$ tra i due periodi dei linguaggi.
+
+Nei linguaggi unari si può mostrare lo strano risultato che per passare da un nodeterministico a un deterministico il costo è $e^{\sqrt{n \ln{n}}}$
+
+\begin{teorema}[Teorema di Parikh]
+	Dato un alfabeto $\Sigma$ di qualsiasi dimensione e una stringa $w$.
+	Sia ad esempio $\Sigma = \{a, b\}$, associamo a questa stringa il vettore 
+	$$ \phi(w) = ( \#_a(w), \#_b(w) ) $$
+	chiamato immagine di Parikh.
+	E definiamo l'immagine di Parikh del linguaggio come
+	$$ \phi(L) = \{ \phi(w) \mid w \in L \} $$
+	Se $L \in \text{CFL}$, allora $\exists L' \in \text{Reg}$ tale che $\phi(L) = \phi(L')$.
+\end{teorema}
+Quindi se non ci interessa l'ordine dei simboli, il linguaggi regolari e i linguaggi CF sono uguali.
+Un corollario è che vale l'uguaglianza del CF e dei regolari nel caso di alfabeti unari.
+
+\begin{tcolorbox}[breakable]
+	Sia 
+	$$ L = \{ a^n b^n \mid n \geq 0 \} $$
+	e 
+	$$ \phi(L) = \{ (n, n) \mid n \geq 0 \} $$
+	allora possiamo prendere il linguaggio regolare $R = (ab)^*$ e vale che
+	$$ \phi(L) = \phi(R) $$
+\end{tcolorbox}
+
+% lezione 21
+\section{Automi a pila two-way}\label{sec:Automi a pila two-way}
+Degli automi a pila abbiamo studiato un modello one-way.
+A differenza degli FSA già nel modello one-way abbiamo differenza tra il modello detrministico e non-deterministico.
+
+Vediamo ora il modello two-way, e prendiamo il linguaggio
+$$ L = \{ a^n b^n c^n \mid n \geq 0 \} $$
+nel caso one-way way l'informazione del numero di $a$ viene distrutta durante il confronto con le $b$.
+Mentre nel caso two-way possiamo tornare indietro a recuperarla per confrontare le $a$ anche con le $c$.
+Anche il caso 
+$$ L = \{ w \# w \mid w \in \{a, b\}^* \} $$
+basta copiare $w$ sulla pila fino al cancelletto, poi si salta fino in fondo e si confronta con la seconda stringa.
+% Supponendo di togliere il cancelletto non 
+
+Pendiamo un altro linguaggio
+$$ L = \{ a^{2^n} \mid n \geq 0 \} $$
+Dobbiamo ``dividere per due'' iterativametne.
+Questo è fatto scorrendo la stringa e ogni due simboli aggiungendone uno sulla stringa.
+Ad esempio
+% fig 21.1
+In questo modo se arriviamo all'end marker in uno stato ``dispari'', è equivalente ad avere resto non zero e quindi non si accetta (tranne nel caso $2^0$).
+Quindi è possibile riconoscere questo linguaggio, che non è CF.
+
+Ritornando all'esempio di prima
+$$ L = \{ w w \mid w \in \{a, b\}^* \} $$
+con il sistema di prima riusciamo a trovare la metà con la pila vuota.
+Una volta a metò si carica la seconda parte della stringa sulla pila.
+Poi si ritrova la metà e si confronta con la prima parte della stringa al cotnratio.
+% fig 21.2
+Ed è per giunta deterministico.
+
+Chiamiamo i PDA (deterministici e non ) two-way 2PDA, mentre i deterministici li chiamiamo 2DPDA.
+Abbiamo visto che sicuramente sono più potentei dei PDA normali perché abbiamo visto 3 linguaggio non CF che riescono a riconoscere.
+Non si sa però se 2PDA e 2DPDA siano classi distinti, cioè se il modello nondeterministico sia più potente di quello determnistico.
+
+Inoltre sicuramente non si sà se la classe dei 2PDA sia strattamente inclusa nei CS, se sia più grande, o se siano inconfrontabili.
+
+Inoltre non si sà se i linguaggi riconosciuti dai 2DPDA siano un superset dei CFL.
+
+\section{Automi limitati linearmente}\label{sec:automi limitati linearmente}
+Supponiamo ora di avere un automa two-way che può anche modificare il nastro.
+Questo è chiamato automa limitato linearmente, o LBA.
+
+\begin{tcolorbox}[breakable]
+	Il linguaggio
+	$$ L = \{ a^n b^n c^n \mid n \geq 0 \} $$
+	è riconoscibile cancellando la prima $a$, poi la prima $b$ e poi la prima $c$ e poi tonando indietro all'inizio della stringa.
+	Si procede in questo modo finché non finiscono le $a$ e se il nastro è tutto cancellato allora la parola è accettata.
+\end{tcolorbox}
+\begin{tcolorbox}[breakable]
+	Il linguaggio
+	$$ L = \{ a^{2^n} \mid n \geq 0 \} $$
+	è riconosciuto similmente a prima: ogni due $a$ se ne cancella una, una volta arrivati alla fine si torna all'inizio e si ripete.
+\end{tcolorbox}
+\begin{tcolorbox}[breakable]
+	Per il linguaggio
+	$$ L = \{ w w \mid w \in \{a, b\}^* \} $$
+	si trova il centro
+	% fig 21.3
+	\begin{center}
+		\begin{tikzpicture}
+			\begin{scope}[local bounding box=lineBox1, start chain=line1, node distance=0pt, name prefix=l1-]
+    				\node [on chain=line1] {$\rhd$};
+				\node [on chain=line1] (n1) {$a$};
+				\node [on chain=line1] (n2) {$b$};
+				\node [on chain=line1] (n2) {$b$};
+				\node [on chain=line1] (n3) {$b$};
+				\node [on chain=line1] (n4) {$a$};
+				\node [on chain=line1] (n5) {$b$};
+				\node [on chain=line1] (n6) {$b$};
+				\node [on chain=line1] (n7) {$b$};
+				\node [on chain=line1] {$\lhd$};
+ 			\end{scope}
+		\end{tikzpicture}
+	\end{center}
+	una volta trovata la metà il simbolo che la si ricorda nello stato e lo si cancella.
+	si va fino in fondo e si cerca se l'ultimo simbolo è uguale e se lo è lo si cancella e si va avanti.
+\end{tcolorbox}
+
+\begin{tcolorbox}[breakable]
+	Per il linguaggio delle parentesi a un simbolo.
+	Si cerca la prima parentesi chiusa e si controlla se il primo simbolo precedente (non cancellato) è una aperta.
+	Si procede iterativamente finché non si arriva all'end-marker.
+	\begin{align*}
+		\rhd ( ( ) ( ) ) (()) \lhd \\
+		\rhd ( \cancel{(} \cancel{)} ( ) ) (()) \lhd \\ % ...
+	\end{align*}
+\end{tcolorbox}
+
+\begin{tcolorbox}[breakable]
+	Vediamo il linguaggio di quadrati di interi in notazione unaria
+	$$ L = \{ a^{n^2} \mid n \geq 0 \} $$
+	possiamo usare il fatto che il quadrato di $n$ è uguale alla somma dei primi $n$ numeri dispari
+	$$ n^2 = \sum_{i = 1}^n (2i + 1) $$
+	Ora procediamo le seguente modo
+	\begin{align*}
+		\rhd aaaaaaaaaaaaaaaa \lhd \\
+		\rhd Xaaaaaaaaaaaaaaa \lhd \\
+		\rhd XYYYaaaaaaaaaaaa \lhd \\
+		\rhd XYYYXXXXXaaaaaaa \lhd \\
+		\rhd XYYYXXXXXYYYYYYY \lhd \\
+	\end{align*}
+	Quindi l'idea per un blocco è fare la copia del blocco precedente e aggiungere 2.
+\end{tcolorbox}
+
+Gli automi LBA (non deterministici) corrispondono alla classe dei linguaggi CS.
+Ricordiamo che le grammatice CS sono della forma
+$$ \alpha \rightarrow \beta, \hspace{1cm} |\beta| \geq |\alpha | $$
+L'idea dell'automa è di simulare la derivazione applicando le regole al contrario: se si trova una parte dell'input che corrisponde ad una parte destra di una regola, lo si sostituisce con la sua parte sinistra (nel caso riepmpiendo lo spazio extra con un simbolo nullo).
+
+In generale si può mostrare che i linguaggi CS possono essere riconosciuti anche da macchine che hanno un nastro di input e un nastro di lavoro separato (di lunghezza limitata).
+Infatti i linguaggi CS sono riconosciuti da tutte queste macchine che hanno una memoria limitata linearmente rispetto l'input.
+
+Vediamo ora le proprietà di chiusura di questi linguaggi:
+\begin{itemize}
+	\item chiusi rispetto all'unione, il motivo è lo stesso della chiusura rispetto all'unione dei CF
+	\item chiusi rispetto all'intersezione: si esegue il primo automa e se questo accetta si esegue il secondo.
+		Per evitare che il primo automa sporchi l'input per il secondo, si ``sdoppia'' l'input e ogni cella contiene una coppia di simboli e il primo automa tocca solo uno dei due elementi.
+	\item chiusi rispetto al complemento (dimostrato da Immermann nell'88).
+		Se c'è una macchina nondeterministica che lavora in spazio $s(n)$ della lunghezza di input, si può ottenre una macchina limitata da $s(n)$ per il complemento
+\end{itemize}
+Non si sà se il modello nondeterministico sia più potente o no di quello deterministico
+$$ \text{DLBA} \overset{?}{=} LBA $$
+\begin{teorema}[Teorema di Sevitch]
+	Se ho una classe di linguaggi riconosciuta da una macchina nondeterministica, si può sempre costruire una macchina determinisitca che riconosce in spazio quadratico.
+	$$ \text{NSPACE}(s(n)) \subseteq \text{DSPACE}(s^2(n)) $$
+\end{teorema}
+Quindi da questo 
+$$ \text{CS} = \text{NSPACE}(n) \subseteq \text{DSPACE}(n^2) $$
+ma non si sà se si può fare meglio di così.
+
+\section{Problemi di decisione sui linguaggi CF}\label{sec:problemi di decisione sui linguaggi CF}
+\begin{teorema}
+	Sia $L \in \text{CF}$ e $N$ la sua costante del pumping lemma per $L$, allora
+	$$ \begin{cases}
+		L \neq \varnothing & \text{sse } \exists w \in L \mid |w| < N \\
+		L \text{ è infinito} & \text{sse } \exists w \in L \mid N \leq |w| < 2N
+	\end{cases}
+	$$
+\end{teorema}
+La dimsotrazione di questo è uguale allo stesso teorema per i regolari.
+
+Per mostrare che $L \neq \varnothing$, supponiamo che $L$ sia generato dalla grammatica
+$$ G = \langle V, \Sigma, P, S \rangle $$
+Possiamo costrire l'insieme delle variabili che sono in grado di generare terminali, e se questo contiene $S$ allora il linguaggio non è vuoto.
+Iniziamo costruendo l'insieme
+$$ T_0 = \Sigma $$
+e 
+$$ T_{i + 1} = T_i \cup \{ A \in V \mid \exists A \rightarrow B \in P \mid \beta \in T_i^* \} $$
+Vale che
+$$ T_0 \subseteq T_1 \subseteq \dots \subseteq \Sigma \cup V $$
+
+Mostriamo ora se un linguaggio $L$ è finito o infinito.
+Supponiamo che $L$ sia riconosciuto dalla grammatica $G$ in FNC, priva di simboli raggiungibili e produttivi.
+Costruiamo il grafo delle produzioni: i vertici sono le variabili ed esiste un arco da $A$ a $B$ se esiste una variabile $C$ tale che
+$$ A \rightarrow BC \in P \vee A \rightarrow CB \in P $$
+Dato questo grafo, $L$ è infinito sse il grafo contiene un ciclo.
+Infatti vuol dire che esiste una serie di produzioni per cui una variabile può riprodurre sé stessa e visto che tutte le variabili in FNC sono produttive, la stringa non può che crescere.
+
+Quindi questa è una quesione decidibile.
+
+Vedremo invece che non possiamo decidere se 
+$$ L \overset{?}{=} \Sigma^* $$
+
+
+% lezione 22
+Si possono considerare modelli diversi rispetto ai LBA, ad esempio un automa con un nastro di input read-only e con $n$-nastri ausiliari.
+
+\begin{definizione}[Memoria di Turing ad un nastro]
+	Un macchina di Turing è un automa con una testina e un nastro illimitato che, sulle celle che non contengono l'input, contiene un carattere speciale detto \textit{blank}.
+	$$ M = \langle Q, \Sigma, \Gamma, \delta, q_0, F \rangle $$
+	\begin{itemize}
+		\item $Q$ un insieme di stati
+		\item $\Sigma$ un alfabeto, e $\Sigma \subseteq \Gamma$
+		\item $\Gamma$ un alfabeto di lavoro, e il blank $\# \in \Gamma \setminus \Sigma$
+		\item $q_0 \in Q$
+		\item $F \subseteq Q$
+		\item $\delta : Q \times \Gamma \rightarrow Q \times \Gamma \times \{-1, 0, +1\} $ nel caso determinsitico,
+			dove
+			\begin{itemize}
+				\item $-1$ è un movimento a destra
+				\item $0$ nessun movimento
+				\item $+1$ un movimento a destra
+			\end{itemize}
+	\end{itemize}
+\end{definizione}
+Quindi una macchina di Turing può utilizzare una memoria illimitata.
+
+Ci sono diverse varianti dell'automa, ad esempio con un nastro infinito solo da un lato, o più nastri.
+
+Assumeremo che gli stati finali siano stati \textit{halting}, quindi che non ci siano transizioni da essi, e inoltre assumeremo che il blank non possa essere scritto.
+
+\`E importante notare che la macchina potrebbe entrare in un loop.
+
+Nel caso delle macchine di Turing, il modello nondeterministico e il modello deterministico sono gli stessi, se non ci sono vincoli di risorse.
+Infatti una macchina nondetermininistica in ogni momento può fare delle scelte, nella versione deterministica si utilizza una BFS.
+
+Si può mostrare che la classe dei linguaggi riconosciuti da questa macchina sono i linguaggi di tipo 0.
+Infatti si può pensare di, tenendo l'input sul nastro, e applicando tutte le produzioni al contrario finché non si trova l'assioma, opzionalmente andando avanti in eterno.
+Possiamo avere quindi tre possibili risposte
+% fig. 22.1
+\begin{center}
+	\begin{tikzpicture}
+		\node (init) {};
+		\node[draw, minimum width=1.5cm, minimum height=1cm] (xinL) [right=of init] {$x \in L$};
+		\node[minimum width=.8cm] (si) [above right=of xinL] {Sì};
+		\node[minimum width=.8cm] (no) [right=of xinL] {No};
+		\node[minimum width=.8cm] (bot) [below right=of xinL] {$\bot$};
+
+		\draw[->] (init.east) -- node[above] {$x$} (xinL.west);
+		\draw[->] ([yshift=.4cm]xinL.east) -- (si.west);
+		\draw[->] (xinL.east) -- (no.west);
+		\draw[->] ([yshift=-.4cm]xinL.east) -- (bot.west);
+
+		\draw[decorate, decoration={brace, amplitude=.2cm}] ([xshift=.1cm]no.east) to node[right, xshift=.4cm] {$x \not \in L$} ([xshift=.1cm]bot.east);
+	\end{tikzpicture}
+\end{center}
+per questo i linguaggi sono detti ricorsivi numberabili.
+
+Possiamo vedere le macchine di Turing anche come macchine che calcolano funzioni, e le funzioni calcolate da una macchina di Turing sono le stesse calcolate da un linguaggio di programmazione generico.
+
+Vediamo ora alcuni problemi indecibili per le macchine di Turing.
+\begin{itemize}
+	\item problema dell'arresto (HALT), tale che abbiamo in input una macchina di Turing $M$ e una stringa $x \in \Sigma^*$, e ci chiediamo se la macchina termini su input $x$
+	\item vuotezza del linguaggio riconosciuto, tale che abbiamo in input una macchina di Turing $M$ e ci chiediamo se $L(M) = \varnothing$
+\end{itemize}
+
+\begin{definizione}[Configurazione]
+Definiamo ora la configurazione di una macchina di Turing.
+Questa non contiene l'intero nastro infinito, ma solo la parte non-blank.
+Suponiamo che la parte a sinistra della testina sia chiamata $x$ e che la parte della stringa da dove la testina si trova all'estremo destro si chiami $y$, una configurazione è
+$$ xqy $$
+con $q \in Q$ e $x, y \in \Gamma^*$.
+\end{definizione}
+
+\begin{definizione}[Configurazione iniziale]
+	La configurazione iniziale su input $w$ è
+	$$ q_0w $$
+\end{definizione}
+\begin{definizione}[Configurazione finale]
+	Una configurazione è finale o acecttante se lo stato $q$ è finale.
+\end{definizione}
+
+\begin{definizione}[Mossa]
+	Una mossa, scritta $C \vdash C'$, o nel caso di più mosse $C \overset{*}{\vdash*} C'$ è una applicazione di $\delta$.
+\end{definizione}
+
+\begin{definizione}[Linguaggio riconosciuto da una macchina di Turing]
+	Data la definizione di mossa definiamo il linguaggio riconosciuto da una macchina di Turing $M$ come
+	$$ L(M) = \{ w \in \Sigma^* \mid q_0w \overset{*}{\vdash} xqy, x, y \in \Gamma^*, q \in F \} $$
+\end{definizione}
+Supponiamo di trovarci nella configurazione
+% fig 22.2.
+\begin{center}
+	\begin{tikzpicture}
+		\begin{scope}[local bounding box=tapeBox, start chain=tape, node distance=0pt]
+    			\node [minimum width=40pt, minimum height=20pt, on chain=tape] {$\dots$};
+			\node [draw, minimum width=20pt, minimum height=20pt, on chain=tape] {$\#$};
+			\node [draw, minimum width=20pt, minimum height=20pt, on chain=tape] {$\#$};
+			\node [draw, minimum width=20pt, minimum height=20pt, on chain=tape] (n1) {};
+			\node [draw, minimum width=20pt, minimum height=20pt, on chain=tape] (n2) {c};
+			\node [draw, minimum width=20pt, minimum height=20pt, on chain=tape] (n3) {};
+			\node [draw, minimum width=20pt, minimum height=20pt, on chain=tape] (n4) {a};
+			\node [draw, minimum width=20pt, minimum height=20pt, on chain=tape] (n5) {};
+			\node [draw, minimum width=20pt, minimum height=20pt, on chain=tape] {$\#$};
+			\node [draw, minimum width=20pt, minimum height=20pt, on chain=tape] {$\#$};
+    			\node [minimum width=40pt, minimum height=20pt, on chain=tape] {$\dots$};
+ 		\end{scope}
+		\draw[decorate, decoration={brace, amplitude=.2cm}] ([yshift=-.1cm]n1.south east) to node[below, yshift=-.2cm] {\tiny $x'$} ([yshift=-.1cm]n1.south west);
+		\draw[decorate, decoration={brace, amplitude=.2cm}] ([yshift=.1cm]n1.north west) to node[above, yshift=.2cm] {\tiny $x$} ([yshift=.1cm]n2.north east);
+		\draw[decorate, decoration={brace, amplitude=.2cm}] ([yshift=-.1cm]n3.south east) to node[below, yshift=-.2cm] {\tiny $q$} ([yshift=-.1cm]n3.south west);
+		\draw[decorate, decoration={brace, amplitude=.2cm}] ([yshift=.1cm]n3.north west) to node[above, yshift=.2cm] {\tiny $y$} ([yshift=.1cm]n5.north east);
+		\draw[decorate, decoration={brace, amplitude=.2cm}] ([yshift=-.1cm]n5.south east) to node[below, yshift=-.2cm] {\tiny $y'$} ([yshift=-.1cm]n5.south west);
+	\end{tikzpicture}
+\end{center}
+con $xqy = xqay'$.
+possiamo avere tre casi di mossa $\delta(q, a)$
+\begin{itemize}
+	\item $(p, b, 0)$ fa passare alla configurazione $xqay' \vdash xpby'$
+	\item $(p, b, +1)$ fa passare alla configurazione $xqay' \vdash xbpy'$
+	\item $(p, b, -1)$ fa passare alla configurazione $xqay' \vdash x'pcby'$
+\end{itemize}
+
+Chiamiamo (questo cancelletto non è il blank, è un altro)
+$$ \Delta = Q \cup \Gamma \cup \{\# \} $$
+e definiamo un linguaggio su questo alfabeto
+$$ L'_{succ} = \{ \alpha \# \beta^{R} \mid \text{$\alpha$ e $\beta$ sono configurazioni di $M$ e $\alpha \vdash \beta$} \} $$
+Per riconoscere questo basta un automa a pila, infatti ad esempio sia $\alpha = xqay'$ e $\beta = y'^Rbpx^R$, carico $x$ e con la funzione di transizione calcolo con cosa sostituire $qa$ e carico $y'$ e poi scarico dopo il cancelletto.
+Definiamo anche
+$$ L''_{succ} = \{ \alpha^R \# \beta \mid \dots \} $$
+come sopra.
+Questi automi a pila sono deterministici, visto che il successore è deterministico.
+
+Definiamo ora il linguaggio delle computazioni valide per un automa $M$, o le computazioni accettanti
+$$ \text{valid}(M) = \{ \alpha_1 \# \alpha_2^R \# \alpha_3 \# \dots \# \alpha_k^{(R)} \mid \alpha_i \in (Q \cup \Gamma)^* \} $$
+$(R)$ indica che se $k$ è dispari allora non è rovesciato, altrimenti sì.
+E devono valere le seguenti condizioni:
+\begin{itemize}
+	\item per $i \in 1, \dots, k$ deve valere che $\alpha_i \in \Gamma^* Q \Gamma^*$, cioè $\alpha_i$ rappresenta una configurazione di $M$
+	\item $\alpha_1$ rappresenta una configurazione iniziale
+	\item $\alpha_k$ rappresenta una configurazione accettante
+	\item per $i \in 2, \dots, k$, deve valere che $\alpha_{i - 1} \vdash \alpha_i$, cioè $\alpha_i$ è raggiunto in una mossa da $\alpha_{i - 1}$
+\end{itemize}
+La prima, la seconda e la terza condizioni possono essere controllate da automi a stati finiti.
+Per la quarta condizione, abbiamo visto che un passaggio è il linguaggio $L'_{succ}$ (o $L''_{succ}$), ma confrontare dopo aver confrontato $\alpha_1$ e $\alpha_2^R$, abbiamo distrutto la pila per $\alpha_3$.
+Quello che possiamo fare con un automa a pila è confrontare $\alpha_1$ e $\alpha_2^R$, $\alpha_3$ e $\alpha_4^R$ e così via.
+Poi si può fare un secondo automa che confronta $\alpha_2^R$ e $\alpha_3$, $\alpha_4^R$ e $\alpha_5$, e così via.
+Quindi questo linguaggio è l'intersezione di due linguaggi CF.
+
+\begin{teorema}
+	Esistono due linguaggi CF $L_1$ e $L_2$ tali che $\text{valid}(M) = L_1 \cap L_2$, ed esiste un algoritmo che data $M$ costruisce PDA (deterministico) o CFG per $L_1$ e $L_2$.
+\end{teorema}
+Se la macchina $M$ riconosce l'insieme vuoto, quindi
+$$ L(M) = \varnothing $$
+sse non ci sono computazioni valide, quindi
+$$ \text{valid}(M) = \varnothing $$
+sse $L_1 \cap L_2 = \varnothing$.
+Quindi non è possibile decidiere se l'intersezione di due linguaggi CF è vuota, perché se si potesse allora potremmo anche decidere se un certo linguaggi riconosciuto da una macchina di Turing è vuota.
+\begin{corollario}
+	Non è possibile decidere se l'intersezione di due CFL (e anche DCFL) è vuota.
+\end{corollario}
+
+Vediamo ora invece
+$$ ( \text{valid}(M) )^C = \Delta^* \setminus \text{valid}(M) $$
+Costruiamo un dispositivo nondeterministico che scommette quele delle quattro condizioni non sia rispettata.
+\begin{itemize}
+	\item se la prima è infranta basta controllare che tra due cancelletti non ci sia uno stato, o ci siano più stati.
+	\item ...
+	\item ...
+	\item esiste almeno un $i$ tale che $\alpha_i$ non è raggiunta da una mossa da $\alpha_{i - 1}$.
+		Questo è verificabile con una pila.
+\end{itemize}
+Le prime proprietà sono controllabili ancora con automi a stati finiti.
+Mentre la quarta è riconoscibile da una pila.
+\begin{teorema}
+	$(\text{valid}(M))^C \in \text{CFL}$ ed esiste un algoritmo che, data $M$ costruisce una CFG o un PDA per $(\text{valid}(M))^C$.
+\end{teorema}
+Vale che $L = \varnothing$ sse $\text{valid}(M) = \varnothing$ sse $(\text{valid}(M))^C = \Delta^*$.
+Se esistesse un algoritmo per determinare se un $L \in \text{CFL} = \Delta^*$, allora potremmo determinare che $L(M) = \varnothing$.
+\begin{corollario}[Problema dell'universalità]
+	Dato $L \in \text{CFL}$ non è possibile determinare (è indecidibile) se $L = \Sigma^*$.
+\end{corollario}
+Invece visto che i DCFL sono chiusi rispetto al complemento, basta costruire l'automa a pila per un linguaggio e vedere se il suo complemento riconosce il linguaggio vuoto.
+\begin{corollario}[Problema dell'equivalenza]
+	Dati $L_1, L_2 \in \text{CFL}$ non è possibile decidere se $L_1 = L_2$.
+\end{corollario}
+Questo perché il problema dell'universalità è un caso particolare dell'equivalenza ($L_1 = \Delta^*$).
+
+\begin{corollario}[Problema dell'equivalenza con regolari]
+	Dati $L \in \text{CFL}$ e $L \in \text{Reg}$, non è possibile decidere se $L = R$.
+\end{corollario}
+La motivazione è la stessa di sopra.
+
+Invece dati due DPDA è possibile determinare se sono equivalenti.
+
+%%%
+Un automa a pila con due pile ha la stessa potenza computazionale di una macchina di Turing.
+
+% lezione 23
+\begin{teorema}
+	Esistono $L_1, L_2$ linguaggi CF deterministici, tali che
+	$$ \text{valid}(M) = L_1 \cap L_2 $$
+	ed esiste un algoritmo che, data la macchina $M$, ci costruisce due automi a pila deterministici per $L_1$ e $L_2$ (o grammatiche non ambigue).
+\end{teorema}
+\begin{corollario}
+$L_1 \cap L_2 = \varnothing$ sse $\text{valid}(M) = \varnothing$ sse $L(M) = \varnothing$.
+Visto che non è possibile capire se un linguaggio di tipo 0 è vuoto, non è decidibile sapere se l'intersezione di due linguaggi CF (anche determinisitic) è vuota.
+\end{corollario}
+
+Se invece analizziamo $L_1 \cup L_2$, questo contiene sia computazioni valide che non.
+Prendiamo $\beta \in \Delta^*$, e supponiamo che $\beta \in L_1 \cup L_2$.
+Definiamo allora il PDA $\mathcal{A}$
+% fig 23.1
+\begin{center}
+	\begin{tikzpicture}
+		\node[state, initial]	(q0) {};
+		\node[draw]	(l1) [above right=of q0] {DPDA $L_1$};
+		\node[draw]	(l2) [below right=of q0] {DPDA $L_2$};
+
+		\draw[->]	(q0)	to node[above] {$\epsilon$} (l1);
+		\draw[->]	(q0)	to node[below] {$\epsilon$} (l2);
+	\end{tikzpicture}
+\end{center}
+se la stringa non viene accettata, allora $\beta$ sicuramente non appartiene a $L(M)$.
+Altrimenti se viene accettata abbiamo alcuni casi
+\begin{itemize}
+	\item se $\beta \in L_1 \cap L_2$ allora abbiamo 2 computazioni accettanti
+	\item se $\beta \in (L_1 \setminus L_2$ o $\beta \in (L_2 \setminus L_1)$, allora c'è solo una computazione accettante
+\end{itemize}
+Allora vale che $\mathcal{A}$ è ambiguo sse $L_1 \cap L_2 = \varnothing$.
+Quindi $\mathcal{A}$ non è ambiguo sse $L_1 \cap L_2 = \varnothing = \text{valid}(M)$ sse $L(M) = \varnothing$.
+\begin{teorema}
+	Non esiste algoritmo che, dato un PDA $\mathcal{A}$, decide se $\mathcal{A}$ è ambiguo.
+\end{teorema}
+Lo stesso vale per le grammatiche CF.
+
+% ripetizione
+Dati due linguaggi $L_1$ e $L_2$, il loro quoziente è definito come
+$$ L_1 / L_2 = \{ x \in \Sigma^* \mid \exists y \in L_2 . xy \in L1 \} $$
+Supponiamo che $L_2 = \{ z \}$, allora
+$$ L / z = \{ x \in \Sigma^* \mid xz \in L \} $$
+avevamo dimostrato che se $L_1$ e $L_2$ sono regolari, allora anche il loro quoziente è regolare.
+
+%% problema della regolarità
+Definiamo il problema della regolarità, come il problema che dato un linguaggio $L \in \text{CFL}$, ci domandiamo se $L$ è regolare.
+Prendiamo $G = \langle V, \Sigma, P, S \rangle$ una grammatica CF.
+Chiamiamo $L = L(G)$.	% diverso dall'L di sopra
+Noi sappiamo che esistono dei linguaggi CF che non sono regolari, sia $L_0$ uno di questo, per cui
+$$ L_0 \in \text{CFL} \setminus \text{Reg} $$
+generato da una gramamtica $G_0$.
+Costruiamo ora 
+$$ L_1 = L_0 \# \Sigma^* \cup \Sigma^* \# L$$
+con $\# \not \in \Sigma$.
+Ora
+\begin{itemize}
+	\item se $L = \Sigma^*$, allora $L_1 = L \# \Sigma^* \cup \Sigma^* \# \Sigma^* = \Sigma^* \# \Sigma^*$, e questo linguaggio è regolare.
+	\item se $L \neq \Sigma^*$, sia $w \not \in L$, calcoliamo
+		$$ L_1 / \# w = L_0 $$
+		siccome $w \not \in L$, tutte le stringhe di $\Sigma^* \# L$ non sono nel quoziente.
+\end{itemize}
+Visto che ??? sono chiusi rispetto al quoziente, allora $L_1 \in \text{CFL} \setminus \text{Reg}$.
+Allora $L = \Sigma^*$ sse $L_1 \in \text{Reg}$.
+Quindi se so decidere la regolarità di un CF, saprei decidere anche la sua universalità.
+
+Definiamo ora il linguaggio delle computazioni valide su un input fissato
+$$ \text{valid}(M, w), w \in \Sigma^* $$
+Questo non cambia rispetto al $\text{valid}(M)$, e bisogna solo controllare che la computazione inizi per $w$.
+Anche il suo complemento rimane invariato e vale che
+\begin{align*}
+	(\text{valid}(M, w))^C &= \Delta^* \setminus \text{valid}(M, w) \\
+	                       &= \begin{cases} \Delta^* & \text{se } w \not \in L(M) \\ \Delta^* \setminus \{ p \} & \text{se } w \in L(M) \text{ e $p$ codifica la computazione che accetta $w$} \end{cases} \in \text{Reg}
+\end{align*}
+\begin{teorema}
+	Non esiste un algoritmo che dato PDA o CFG per linguaggio regolare, produce un automa a stati finiti equivalente.
+\end{teorema}
+\begin{proof}
+	Sia $M$ una macchina di Turing che riconosce un linguaggio ricorsivamente enuemrabile, ma non ricorsivo.
+	Sia $w \in \Sigma^*$, costruisco la grammatica $G_w$ per $(\text{valid}(G, w))^C$, un linguaggio regolare.
+	% ???, spento il puter
+	\begin{itemize}
+		\item se $w \in L(M)$, allora $L(G_w) = \Delta^* \setminus \{ \beta \} \neq \Delta^*$
+		\item se $w \not \in L(M)$, allora $L(G_w) = \Delta^*$
+	\end{itemize}
+	vale quindi che $w \in L(M)$ sse $L(G_w) = \Delta^*$.
+	Quindi non si può costruire l'automa a stati finiti.
+\end{proof}
+
+Vale inoltre che data una grammatica CF con $n$ simboli che genera un linguaggio regolare, non c'è limite al numero di stati che l'automa regolare corrispondente.
+Infatti se ci fosse un upper bound potremmo esplorare tutti gli automi costruibili finché non si trova quello corretto.
+Questo si chiama \textit{tradeoff}.
+Abbiamo visto che passare da DFA nondeterminisitici a DFA deterministici a un tradeoff esponenziale. 
+In questo secondo caso invece il tradeoff è illimitato.
+
+Decidibilità
+\begin{center}
+	\begin{tblr}{colspec = { l | c c c} }
+		&	Reg & DFCL & CF \\
+		\hline
+		\hline
+		$L \overset{?}{=} \varnothing$ & D & D & D \\
+		$L$ è finito? & D & D & D \\
+		$L \overset{?}{=} \Delta^*$ & D & D & U \\	% visto che il complemento è decidibile per il DCFL
+		$L_1 \overset{?}{=} L_2$ & D & D & U \\
+		$L \overset{?}{\in} \text{Reg}$ & / & D & U \\	% se l'automa a pila è specificato con $n$ simboli, l'upper bound per l'FSA è 2^{2^{2^n}}, poi ridotto a 2^{2^n}
+		$L_1 \cap L_2 \overset{?}{=} \varnothing$ & D & U & U \\
+	\end{tblr}
+\end{center}
 
  
 \end{document}
