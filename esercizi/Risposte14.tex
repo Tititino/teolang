@@ -1,0 +1,89 @@
+\documentclass[12pt, answers]{exam}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[italian]{babel}
+\usepackage{caption}
+\usepackage[utf8]{inputenc}
+\usepackage{embedall}
+\usepackage{etoolbox}
+\usepackage{float}
+\AtBeginEnvironment{align}{\setcounter{equation}{0}}
+\embedfile{\jobname.tex}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{mathtools}
+\usepackage{subcaption}
+\usepackage{tabularray}
+\usepackage{tikz}
+\usetikzlibrary{positioning, automata, decorations.pathreplacing, calligraphy}
+\usepackage{xcolor}
+\usepackage[bookmarks]{hyperref}
+
+\definecolor{codegray}{gray}{0.95}
+\lstdefinestyle{mystyle}{
+	numberstyle=\scriptsize\color{black},
+	basicstyle=\footnotesize,
+	numbers=left,
+	numbersep=5pt,
+}
+\lstset{style=mystyle}
+\overfullrule=10pt
+
+\newcommand{\grammar}[4]{\langle #1, #2, #3, #4 \rangle}
+\newcommand{\grammarP}[4]{\langle \{ #1 \}, \{ #2 \}, \{ #3 \}, #4 \rangle}
+\newcommand{\der}{\Rightarrow}
+\newcommand{\prd}{\rightarrow}
+
+\footer{}{\thepage}{}
+\begin{document}
+\begin{questions}
+	\question Sia $\Sigma = \{a, b\}$ e $L = \{w \in \Sigma^+ \mid \#_a(w) = \#_b(w) \}$, dove $\#_\sigma(w)$ indica il numero di occorrenze del simbolo $\sigma$ nella stringa $w$, con $\sigma \in \Sigma$.
+	Siano inoltre $L_a = \{w \in \Sigma^+ \mid \#_a(w) = \#_b(w) + 1 \}$ e $L_b = \{ w \in \Sigma^+ \mid \#_b(w) = \#_a(w) + 1 \}$.
+	Si fornisca una definizione induttiva per le stringhe nel linguaggio $L, L_a, L_b$. Dalla definizione ricavate una grammatica per il linguaggio $L$.
+	\begin{solution}
+		Definiamo per mutua induzione $L, L_a$ e $L_b$.
+		Caso base: 
+		\begin{align*}
+			a &\in L_a \\
+			b &\in L_b 
+		\end{align*}
+		Passo induttivo:
+		\begin{itemize}
+			\item se $w \in L$, allora $aw \in L_a$ e $wa \in L_a$;
+			\item se $w \in L$, allora $bw \in L_b$ e $wb \in L_b$;
+			\item se $w \in L_a$, allora $bw \in L$ e $wb \in L$;
+			\item se $w \in L_b$, allora $aw \in L$ e $wa \in L$.
+		\end{itemize}
+		Da qui possiamo ricavare la grammatica
+		\begin{align*}
+			L   &\rightarrow a L_b \mid L_b a \mid b L_a \mid L_a b \\
+			L_a &\rightarrow a L \mid L a \mid a \\
+			L_b &\rightarrow b L \mid L b \mid b
+		\end{align*}
+	\end{solution}
+	\textit{Suggerimento.} Ispiratevi all'esempio presentato a lezione per il linguaggio delle parentesi bilanciate, utilizzando affermazioni come `\textit{Una stringa di $L$ inizia con una $b$ seguita da una stringa di $L_w$, oppure inizia con ...}'. 
+	Per ricavare la grammatica potete considerare una variabile per ognuno dei tre linguaggi.
+	Una delle possibili soluzioni vi permetterà di ottenere una grammatica per $L$ presentata a lezione.
+	\question Ripetete l'esercizio precedente, sostituendo $w \in \Sigma^*$ a $w \in \Sigma^+$ nella definizione dei linguaggio. 
+	Osservate che è sufficiente un unico caso base n tutta la definizione ricorsiva.
+	\begin{solution}
+		Precediamo similmente a sopra per mutua induzione.
+		Caso base: 
+		$$ \varepsilon \in L $$
+		Passo induttivo:
+		\begin{itemize}
+			\item se $w \in L$, allora $aw \in L_a$ e $wa \in L_a$;
+			\item se $w \in L$, allora $bw \in L_b$ e $wb \in L_b$;
+			\item se $w \in L_a$, allora $bw \in L$ e $wb \in L$;
+			\item se $w \in L_b$, allora $aw \in L$ e $wa \in L$.
+		\end{itemize}
+		Da qui possiamo ricavare la grammatica
+		\begin{align*}
+			L   &\rightarrow a L_b \mid L_b a \mid b L_a \mid L_a b \mid \epsilon \\
+			L_a &\rightarrow a L \mid L a \\
+			L_b &\rightarrow b L \mid L b 
+		\end{align*}
+	\end{solution}
+\end{questions}
+\end{document}
