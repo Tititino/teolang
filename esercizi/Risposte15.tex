@@ -1,0 +1,81 @@
+\documentclass[12pt, answers]{exam}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[italian]{babel}
+\usepackage{caption}
+\usepackage[utf8]{inputenc}
+\usepackage{embedall}
+\usepackage{enumitem}
+\usepackage{etoolbox}
+\usepackage{float}
+\AtBeginEnvironment{align}{\setcounter{equation}{0}}
+\embedfile{\jobname.tex}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{mathtools}
+\usepackage{subcaption}
+\usepackage{tabularray}
+\usepackage{tikz}
+\usetikzlibrary{positioning, automata, decorations.pathreplacing, calligraphy}
+\usepackage{xcolor}
+\usepackage[bookmarks]{hyperref}
+
+\definecolor{codegray}{gray}{0.95}
+\lstdefinestyle{mystyle}{
+	numberstyle=\scriptsize\color{black},
+	basicstyle=\footnotesize,
+	numbers=left,
+	numbersep=5pt,
+}
+\lstset{style=mystyle}
+\overfullrule=10pt
+
+\newcommand{\grammar}[4]{\langle #1, #2, #3, #4 \rangle}
+\newcommand{\grammarP}[4]{\langle \{ #1 \}, \{ #2 \}, \{ #3 \}, #4 \rangle}
+\newcommand{\der}{\Rightarrow}
+\newcommand{\prd}{\rightarrow}
+
+\footer{}{\thepage}{}
+\begin{document}
+Negli esercizi deguenti facciamo riferimento alla forma normale per gli automai a pila presentata a lezione, in cui un automa a pila è, come sempre, una 7-tupla 
+$$M = \langle Q, \Sigma, \Gamma, \delta, q_0, Z_0, F\rangle$$
+dove $Q$ è l'insieme finito degli \textit{stati}, $\Sigma$ è l'\textit{alfabeto di input}, $\Gamma$ è l'\textit{alfabeto della pila}, $q_0 \in Q$ è lo stato iniziale, $Z_0 \in \Gamma$ \textit{simbolo iniziale} sulla pila, $F \subseteq Q$ è l'insieme degli \textit{stati finali}.
+Nella forma normale l'automa opera come segue:
+\begin{itemize}
+	\item all'inizio della computazione la pila contiene solo il simbolo $Z_0$, che non può essere mai rimosso o caricato sulla pila;
+	\item l'input è accettato se e solo se l'automa raggiunge una configurazione in cui tutto l'input è stato letto, lo stato appartiene all'insieme $F$, la pila contiene solo $Z_0$;
+	\item in una mossa è possibile caricare un simbolo in cima alla pila, rimuovere il simbolo che si trova in cima alla pila, oppure lasciare la pila inalterata;
+	\item nelle mosse in cui l'automa legge un simbolo dall'input la pila non viene modificata.
+\end{itemize}
+La funzione di transizione $\delta$ di un automa a pila $M$ in questa forma può essere scritta come:
+$$ \delta : Q \times (\Sigma \cup \{\varepsilon\} ) \times  \Gamma \rightarrow 2^{Q \times (\{-, \text{pop}\} \cup \{\text{push}(Z) \mid Z \in \Gamma\})} $$
+con il seguente significato, per $q, p \in Q$, $A, B \in \Gamma$, $a \in \Sigma$:
+\begin{itemize}
+	\item $(p, -) \in \delta(q, a, A)$:\\
+		\noindent se il simbolo in input è $a \in \Sigma$, l'automa $M$ nello stato $q$, con $A$ in cima alla pila, può leggere $a$, muovendo dunque la testina di input a destra di una posizione, e raggiungere lo stato $p$, senza modificare la pila;
+	\item $(p, -) \in \delta(q, \varepsilon, A)$:\\
+		\noindent l'automa $M$ nello stato $q$, con $A$ in cima alla pila, senza leggere alcun simbolo dall'input può raggiungere lo stato $p$, senza modificare la pila;
+	\item $(p, \text{push}(B)) \in \delta(q, \varepsilon, A)$:\\
+		\noindent l'automa $M$ nello stato $q$, con $A$ in cima alla pila, senza leggere alcun simbolo dall'input può raggiungere lo stato $p$, aggiungendo $B$ in cima all apila (si noti che $B$ non può essere $Z_0$);
+	\item $(p, \text{pop}) \in \delta(q, \varepsilon, A)$:\\
+		\noindent l'automa $M$ nello stato $q$, con $A$ in cima alla pila, senza leggere alcun simbolo dall'input può raggiungere lo stato $p$, rimuovendo il simbolo $A$ dalla cima della pila (si noti che $A$ non può essere $Z_0$).
+\end{itemize}
+Da un automa a pila $M$ nella forma precedente, abbiamo costruito una grammatica context free
+$$ G = \langle V, \Sigma, P, S \rangle $$
+dove l'insieme $V$ delle variabili contiene tutte le triple della forma $[qAp]$, con $q, p \in Q$, $A \in \Gamma$, più il simbolo iniziale $S$ di $G$, dunque
+$$ V = \{[qAp] \mid q, p \in Q, A \in \Gamma\} \cup \{S\} $$
+le produzioni in $P$ sono:
+\begin{enumerate}[label=\alph*.]
+	\item $[qAp] \rightarrow [qAr][rAp]$, per ogni $q, p, r \in Q$, $A \in \Gamma$;
+	\item $[qAp] \rightarrow [q'Bp']$, per ogni $q, q', p, p' \in Q$, $A, B \in \Gamma$ tali che $(q', \text{push}(B)) \in \delta(q, \varepsilon, A)$ e $(p, \text{pop}) \in \delta(p', \varepsilon, B)$;
+	\item $[qAp] \rightarrow a$, per ogni $q, p \in Q$, $a \in \Sigma \cup \{\varepsilon\}$, $A \in \Gamma$ tali che $(p, -) \in \delta(q, a, A)$;
+	\item $[qAq] \rightarrow \varepsilon$, per ogni $q \in Q$, $A \in \Gamma$;
+	\item $S \rightarrow [q_0Z_0q]$, per ogni $q \in F$.
+\end{enumerate}
+\begin{questions}
+	\question Studiate come trasformare un automa a pila nella forma classica, vista in lezioni precedenti, in un automa a pila equivalente nella forma normale presentata in questa lezione.
+	\begin{solution}
+	\end{solution}
+\end{questions}
+\end{document}
